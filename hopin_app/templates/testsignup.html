@@ -7,6 +7,7 @@
 </head>
 <body>
 
+    {# default message display snippet- as web popup #}
     {% if messages %}
         {% for message in messages %}
             <script>
@@ -19,8 +20,10 @@
     <p>Hi, This is Test Login</p>
     <form method="POST">
         {% csrf_token %}
-        <input type="text" name="email">
-        <button type="submit"></button>
+            <input type="text" name="username" placeholder="user name">
+            <input type="text" name="useremail" placeholder="user email">
+            <input type="text" name="userpassword" placeholder="user password">
+            <button type="submit">Submit Form</button>
     </form>
 </body>
 </html>
