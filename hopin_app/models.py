@@ -14,7 +14,7 @@ class user(models.Model):
     userid=models.AutoField(primary_key=True)
     username=models.CharField(max_length=100)
     useremail=models.EmailField(unique=True, validators=[verifyemail])
-    userpassword=models.CharField(max_length=50)
+    hashedpassword=models.CharField(max_length=50)
     useraccess=models.CharField(default="allowed")
 
     def __str__(self):
