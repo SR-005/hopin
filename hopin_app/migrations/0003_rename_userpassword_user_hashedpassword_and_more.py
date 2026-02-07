@@ -19,6 +19,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='user',
             name='useremail',
-            field=models.EmailField(max_length=254, unique=True, validators=[hopin_app.models.verifyemail]),
+            field=models.EmailField(max_length=254, unique=True),
         ),
     ]
