@@ -1,15 +1,33 @@
-from django.shortcuts import render
-from .forms import signupForm
+from django.shortcuts import render,redirect
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth import authenticate, login
+
+from .forms import signupForm,loginForm
 
 # Create your views here.
 
-def login(request):
+def loginfunction(request):
+    if request.method=="POST":
+
+        loginform=loginForm(request.POST)
+        if loginform.is_valid():
+            useremail=loginform.cleaned_data["email"]
+            userpassword=loginform.cleaned_data["password"]
+            print(useremail, userpassword)
+            
+            user=authenticate(request,username=useremail,password=userpassword)
+            if user is not None:
+                login(request,user)
+                messages.success(request,"Login Successfull!!")
+                return redirect("testsignup")
+            else:
+                messages.error(request,"Invalid Credentials!!")
+
     return render(request,"testlogin.html")
 
-def signup(request):
+def signupfunction(request):
     if request.method=="POST":
 
         signupform=signupForm(request.POST)             #collect values from html form and validate it w.r.t signupForm
