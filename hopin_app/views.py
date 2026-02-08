@@ -8,6 +8,12 @@ from .forms import signupForm,loginForm
 
 # Create your views here.
 
+def landingfunction(request):
+    if request.method=="POST":
+        return redirect("testlogin")
+
+    return render(request,"testlanding.html")
+
 def loginfunction(request):
     if request.method=="POST":
 

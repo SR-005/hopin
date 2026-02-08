@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login</title>
+</head>
+<body>
+
+    {# default message display snippet- as web popup #}
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+            alert("{{ message|escapejs }}");
+            </script>
+        {% endfor %}
+    {% endif %}
+
+
+    <p>Hi, This is Test Landing</p>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit">Go to Login</button>
+    </form>
+</body>
+</html>
