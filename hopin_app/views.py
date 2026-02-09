@@ -13,14 +13,13 @@ def landingfunction(request):
     if request.method=="POST":
         return redirect("testlogin")
 
-    return render(request,"testlanding.html")
+    return render(request,"landing.html")
 
 def loginfunction(request):
     if request.method=="POST":
         
         loginform=loginForm(request.POST)
         if loginform.is_valid():
-            print("Hello")
             useremail=loginform.cleaned_data["email"]
             userpassword=loginform.cleaned_data["password"]
             print(useremail, userpassword)
@@ -45,10 +44,6 @@ def signupfunction(request):
             lastname=signupform.cleaned_data["last_name"]
             useremail=signupform.cleaned_data["email"]
             userpassword=signupform.cleaned_data["password"]
-
-            '''print("Name: ",username)
-            print("Email: ",useremail)
-            print("Password: ",userpassword)'''
 
             #create_user is a Django Built in function to create a User to User Model
             newuser=User.objects.create_user(email=useremail,password=userpassword)  
