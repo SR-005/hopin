@@ -2,6 +2,8 @@ from django.db import models
 
 
 # Create your models here.
+
+#creating admin model
 from django.contrib.auth.models import BaseUserManager
 class UserManager(BaseUserManager):
     use_in_migrations = True
@@ -29,7 +31,7 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
-
+#creating custom User Model usin AbstractUser Model
 from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
     username=None
@@ -44,7 +46,7 @@ class User(AbstractUser):
         return self.email
     
 #User Details Table: contains details of each user
-class useredetail(models.Model):
+class userdetail(models.Model):
     usercredentials=models.OneToOneField(User, on_delete=models.CASCADE, related_name="userdetails")
     useraccess = models.CharField(default="allowed",max_length=20)
     
