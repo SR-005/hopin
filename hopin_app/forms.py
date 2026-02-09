@@ -7,7 +7,7 @@ class signupForm(forms.ModelForm):
 
     class Meta:
         model=User              #model name
-        fields=["username","email"]      #field names of db that come from form(htmlid=model field name)
+        fields=["first_name","last_name","email"]      #field names of db that come from form(htmlid=model field name)
 
 
     def clean_email(self):              #checking if the email is college email or not
@@ -16,9 +16,6 @@ class signupForm(forms.ModelForm):
             raise ValidationError("Only college email addresses (@student.aisat.ac.in) are allowed.")
         return email
     
-class loginForm(forms.ModelForm):
+class loginForm(forms.Form):
+    email = forms.EmailField()
     password=forms.CharField(widget=forms.PasswordInput())
-
-    class Meta:
-        model=User
-        fields=["email"]

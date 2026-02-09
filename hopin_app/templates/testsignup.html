@@ -20,7 +20,8 @@
     <p>Hi, This is Test Signup</p>
     <form method="POST">
         {% csrf_token %}
-            <input type="text" name="username" placeholder="user name">
+            <input type="text" name="first_name" placeholder="first name">
+            <input type="text" name="last_name" placeholder="last name">
             <input type="text" name="email" placeholder="user email">
             <input type="text" name="password" placeholder="user password">
             <button type="submit">Submit Form</button>

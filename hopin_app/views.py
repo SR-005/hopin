@@ -1,6 +1,7 @@
 from django.shortcuts import render,redirect
 from django.contrib import messages
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()
 from django.contrib.auth.hashers import make_password, check_password
 from django.contrib.auth import authenticate, login
 
@@ -16,9 +17,10 @@ def landingfunction(request):
 
 def loginfunction(request):
     if request.method=="POST":
-
+        
         loginform=loginForm(request.POST)
         if loginform.is_valid():
+            print("Hello")
             useremail=loginform.cleaned_data["email"]
             userpassword=loginform.cleaned_data["password"]
             print(useremail, userpassword)
@@ -30,7 +32,8 @@ def loginfunction(request):
                 return redirect("testsignup")
             else:
                 messages.error(request,"Invalid Credentials!!")
-
+        else:
+            print(loginform.errors)
     return render(request,"testlogin.html")
 
 def signupfunction(request):
@@ -38,7 +41,8 @@ def signupfunction(request):
 
         signupform=signupForm(request.POST)             #collect values from html form and validate it w.r.t signupForm
         if signupform.is_valid():
-            username=signupform.cleaned_data["username"]
+            firstname=signupform.cleaned_data["first_name"]
+            lastname=signupform.cleaned_data["last_name"]
             useremail=signupform.cleaned_data["email"]
             userpassword=signupform.cleaned_data["password"]
 
@@ -47,8 +51,10 @@ def signupfunction(request):
             print("Password: ",userpassword)'''
 
             #create_user is a Django Built in function to create a User to User Model
-            newuser=User.objects.create_user(username=username,email=useremail,password=userpassword)  
-
+            newuser=User.objects.create_user(email=useremail,password=userpassword)  
+            newuser.first_name=firstname    
+            newuser.last_name=lastname
+            newuser.save()
             messages.success(request,"Account has been successfully created.")
 
         else:
