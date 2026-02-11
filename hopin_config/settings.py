@@ -63,7 +63,7 @@ ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 
-ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'  #used to config the restriction of emails through google auth
+SOCIALACCOUNT_ADAPTER = 'hopin_app.adapters.RestrictDomainSocialAdapter'  #used to config the restriction of emails through google auth
 SOCIALACCOUNT_LOGIN_ON_GET = True       #to skip permission screen
 
 MIDDLEWARE = [
