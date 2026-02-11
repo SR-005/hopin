@@ -10,10 +10,8 @@ from .forms import signupForm,loginForm
 # Create your views here.
 
 def landingfunction(request):
-    if request.method=="POST":
-        return redirect("testlogin")
-
-    return render(request,"landing.html")
+    user=None
+    return render(request,"landing.html",{"user":user})
 
 def loginfunction(request):
     if request.method=="POST":
@@ -28,7 +26,7 @@ def loginfunction(request):
             if user is not None:
                 login(request,user)
                 messages.success(request,"Login Successfull!!")
-                return redirect("testsignup")
+                return redirect("landing")
             else:
                 messages.error(request,"Invalid Credentials!!")
         else:
@@ -56,3 +54,6 @@ def signupfunction(request):
             for errors in signupform.errors.items():        #returns a tuple of errors from the form
                 messages.error(request,errors[1][0])            #we use indexing to catch the exact error message from tuple
     return render(request,"testsignup.html")
+
+def driverfunction(request):
+    return render(request,"testdriver.html")

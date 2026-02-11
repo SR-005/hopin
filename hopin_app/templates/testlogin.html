@@ -6,6 +6,9 @@
     <title>Test Login</title>
 </head>
 <body>
+    {% load django_bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
 
     {# default message display snippet- as web popup #}
     {% if messages %}
@@ -17,12 +20,20 @@
     {% endif %}
 
 
-    <p>Hi, This is Test Login</p>
+    <h1 class="text-center">Login</h1>
     <form method="POST">
+        <div class="d-flex justify-content-center">
         {% csrf_token %}
-        <input type="text" name="email">
-        <input type="text" name="password">
-        <button type="submit">Login</button>
+        <div class="d-flex justify-content-start flex-column w-25">
+            <label>Email: </label>
+            <input type="text" name="email"><br>
+            <label>Password: </label>
+            <input type="password" name="password">
+            <button class="mt-4" type="submit">Login</button>
+            <a href="{% url 'testsignup' %}" class="text-center mt-3">Go to Signup</a>
+        </div>
+        </div>
+        
     </form>
 </body>
 </html>

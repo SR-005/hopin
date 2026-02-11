@@ -5,4 +5,5 @@ urlpatterns = [
     path("", views.landingfunction, name="landing"),
     path("login/", views.loginfunction, name="testlogin"),
     path("signup/", views.signupfunction, name="testsignup"),
+    path("createride/", views.driverfunction, name="testdriver"),
 ]
