@@ -3,7 +3,8 @@ from . import views
 
 urlpatterns = [
     path("", views.landingfunction, name="landing"),
-    path("login/", views.loginfunction, name="testlogin"),
-    path("signup/", views.signupfunction, name="testsignup"),
+    path("testlogin/", views.loginfunction, name="testlogin"),
+    path("login/", views.loginfunction, name="login"),
+    path("testsignup/", views.signupfunction, name="testsignup"),
     path("createride/", views.driverfunction, name="testdriver"),
 ]
