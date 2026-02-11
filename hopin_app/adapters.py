@@ -1,5 +1,3 @@
-# hopin_app/adapters.py
-
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 from allauth.exceptions import ImmediateHttpResponse
 from django.http import HttpResponseRedirect

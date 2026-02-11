@@ -1,5 +1,5 @@
 from .forms import signupForm, loginForm
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.hashers import make_password, check_password
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -9,12 +9,22 @@ User = get_user_model()
 
 # Create your views here.
 
-
+#Main Landing Page View
 def landingfunction(request):
     user = None
+    try:
+        print("Current User Email: ",request.user.email)
+    except:
+        print("User is not Logged in or Logged Out")
     return render(request, "landing.html", {"user": user})
 
+#Main Logout Function
+def logoutfunction(request):
+    logout(request)
+    messages.success(request, "User Logged Out- Log back in to use the app!")
+    return redirect ("/")
 
+#Main Login Page View
 def loginfunction(request):
     return render(request, "login.html")
 
@@ -41,7 +51,7 @@ def testloginfunction(request):
     return render(request, "testlogin.html")
 
 
-def signupfunction(request):
+def testsignupfunction(request):
     if request.method == "POST":
 
         # collect values from html form and validate it w.r.t signupForm
@@ -67,5 +77,5 @@ def signupfunction(request):
     return render(request, "testsignup.html")
 
 
-def driverfunction(request):
+def testdriverfunction(request):
     return render(request, "testdriver.html")

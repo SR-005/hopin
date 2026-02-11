@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hop-In</title>
-    <link rel="stylesheet" href="index.css">
+    
     <link rel="stylesheet" href="{% static 'hopin_app/css/style.css' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -27,7 +27,6 @@
     
     <div class="page">
         <h1 class="main_title abs">HopIn</h1>
-        { % if user % }
             <div class="auth">
                 <div class="log">
                     <a href="{% url 'testlogin' %}">Log in</a>
@@ -36,8 +35,12 @@
                 <a href="{% url 'testsignup' %}" class="signbtn">
                     <span class="signtxt">Sign up</span>
                 </a>
+                
+                <div class="log">
+                    <a href="{% url 'logout' %}">Log Out</a>
+                </div>
+
             </div>
-        { % endif % }
         <img src="{% static 'hopin_app/images/logo.png' %}" alt="My image" class="logo abs">
         <div class="text abs">
             <span>Ride</span><br>
