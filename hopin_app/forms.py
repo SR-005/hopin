@@ -1,5 +1,5 @@
 from django import forms
-from .models import User
+from .models import User,driverdetail
 from django.core.exceptions import ValidationError
 
 class signupForm(forms.ModelForm):
@@ -19,3 +19,8 @@ class signupForm(forms.ModelForm):
 class loginForm(forms.Form):
     email = forms.EmailField()
     password=forms.CharField(widget=forms.PasswordInput())
+
+class createtripForm(forms.ModelForm):
+    class Meta:
+        model=driverdetail
+        fields=["preferedlocation","prefereddirection","vehicletype","vehiclenumber","vehiclemodel"]
