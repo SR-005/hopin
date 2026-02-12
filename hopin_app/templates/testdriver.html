@@ -11,5 +11,37 @@
     
     <h1 class="text-center">Hello, world!</h1>
     
+    <div class="d-flex justify-content-center mt-5">
+      <form method="POST">
+        {% csrf_token %}
+
+        <div class="mb-2">
+          <label>Location: </label>
+          <input type="text" name="preferedlocation">
+        </div>
+
+        <div class="mb-2">
+          <label>Direction: </label>
+          <input type="text" name="prefereddirection">
+        </div>
+
+        <div class="mb-2">
+          <label>Vehicle Type: </label>
+          <input type="text" name="vehicletype">
+        </div>
+
+        <div class="mb-2">
+          <label>Vehicle Number: </label>
+          <input type="text" name="vehiclenumber">
+        </div>
+
+        <div class="mb-2">
+          <label>Vehicle Model: </label>
+          <input type="text" name="vehiclemodel">
+        </div>
+
+      </form>
+    </div>
+
   </body>
 </html>

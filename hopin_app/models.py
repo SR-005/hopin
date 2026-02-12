@@ -58,6 +58,6 @@ class driverdetail(models.Model):
     usercredentials=models.OneToOneField(User, on_delete=models.CASCADE, related_name="driver")
     preferedlocation=models.CharField()                 #location suggession
     prefereddirection=models.CharField()                #direction suggession
-    vehiclenumber=models.CharField(max_length=12)       #KL 41 **** ****
     vehicletype=models.CharField()                      #car or bike
+    vehiclenumber=models.CharField(max_length=12)       #KL 41 **** ****
     vehiclemodel=models.CharField()                     #car or bike model name
