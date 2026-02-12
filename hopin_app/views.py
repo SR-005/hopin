@@ -1,8 +1,8 @@
 from .forms import signupForm, loginForm
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.hashers import make_password, check_password
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from .models import userdetail
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -16,6 +16,7 @@ def landingfunction(request):
         print("Current User Email: ",request.user.email)
     except:
         print("User is not Logged in or Logged Out")
+
     return render(request, "landing.html", {"user": user})
 
 #Main Logout Function
@@ -38,8 +39,7 @@ def testloginfunction(request):
             userpassword = loginform.cleaned_data["password"]
             print(useremail, userpassword)
 
-            user = authenticate(request, username=useremail,
-                                password=userpassword)
+            user = authenticate(request, username=useremail,password=userpassword)
             if user is not None:
                 login(request, user)
                 messages.success(request, "Login Successfull!!")
@@ -68,6 +68,7 @@ def testsignupfunction(request):
             newuser.first_name = firstname
             newuser.last_name = lastname
             newuser.save()
+
             messages.success(request, "Account has been successfully created.")
 
         else:
