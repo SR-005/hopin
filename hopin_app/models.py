@@ -46,9 +46,18 @@ class User(AbstractUser):
     
 #User Details Table: contains details of each user
 class userdetail(models.Model):
+    id=models.AutoField(primary_key=True)
     usercredentials=models.OneToOneField(User, on_delete=models.CASCADE, related_name="userdetails")
-    useraccess = models.CharField(default="allowed",max_length=20)
+    paymentpending = models.BooleanField(default="False")
     
     def __str__(self):
         return self.usercredentials.email
     
+class driverdetail(models.Model):
+    id=models.AutoField(primary_key=True)
+    usercredentials=models.OneToOneField(User, on_delete=models.CASCADE, related_name="driver")
+    preferedlocation=models.CharField()                 #location suggession
+    prefereddirection=models.CharField()                #direction suggession
+    vehiclenumber=models.CharField(max_length=12)       #KL 41 **** ****
+    vehicletype=models.CharField()                      #car or bike
+    vehiclemodel=models.CharField()                     #car or bike model name
