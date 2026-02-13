@@ -1,4 +1,4 @@
-from .forms import signupForm, loginForm
+from .forms import signupForm, loginForm, createtripForm
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -63,8 +63,7 @@ def testsignupfunction(request):
             userpassword = signupform.cleaned_data["password"]
 
             # create_user is a Django Built in function to create a User to User Model
-            newuser = User.objects.create_user(
-                email=useremail, password=userpassword)
+            newuser = User.objects.create_user(email=useremail, password=userpassword)
             newuser.first_name = firstname
             newuser.last_name = lastname
             newuser.save()
@@ -79,4 +78,13 @@ def testsignupfunction(request):
 
 
 def testdriverfunction(request):
-    return render(request, "testdriver.html")
+    if request.method == "POST":
+        createtripform=createtripForm(request.POST)
+        if createtripform.is_valid():
+            trip=createtripform.save(commit=False)               #commit=False: saves the form content but doesnot upload it into db yet
+            trip.usercredentials=request.user
+            trip.save()
+        else:
+            print("Form not Valid")
+
+    return render(request, "testdriver.html",)
