@@ -23,4 +23,4 @@ class loginForm(forms.Form):
 class createtripForm(forms.ModelForm):
     class Meta:
         model=driverdetail
-        fields=["preferedlocation","prefereddirection","vehicletype","vehiclenumber","vehiclemodel"]
+        fields=["preferedlocation","viaroute","prefereddirection","vehicletype","vehiclenumber","vehiclemodel"]
