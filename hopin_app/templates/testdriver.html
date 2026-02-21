@@ -22,7 +22,15 @@
 
         <div class="mb-2">
           <label>Route: </label>
-          <input type="text" name="viaroute">
+          <select id="routeSelect" name="route">
+            <option value="via pipeline road">via Pipeline Road</option>
+            {# {% for route in routes %} #}
+                <option value="via Pipeline">via Metro Route</option>
+            {# {% endfor %} #}
+            <option value="other">Other</option>
+          </select>
+
+          <input type="text" id="newRoute" name="route" style="display:none;" placeholder="Enter new route">
         </div>
 
         <div class="mb-2">
@@ -48,6 +56,18 @@
         <button type="submit">Enter</button>
       </form>
     </div>
+
+
+    <script>
+      document.getElementById("routeSelect").addEventListener("change", function() {
+          const newRouteInput = document.getElementById("newRoute");
+          if (this.value === "other") {
+              newRouteInput.style.display = "block";
+          } else {
+              newRouteInput.style.display = "none";
+          }
+      });
+    </script>
 
   </body>
 </html>
