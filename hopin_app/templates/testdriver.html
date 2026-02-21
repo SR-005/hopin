@@ -23,10 +23,9 @@
         <div class="mb-2">
           <label>Route: </label>
           <select id="routeSelect" name="route">
-            <option value="via pipeline road">via Pipeline Road</option>
-            {# {% for route in routes %} #}
-                <option value="via Pipeline">via Metro Route</option>
-            {# {% endfor %} #}
+            {% for route in availableroutes %}
+                <option value="{{ route }}">{{ route }}</option>
+            {% endfor %}
             <option value="other">Other</option>
           </select>
 
