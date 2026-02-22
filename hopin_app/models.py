@@ -53,7 +53,7 @@ class userdetail(models.Model):
     def __str__(self):
         return self.usercredentials.email
     
-class driverdetail(models.Model):
+class trip(models.Model):
     id=models.AutoField(primary_key=True)
     usercredentials=models.ForeignKey(User, on_delete=models.CASCADE, related_name="driver")
     preferedlocation=models.CharField()                 #location suggession

@@ -2,7 +2,7 @@ from .forms import signupForm, loginForm, createtripForm
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .models import userdetail,driverdetail
+from .models import userdetail,trip
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -79,7 +79,7 @@ def testsignupfunction(request):
 
 def testdriverfunction(request):
     userobject=request.user
-    userasdriver=driverdetail.objects.filter(usercredentials=userobject)
+    userasdriver=trip.objects.filter(usercredentials=userobject)
 
     availableroutes=[]
     for details in userasdriver:
@@ -90,9 +90,9 @@ def testdriverfunction(request):
     if request.method == "POST":
         createtripform=createtripForm(request.POST)
         if createtripform.is_valid():
-            trip=createtripform.save(commit=False)               #commit=False: saves the form content but doesnot upload it into db yet
-            trip.usercredentials=request.user
-            trip.save()
+            newtrip=createtripform.save(commit=False)               #commit=False: saves the form content but doesnot upload it into db yet
+            newtrip.usercredentials=request.user
+            newtrip.save()
         else:
             print("Form not Valid")
 
