@@ -92,8 +92,15 @@ def testdriverfunction(request):
         if createtripform.is_valid():
             newtrip=createtripform.save(commit=False)               #commit=False: saves the form content but doesnot upload it into db yet
             newtrip.usercredentials=request.user
+
+            if request.POST.get("route") == "other":
+                trip.route = request.POST.get("customroute")
+            else:
+                trip.route = request.POST.get("route")
+
             newtrip.save()
         else:
             print("Form not Valid")
+            print(request.POST)
 
     return render(request, "testdriver.html",{"availableroutes":availableroutes})

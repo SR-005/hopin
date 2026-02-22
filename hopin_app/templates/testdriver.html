@@ -22,31 +22,25 @@
 
         <div class="mb-2">
           <label>Route: </label>
-          <select id="routeSelect" name="route">
+          <select id="routeSelect" name="route" required>
+            <option value="" disabled selected>Select Route</option>
             {% for route in availableroutes %}
                 <option value="{{ route }}">{{ route }}</option>
             {% endfor %}
             <option value="other">Other</option>
           </select>
 
-          <input type="text" id="newRoute" name="route" style="display:none;" placeholder="Enter new route">
+          <input type="text" id="newRoute" name="customroute" style="display:none;" placeholder="Enter new route">
         </div>
 
         <div class="mb-2">
-          <label>Direction: </label>
-          <input type="text" name="prefereddirection">
-
           <div class="form-check">
-            <input class="form-check-input" type="radio" name="radioDefault" id="radioDefault1">
-            <label class="form-check-label" for="radioDefault1">
-              Default radio
-            </label>
+            <input class="form-check-input" type="radio" value="to" name="prefereddirection" id="radioDefault1" checked>
+            <label class="form-check-label" for="radioDefault1">To College</label>
           </div>
           <div class="form-check">
-            <input class="form-check-input" type="radio" name="radioDefault" id="radioDefault2" checked>
-            <label class="form-check-label" for="radioDefault2">
-              Default checked radio
-            </label>
+            <input class="form-check-input" type="radio" value="from" name="prefereddirection" id="radioDefault2">
+            <label class="form-check-label" for="radioDefault2">From College</label>
           </div>
 
         </div>
