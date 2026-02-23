@@ -81,11 +81,15 @@ def testdriverfunction(request):
     userobject=request.user
     userasdriver=trip.objects.filter(usercredentials=userobject)
 
+    #retrieve previous routes from their history
     availableroutes=[]
     for details in userasdriver:
-        print(details.route)
         availableroutes.append(details.route)
     print(availableroutes)
+
+    #retrieve last vehicle information
+    index=len(userasdriver)-1
+    lasttrip=userasdriver[index]
 
     if request.method == "POST":
         createtripform=createtripForm(request.POST)
@@ -103,4 +107,5 @@ def testdriverfunction(request):
             print("Form not Valid")
             print(request.POST)
 
-    return render(request, "testdriver.html",{"availableroutes":availableroutes})
+    return render(request, "testdriver.html",
+                  {"availableroutes":availableroutes,"lasttrip":lasttrip})
