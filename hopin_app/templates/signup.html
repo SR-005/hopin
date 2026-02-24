@@ -21,6 +21,15 @@
 
 <body>
 
+    {# default message display snippet- as web popup #}
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+            alert("{{ message|escapejs }}");
+            </script>
+        {% endfor %}
+    {% endif %}
+
     <div class="main-container relative">
         <nav class="w-full flex items-center px-4 py-6 absolute top-0 left-0 z-50">
 
@@ -43,25 +52,36 @@
 
         <div class="left min-h-screen flex items-start justify-center pt-28">
 
-            <form class="w-full md:w-[450px]  mt-4 p-6 space-y-4 bg-[#191265] ">
+            <form method="POST" class="w-full md:w-[450px]  mt-4 p-6 space-y-4 bg-[#191265] ">
+                {% csrf_token %}
                 <h1
-                    class="text-5xl font-extrabold tracking-tight font-['Bricolage_Grotesque'] text-[#ebebdf] text-left mb-8">
+                    class="text-5xl font-extrabold tracking-tight font-['Bricolage_Grotesque'] text-[#ebebdf] text-left mb-12">
                     Sign Up
                 </h1>
                 <div class="relative">
 
-                    <input type="text" id="name"
+                    <input type="text" id="name" name="first_name"
                         class="block w-full px-0 py-2.5 text-sm text-[#ebebdf] bg-transparent  border-b-[1px] border-[#ebebdf] focus:outline-none focus:ring-0 focus:border-[#ebebdf] peer"
                         placeholder=" " required />
                     <label for="name"
                         class="absolute text-sm text-[#ebebdf] font-['Poppins'] duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:left-0 peer-focus:text-[#ebebdf] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
-                        Name
+                        First Name
                     </label>
                 </div>
 
+                <div class="relative">
+
+                    <input type="text" id="name" name="last_name"
+                        class="block w-full px-0 py-2.5 text-sm text-[#ebebdf] bg-transparent  border-b-[1px] border-[#ebebdf] focus:outline-none focus:ring-0 focus:border-[#ebebdf] peer"
+                        placeholder=" " required />
+                    <label for="name"
+                        class="absolute text-sm text-[#ebebdf] font-['Poppins'] duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:left-0 peer-focus:text-[#ebebdf] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                        Last Name
+                    </label>
+                </div>
 
                 <div class="relative">
-                    <input type="email" id="email"
+                    <input type="email" id="email" name="email"
                         class="block w-full px-0 py-2.5 text-sm text-[#ebebdf]  bg-transparent  border-b-[1px] border-[#ebebdf] focus:outline-none focus:ring-0 focus:border-[#ebebdf] peer"
                         placeholder=" " required />
                     <label for="email"
@@ -70,9 +90,8 @@
                     </label>
                 </div>
 
-
                 <div class="relative mb-8">
-                    <input type="password" id="password"
+                    <input type="password" id="password" name="password"
                         class="block w-full px-0 py-2.5 text-sm text-[#ebebdf] bg-transparent  border-b-[1px] border-[#ebebdf] focus:outline-none focus:ring-0 focus:border-[#ebebdf] peer"
                         placeholder=" " required />
                     <label for="password"
@@ -94,17 +113,18 @@
                     <div class="flex-grow h-px bg-[#ebebdf] opacity-40"></div>
                 </div>
 
+                <br>
 
 
 
 
-                <button type="button"
+                <a href="/accounts/google/login/"><button type="button"
                     class="w-full flex items-center justify-center gap-3 bg-white font-['Bricolage_Grotesque'] font-black text-[#191265] py-2.5 px-4 rounded-3xl text-[20px] border border-gray-300 hover:bg-gray-100 transition duration-300  whitespace-nowrap">
 
                     <img src="{% static 'hopin_app/images/google.png' %}" class="w-6 h-6 object-contain flex-shrink-0">
 
                     <span>Sign in with Google</span>
-                </button>
+                </button></a>
                 <p class="relative -top-2 text-center text-xs font-['Poppins'] text-[#ebebdf] ">
                     Already have an account?
                     <a href="login.css" class="font-medium underline hover:text-white">
@@ -131,15 +151,9 @@
                 </p>
 
             </div>
-            <h1 class="font-['Manrope'] 
-           text-[80px] 
-          
-           leading-none 
-           tracking-[-5px] mt--6 ml-[190px]">
-
+            <h1 class="font-['Manrope'] text-[80px] leading-none tracking-[-5px] mt--6 ml-[190px]">
                 <span class="text-[#191265]  font-black tracking-[-5px] ">Hop in</span>
                 <span class="text-black font-[400]"> & Go!!</span>
-
             </h1>
         </div>
     </div>

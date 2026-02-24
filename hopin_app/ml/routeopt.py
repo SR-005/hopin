@@ -13,7 +13,11 @@ def spacialscore(location1,location2):
     return spatialscore
 
 def finalscore(riderroute,riderlocation,availabletrips):
+    #creating an array with all route text- including riders input route(as first element)
     allroutes=[riderroute]
     for trip in availabletrips:
-        allroutes(trip)
+        allroutes.append(trip)
+
+    vectorizer=TfidfVectorizer()
+    matrix=vectorizer.fit_transform(allroutes)
     return 0
