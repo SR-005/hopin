@@ -7,7 +7,7 @@
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hop-In</title>
+    <title>Sign Up</title>
     <link rel="stylesheet" href="{% static 'hopin_app/css/signup.css' %}">
 
 
@@ -42,7 +42,7 @@
             <ul class="hidden md:flex space-x-16  font-['Playfair_Display'] 
  tracking-widest font-extrabold text-[18px] absolute left-1/2 transform -translate-x-1/2">
 
-                <li><a href="#" class=" text-[#ebebdf] hover-text-[#ebebdf]  hover:opacity-70">Home</a></li>
+                <li><a href="{% url 'landing' %}" class=" text-[#ebebdf] hover-text-[#ebebdf]  hover:opacity-70">Home</a></li>
                 <li><a href="#" class="text-[#191265] hover:text-[#191265]  hover:opacity-70 ">History</a></li>
                 <li><a href="#" class="ext-[#191265] hover:text-[#191265] hover:opacity-70 t">Contact</a></li>
 
