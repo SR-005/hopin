@@ -1,0 +1,146 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hop-In</title>
+    <link rel="stylesheet" href="{% static 'hopin_app/css/signup.css' %}">
+
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="main-container relative">
+        <nav class="w-full flex items-center px-4 py-6 absolute top-0 left-0 z-50">
+
+
+            <div class="flex items-center">
+                <img src="{% static 'hopin_app/images/logo.png' %}" class="h-14">
+            </div>
+
+
+            <ul class="hidden md:flex space-x-16  font-['Playfair_Display'] 
+ tracking-widest font-extrabold text-[18px] absolute left-1/2 transform -translate-x-1/2">
+
+                <li><a href="#" class=" text-[#ebebdf] hover-text-[#ebebdf]  hover:opacity-70">Home</a></li>
+                <li><a href="#" class="text-[#191265] hover:text-[#191265]  hover:opacity-70 ">History</a></li>
+                <li><a href="#" class="ext-[#191265] hover:text-[#191265] hover:opacity-70 t">Contact</a></li>
+
+            </ul>
+
+        </nav>
+
+        <div class="left min-h-screen flex items-start justify-center pt-28">
+
+            <form class="w-full md:w-[450px]  mt-4 p-6 space-y-4 bg-[#191265] ">
+                <h1
+                    class="text-5xl font-extrabold tracking-tight font-['Bricolage_Grotesque'] text-[#ebebdf] text-left mb-8">
+                    Sign Up
+                </h1>
+                <div class="relative">
+
+                    <input type="text" id="name"
+                        class="block w-full px-0 py-2.5 text-sm text-[#ebebdf] bg-transparent  border-b-[1px] border-[#ebebdf] focus:outline-none focus:ring-0 focus:border-[#ebebdf] peer"
+                        placeholder=" " required />
+                    <label for="name"
+                        class="absolute text-sm text-[#ebebdf] font-['Poppins'] duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:left-0 peer-focus:text-[#ebebdf] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                        Name
+                    </label>
+                </div>
+
+
+                <div class="relative">
+                    <input type="email" id="email"
+                        class="block w-full px-0 py-2.5 text-sm text-[#ebebdf]  bg-transparent  border-b-[1px] border-[#ebebdf] focus:outline-none focus:ring-0 focus:border-[#ebebdf] peer"
+                        placeholder=" " required />
+                    <label for="email"
+                        class="absolute text-sm text-[#ebebdf] font-['Poppins']   duration-300 transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:left-0 peer-focus:text-[#ebebdf] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                        Email
+                    </label>
+                </div>
+
+
+                <div class="relative mb-8">
+                    <input type="password" id="password"
+                        class="block w-full px-0 py-2.5 text-sm text-[#ebebdf] bg-transparent  border-b-[1px] border-[#ebebdf] focus:outline-none focus:ring-0 focus:border-[#ebebdf] peer"
+                        placeholder=" " required />
+                    <label for="password"
+                        class="absolute text-sm text-white font-['Poppins'] duration-300     transform -translate-y-6 scale-75 top-3 origin-[0] peer-focus:left-0 peer-focus:text-[#ebebdf] peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">
+                        Password
+                    </label>
+                </div>
+                <br>
+
+
+                <button type="submit"
+                    class="w-full bg-white text-[#191265] font-['Bricolage_Grotesque']    py-2 rounded-3xl text-[22px]   hover:bg-blue-700 transition duration-300 font-bold">
+                    Sign up
+                </button>
+
+                <div class="flex items-center ">
+                    <div class="flex-grow h-px bg-[#ebebdf] opacity-40"></div>
+                    <span class="px-1 text-xs text-[#ebebdf] ">OR</span>
+                    <div class="flex-grow h-px bg-[#ebebdf] opacity-40"></div>
+                </div>
+
+
+
+
+
+                <button type="button"
+                    class="w-full flex items-center justify-center gap-3 bg-white font-['Bricolage_Grotesque'] font-black text-[#191265] py-2.5 px-4 rounded-3xl text-[20px] border border-gray-300 hover:bg-gray-100 transition duration-300  whitespace-nowrap">
+
+                    <img src="{% static 'hopin_app/images/google.png' %}" class="w-6 h-6 object-contain flex-shrink-0">
+
+                    <span>Sign in with Google</span>
+                </button>
+                <p class="relative -top-2 text-center text-xs font-['Poppins'] text-[#ebebdf] ">
+                    Already have an account?
+                    <a href="login.css" class="font-medium underline hover:text-white">
+                        Login
+                    </a>
+                </p>
+            </form>
+        </div>
+
+
+        <div class="right min-h-screen bg-white flex flex-col justify-center px-12">
+
+            <h3 class="text-3xl text-black font-['Poppins'] mt-8 ml-[370px]">
+                No more hazzles
+            </h3>
+
+            <div class="relative w-full flex justify-center">
+
+                <img src="{% static 'hopin_app/images/signup.png' %}" class="w-[80%] md:w-[490px] !max-w-none">
+
+                <p class="absolute bottom-0 right-[150px] 
+       text-4xl font-['Poppins'] text-black">
+                    just
+                </p>
+
+            </div>
+            <h1 class="font-['Manrope'] 
+           text-[80px] 
+          
+           leading-none 
+           tracking-[-5px] mt--6 ml-[190px]">
+
+                <span class="text-[#191265]  font-black tracking-[-5px] ">Hop in</span>
+                <span class="text-black font-[400]"> & Go!!</span>
+
+            </h1>
+        </div>
+    </div>
+</body>

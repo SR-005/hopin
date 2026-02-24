@@ -2,32 +2,40 @@ from .forms import signupForm, loginForm, createtripForm
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .models import userdetail,trip
+from .models import userdetail, trip
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
 # Create your views here.
 
-#Main Landing Page View
+# Main Landing Page View
 def landingfunction(request):
     user = None
     try:
-        print("Current User Email: ",request.user.email)
+        print("Current User Email: ", request.user.email)
     except:
         print("User is not Logged in or Logged Out")
 
     return render(request, "landing.html", {"user": user})
 
-#Main Logout Function
+# Main Logout Function
+
+
 def logoutfunction(request):
     logout(request)
     messages.success(request, "User Logged Out- Log back in to use the app!")
-    return redirect ("/")
+    return redirect("/")
 
-#Main Login Page View
+# Main Login Page View
+
+
 def loginfunction(request):
     return render(request, "login.html")
+
+
+def signupfunction(request):
+    return render(request, "signup.html")
 
 
 def testloginfunction(request):
@@ -39,7 +47,8 @@ def testloginfunction(request):
             userpassword = loginform.cleaned_data["password"]
             print(useremail, userpassword)
 
-            user = authenticate(request, username=useremail,password=userpassword)
+            user = authenticate(request, username=useremail,
+                                password=userpassword)
             if user is not None:
                 login(request, user)
                 messages.success(request, "Login Successfull!!")
@@ -63,7 +72,8 @@ def testsignupfunction(request):
             userpassword = signupform.cleaned_data["password"]
 
             # create_user is a Django Built in function to create a User to User Model
-            newuser = User.objects.create_user(email=useremail, password=userpassword)
+            newuser = User.objects.create_user(
+                email=useremail, password=userpassword)
             newuser.first_name = firstname
             newuser.last_name = lastname
             newuser.save()
@@ -78,24 +88,25 @@ def testsignupfunction(request):
 
 
 def testdriverfunction(request):
-    userobject=request.user
-    userasdriver=trip.objects.filter(usercredentials=userobject)
+    userobject = request.user
+    userasdriver = trip.objects.filter(usercredentials=userobject)
 
-    #retrieve previous routes from their history
-    availableroutes=[]
+    # retrieve previous routes from their history
+    availableroutes = []
     for details in userasdriver:
         availableroutes.append(details.route)
     print(availableroutes)
 
-    #retrieve last vehicle information
-    index=len(userasdriver)-1
-    lasttrip=userasdriver[index]
+    # retrieve last vehicle information
+    index = len(userasdriver)-1
+    lasttrip = userasdriver[index]
 
     if request.method == "POST":
-        createtripform=createtripForm(request.POST)
+        createtripform = createtripForm(request.POST)
         if createtripform.is_valid():
-            newtrip=createtripform.save(commit=False)               #commit=False: saves the form content but doesnot upload it into db yet
-            newtrip.usercredentials=request.user
+            # commit=False: saves the form content but doesnot upload it into db yet
+            newtrip = createtripform.save(commit=False)
+            newtrip.usercredentials = request.user
 
             if request.POST.get("route") == "other":
                 trip.route = request.POST.get("customroute")
@@ -108,4 +119,4 @@ def testdriverfunction(request):
             print(request.POST)
 
     return render(request, "testdriver.html",
-                  {"availableroutes":availableroutes,"lasttrip":lasttrip})
+                  {"availableroutes": availableroutes, "lasttrip": lasttrip})
