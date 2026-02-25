@@ -143,3 +143,15 @@ def testdriverfunction(request):
 
     return render(request, "testdriver.html",
                   {"availableroutes": availableroutes, "lasttrip": lasttrip})
+
+def testriderfunction(request):
+    userobject = request.user
+    userasdriver = trip.objects.filter(usercredentials=userobject)
+
+    # retrieve previous routes from their history
+    availableroutes = []
+    for details in userasdriver:
+        availableroutes.append(details.route)
+    print(availableroutes)
+    
+    return render(request, "testrider.html",{"availableroutes": availableroutes})
