@@ -1,0 +1,22 @@
+body {
+    margin: 0;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+.main-container {
+    display: flex;
+    height: 100vh;
+
+}
+
+.left {
+    flex: 5.9;
+    background-color: white;
+}
+
+.right {
+
+    flex: 4.1;
+    background-color: #191265;
+}
