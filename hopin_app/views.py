@@ -20,16 +20,12 @@ def landingfunction(request):
     return render(request, "landing.html", {"user": user})
 
 # Main Logout Function
-
-
 def logoutfunction(request):
     logout(request)
     messages.success(request, "User Logged Out- Log back in to use the app!")
     return redirect("/")
 
 # Main Login Page View
-
-
 def loginfunction(request):
     if request.method == "POST":
 
@@ -51,7 +47,7 @@ def loginfunction(request):
             print(loginform.errors)
     return render(request, "login.html")
 
-
+# Main Sign Up Page View
 def signupfunction(request):
     if request.method == "POST":
         print("Hello")
@@ -129,31 +125,33 @@ def testsignupfunction(request):
 
 
 def testdriverfunction(request):
-    userobject = request.user
-    userasdriver = trip.objects.filter(usercredentials=userobject)
+    userobject=request.user
+    userasdriver=trip.objects.filter(usercredentials=userobject)
 
     # retrieve previous routes from their history
-    availableroutes = []
+    availableroutes=[]
     for details in userasdriver:
         availableroutes.append(details.route)
     print(availableroutes)
 
     # retrieve last vehicle information
-    index = len(userasdriver)-1
-    lasttrip = userasdriver[index]
+    index=len(userasdriver)-1
+    if index>0:
+        lasttrip=userasdriver[index]
+    else:
+        lasttrip=None
 
-    if request.method == "POST":
-        createtripform = createtripForm(request.POST)
+    if request.method=="POST":
+        createtripform=createtripForm(request.POST)
         if createtripform.is_valid():
             # commit=False: saves the form content but doesnot upload it into db yet
             newtrip = createtripform.save(commit=False)
-            newtrip.usercredentials = request.user
+            newtrip.usercredentials=request.user
 
-            if request.POST.get("route") == "other":
+            if request.POST.get("route")=="other":
                 trip.route = request.POST.get("customroute")
             else:
                 trip.route = request.POST.get("route")
-
             newtrip.save()
         else:
             print("Form not Valid")
@@ -171,5 +169,15 @@ def testriderfunction(request):
     for details in userasdriver:
         availableroutes.append(details.route)
     print(availableroutes)
+
+    if request.method=="POST":
+        location=request.POST.get("location")
+        direction=request.POST.get("direction")
+        if request.POST.get("route")=="other":
+            route=request.POST.get("customroute")
+        else:
+            route=request.POST.get("route")
+
+        print(location,route,direction)
     
     return render(request, "testrider.html",{"availableroutes": availableroutes})
