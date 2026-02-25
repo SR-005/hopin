@@ -40,7 +40,7 @@
             <ul class="hidden md:flex space-x-16  font-['Playfair_Display'] 
  tracking-widest font-extrabold text-[18px] absolute left-1/2 transform -translate-x-1/2">
 
-                <li><a href="#" class=" text-[#191265] hover:text-[#191265]  hover:opacity-70">Home</a></li>
+                <li><a href="{% url 'landing' %}" class=" text-[#191265] hover:text-[#191265]  hover:opacity-70">Home</a></li>
                 <li><a href="#" class="text-[#191265] hover:text-[#191265]  hover:opacity-70 ">History</a></li>
                 <li><a href="#" class="text-[#ebebdf] hover-text-[#ebebdf] hover:opacity-70 t">Contact</a></li>
 
@@ -149,7 +149,7 @@
                 </button>
                 <p class="relative -top-2 text-center text-xs font-['Poppins'] text-[#ebebdf] ">
                     Don't have an account?
-                    <a href="signup.html" class="font-medium underline hover:text-white">
+                    <a href="{% url 'signup' %}" class="font-medium underline hover:text-white">
                         Sign up
                     </a>
                 </p>

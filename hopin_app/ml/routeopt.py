@@ -6,7 +6,16 @@ from haversine import haversine, Unit
 sematicweight=0.6
 sematicheight=0.2
 
-#Haversine's Distance Function
+#Haversine's Distance Function- Price Calculation
+def price(location1,location2):
+    distance=haversine(location1, location2)    #calculating distance between two locations (in km)
+    print(distance,"km")
+    price=round(distance*1.3)       #1.3 rupees per km
+    print("Price: ",price)
+    return price
+price((10.1071868,76.3597351),(10.0463,76.3242))
+
+#Haversine's Distance Function- Spacial Score Computation
 def spacialscore(location1,location2):
     distance=haversine(location1, location2)
     spatialscore=1/(1+distance)
