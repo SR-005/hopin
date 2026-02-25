@@ -31,6 +31,24 @@ def logoutfunction(request):
 
 
 def loginfunction(request):
+    if request.method == "POST":
+
+        loginform = loginForm(request.POST)
+        if loginform.is_valid():
+            useremail = loginform.cleaned_data["email"]
+            userpassword = loginform.cleaned_data["password"]
+            print(useremail, userpassword)
+
+            user = authenticate(request, username=useremail,
+                                password=userpassword)
+            if user is not None:
+                login(request, user)
+                messages.success(request, "Login Successfull!!")
+                return redirect("landing")
+            else:
+                messages.error(request, "Invalid Credentials!!")
+        else:
+            print(loginform.errors)
     return render(request, "login.html")
 
 
