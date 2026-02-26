@@ -170,6 +170,7 @@ def testriderfunction(request):
         availableroutes.append(details.route)
     print(availableroutes)
 
+    #getting rider data from form
     if request.method=="POST":
         location=request.POST.get("location")
         direction=request.POST.get("direction")
@@ -178,6 +179,6 @@ def testriderfunction(request):
         else:
             route=request.POST.get("route")
 
-        print(location,route,direction)
+        print(location,route,direction)         
     
     return render(request, "testrider.html",{"availableroutes": availableroutes})
