@@ -33,21 +33,28 @@ def finalscore(riderroute,availabletrips):
     similarity=cosine_similarity(matrix[0:1],matrix[1:])[0]
     print("After Cosine Similarity: ",similarity)
 
-    spacialscore=haversine((10.1071868,76.3597351),(10.0463,76.3242))
-    final=(sematicweight*similarity,spacialweight*spacialscore)
-
+    finallist=[]
     for i,ride in enumerate(availabletrips):
         semanticscore=similarity[i]
 
         driverlocation=availabletrips[i][1]
         riderlocation=(10.1071868,76.3597351)
         spacialscore=haversinefunction(driverlocation,riderlocation)
-        print("Spacial Score of ",i+1,": ",spacialscore)
+        #print("Spacial Score of ",i+1,": ",spacialscore)
 
         final=(sematicweight*semanticscore+spacialweight*spacialscore)
-        print("Final Score of ",i+1,": ",final,"\n")
+        #print("Final Score of ",i+1,": ",final,"\n")
 
+        finallist.append({
+            "ride":ride,
+            "distance":round(float(spacialscore),4),
+            "similarity":round(float(semanticscore),4),
+            "final":round(float(final),4)
+        })
+        print("Final List",i+1,": ",finallist[-1],"\n")
 
+    ranked = sorted(finallist, key=lambda x: x["final"], reverse=True)
+    print(ranked)
 
     return 0
 
