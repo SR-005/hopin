@@ -62,6 +62,7 @@ class trip(models.Model):
     vehicletype=models.CharField()                      #car or bike
     vehiclenumber=models.CharField(max_length=12)       #KL 41 **** ****
     vehiclemodel=models.CharField()                     #car or bike model name
+    status=models.CharField(default="ACTIVE")
     
     def __str__(self):
         return self.usercredentials.email

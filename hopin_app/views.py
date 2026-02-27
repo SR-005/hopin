@@ -174,11 +174,20 @@ def testriderfunction(request):
     if request.method=="POST":
         location=request.POST.get("location")
         direction=request.POST.get("direction")
+
         if request.POST.get("route")=="other":
             route=request.POST.get("customroute")
         else:
             route=request.POST.get("route")
 
-        print(location,route,direction)         
+        print(location,route,direction)     
+
+        #collecting active trip details- for route optimization
+        availabletrips=[]
+        activetrips=trip.objects.filter(status="ACTIVE")
+        for trips in activetrips:
+            availabletrips.append([trips.route,trips.preferedlocation])
+        print("Available Trip Routes: ",availabletrips)
+
     
     return render(request, "testrider.html",{"availableroutes": availableroutes})
