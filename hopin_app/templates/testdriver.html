@@ -66,12 +66,17 @@
 
 
     <script>
-      document.getElementById("routeSelect").addEventListener("change", function() {
-          const newRouteInput = document.getElementById("newRoute");
+      const routeSelect = document.getElementById("routeSelect");
+      const newRouteInput = document.getElementById("newRoute");
+
+      routeSelect.addEventListener("change", function() {
           if (this.value === "other") {
               newRouteInput.style.display = "block";
+              newRouteInput.required = true;   // make required only when visible
           } else {
               newRouteInput.style.display = "none";
+              newRouteInput.required = false;  // remove required when hidden
+              newRouteInput.value = "";        // clear old value
           }
       });
     </script>

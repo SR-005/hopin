@@ -140,14 +140,15 @@
 
 
 
+                <a href="/accounts/google/login/">
+                    <button type="button"
+                        class="w-full flex items-center justify-center gap-3 bg-white font-['Bricolage_Grotesque'] font-black text-[#191265] py-2.5 px-4 rounded-3xl text-[20px] border border-gray-300 hover:bg-gray-100 transition duration-300  whitespace-nowrap">
 
-                <button type="button"
-                    class="w-full flex items-center justify-center gap-3 bg-white font-['Bricolage_Grotesque'] font-black text-[#191265] py-2.5 px-4 rounded-3xl text-[20px] border border-gray-300 hover:bg-gray-100 transition duration-300  whitespace-nowrap">
+                        <img src="{% static 'hopin_app/images/google.png' %}" class="w-6 h-6 object-contain flex-shrink-0">
 
-                    <img src="{% static 'hopin_app/images/google.png' %}" class="w-6 h-6 object-contain flex-shrink-0">
-
-                    <span>Sign in with Google</span>
-                </button>
+                        <span>Sign in with Google</span>
+                    </button>
+                </a>
                 <p class="relative -top-2 text-center text-xs font-['Poppins'] text-[#ebebdf] ">
                     Don't have an account?
                     <a href="{% url 'signup' %}" class="font-medium underline hover:text-white">
