@@ -1,3 +1,9 @@
 hopin_env/
 __pycache__
 .env
+
+DBNAME=hopin_db
+DBUSER=hopin_user
+DBPASSWORD=hopindb
+DBHOST=localhost
+DBPORT=5432

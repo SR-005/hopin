@@ -5,20 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Create-a-trip</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script> 
   </head>
   <body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     
     <h1 class="text-center">Create a trip</h1>
     
+    {% comment %} form div {% endcomment %}
     <div class="d-flex justify-content-center mt-5">
       <form method="POST">
         {% csrf_token %}
 
         <div class="mb-2">
           <label>Location: </label>
-          <input type="text" name="preferedlocation">
+          <input id="location-input" type="text" name="preferedlocation">
+          <div id="autocomplete-results" class="list-group position-absolute w-100 shadow" style="z-index: 1000;"> </div>
+          <input type="hidden" name="latitude" id="lat">
+          <input type="hidden" name="longitude" id="lng">
         </div>
+        <div id="map" style="height:400px;" class="mb-3"></div>
 
         <div class="mb-2">
           <label>Route: </label>
@@ -64,22 +71,123 @@
       </form>
     </div>
 
+    {% comment %} location div {% endcomment %}
+    <div class="position-relative w-50">
+        <input 
+            type="text" 
+            id="location-input" 
+            class="form-control" 
+            placeholder="Enter location..."
+            autocomplete="off"
+        >
+
+        
+    </div>
+
 
     <script>
+      /* ================= ROUTE LOGIC ================= */
       const routeSelect = document.getElementById("routeSelect");
       const newRouteInput = document.getElementById("newRoute");
 
       routeSelect.addEventListener("change", function() {
           if (this.value === "other") {
               newRouteInput.style.display = "block";
-              newRouteInput.required = true;   // make required only when visible
+              newRouteInput.required = true;
           } else {
               newRouteInput.style.display = "none";
-              newRouteInput.required = false;  // remove required when hidden
-              newRouteInput.value = "";        // clear old value
+              newRouteInput.required = false;
+              newRouteInput.value = "";
+          }
+      });
+
+
+      /* ================= MAP INIT ================= */
+      const map = L.map('map').setView([10.8505, 76.2711], 8);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      let marker = L.marker([10.8505, 76.2711], { draggable: true }).addTo(map);
+
+      // Update hidden inputs on drag
+      marker.on('dragend', function () {
+          const position = marker.getLatLng();
+          document.getElementById('lat').value = position.lat;
+          document.getElementById('lng').value = position.lng;
+      });
+
+      // Allow clicking anywhere on map
+      map.on('click', function(e) {
+          const lat = e.latlng.lat;
+          const lng = e.latlng.lng;
+
+          marker.setLatLng([lat, lng]);
+
+          document.getElementById('lat').value = lat;
+          document.getElementById('lng').value = lng;
+      });
+
+
+      /* ================= AUTOCOMPLETE ================= */
+      const input = document.getElementById("location-input");
+      const resultsBox = document.getElementById("autocomplete-results");
+
+      let debounceTimer;
+
+      input.addEventListener("input", function () {
+          const query = input.value.trim();
+          clearTimeout(debounceTimer);
+
+          if (query.length < 3) {
+              resultsBox.innerHTML = "";
+              return;
+          }
+
+          debounceTimer = setTimeout(() => {
+              fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5&accept-language=en`)
+                  .then(response => response.json())
+                  .then(data => {
+
+                      resultsBox.innerHTML = "";
+
+                      data.forEach(place => {
+                          const item = document.createElement("a");
+                          item.className = "list-group-item list-group-item-action";
+                          item.textContent = place.display_name;
+
+                          item.addEventListener("click", () => {
+
+                              input.value = place.display_name;
+
+                              const lat = parseFloat(place.lat);
+                              const lon = parseFloat(place.lon);
+
+                              document.getElementById("lat").value = lat;
+                              document.getElementById("lng").value = lon;
+
+                              map.setView([lat, lon], 16);
+                              marker.setLatLng([lat, lon]);
+
+                              resultsBox.innerHTML = "";
+                          });
+
+                          resultsBox.appendChild(item);
+                      });
+                  });
+          }, 400);
+      });
+
+      // Close dropdown on outside click
+      document.addEventListener("click", function (e) {
+          if (!input.contains(e.target)) {
+              resultsBox.innerHTML = "";
           }
       });
     </script>
+
+    
 
   </body>
 </html>
