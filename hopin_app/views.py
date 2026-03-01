@@ -75,64 +75,19 @@ def signupfunction(request):
     return render(request, "signup.html")
 
 
-def testloginfunction(request):
-    if request.method == "POST":
 
-        loginform = loginForm(request.POST)
-        if loginform.is_valid():
-            useremail = loginform.cleaned_data["email"]
-            userpassword = loginform.cleaned_data["password"]
-            print(useremail, userpassword)
-
-            user = authenticate(request, username=useremail,
-                                password=userpassword)
-            if user is not None:
-                login(request, user)
-                messages.success(request, "Login Successfull!!")
-                return redirect("landing")
-            else:
-                messages.error(request, "Invalid Credentials!!")
-        else:
-            print(loginform.errors)
-    return render(request, "testlogin.html")
-
-
-def testsignupfunction(request):
-    if request.method == "POST":
-
-        # collect values from html form and validate it w.r.t signupForm
-        signupform = signupForm(request.POST)
-        if signupform.is_valid():
-            firstname = signupform.cleaned_data["first_name"]
-            lastname = signupform.cleaned_data["last_name"]
-            useremail = signupform.cleaned_data["email"]
-            userpassword = signupform.cleaned_data["password"]
-
-            # create_user is a Django Built in function to create a User to User Model
-            newuser = User.objects.create_user(
-                email=useremail, password=userpassword)
-            newuser.first_name = firstname
-            newuser.last_name = lastname
-            newuser.save()
-
-            messages.success(request, "Account has been successfully created.")
-
-        else:
-            for errors in signupform.errors.items():  # returns a tuple of errors from the form
-                # we use indexing to catch the exact error message from tuple
-                messages.error(request, errors[1][0])
-    return render(request, "testsignup.html")
-
+def newlandingfunction(request):
+    return render(request,"landing2.html")
 
 def testdriverfunction(request):
     userobject=request.user
     userasdriver=trip.objects.filter(usercredentials=userobject)
 
     # retrieve previous routes from their history
-    availableroutes=[]
+    previousroutes=[]
     for details in userasdriver:
-        availableroutes.append(details.route)
-    print(availableroutes)
+        previousroutes.append(details.route)
+    print(previousroutes)
 
     # retrieve last vehicle information
     index=len(userasdriver)-1
@@ -158,19 +113,18 @@ def testdriverfunction(request):
             print(request.POST)
 
     return render(request, "testdriver.html",
-                  {"availableroutes": availableroutes, "lasttrip": lasttrip})
+                  {"previousroutes": previousroutes, "lasttrip": lasttrip})
 
 def testriderfunction(request):
     userobject = request.user
     userasdriver = trip.objects.filter(usercredentials=userobject)
 
     # retrieve previous routes from their history
-    availableroutes = []
+    previousroutes = []
     for details in userasdriver:
-        availableroutes.append(details.route)
-    print(availableroutes)
+        previousroutes.append(details.route)
+    print(previousroutes)
 
-    #getting rider data from form
     if request.method=="POST":
         location=request.POST.get("location")
         direction=request.POST.get("direction")
@@ -179,15 +133,14 @@ def testriderfunction(request):
             route=request.POST.get("customroute")
         else:
             route=request.POST.get("route")
-
-        print(location,route,direction)     
+        #print(location,route,direction)     
 
         #collecting active trip details- for route optimization
         availabletrips=[]
         activetrips=trip.objects.filter(status="ACTIVE")
         for trips in activetrips:
-            availabletrips.append([trips.route,trips.preferedlocation])
+            availabletrips.append(trips)
         print("Available Trip Routes: ",availabletrips)
 
     
-    return render(request, "testrider.html",{"availableroutes": availableroutes})
+    return render(request, "testrider.html",{"previousroutes": previousroutes})

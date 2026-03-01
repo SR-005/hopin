@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hop In - Commute Simplified</title>
+    
+    <!-- ========================================== -->
+    <!-- HTML HEAD RESOURCES (Keep these in <head>) -->
+    <!-- ========================================== -->
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'hopin_app/css/landing.css' %}">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            blue: '#191265',
+                            text: '#EAE9DF',
+                            bgRight: '#F4F5F7'
+                        }
+                    },
+                    fontFamily: {
+                        display: ['Brasika', 'serif'],
+                        body: ['"Black Mango"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+</head>
+<body class="min-h-screen overflow-x-hidden relative">
+    <div class="absolute bottom-0 right-0 w-full lg:w-[37%] h-[40vh] lg:h-full bg-brand-bgRight rounded-t-[3rem] lg:rounded-t-none lg:rounded-bl-[140px] z-0 shadow-2xl"></div>
+
+    <div class="relative z-10 w-full max-w-[1400px] mx-auto px-6 lg:px-16 flex flex-col min-h-screen">
+        
+        <nav class="flex justify-between items-center py-10 relative z-20">
+            <div class="w-1/4">
+                <a href="#" class="flex items-center text-brand-text hover:opacity-80 transition-opacity">
+                    <img src="{% static 'hopin_app/images/logo.png' %}" alt="Hop In Logo Placeholder" class="h-20 w-auto object-contain" />
+                </a>
+            </div>
+
+            <div class="hidden md:flex flex-1 justify-center gap-14">
+                <a href="#" class="text-brand-text font-body text-[22px] nav-link-active tracking-wide">Home</a>
+                <a href="#" class="text-brand-text/60 hover:text-brand-text font-body text-[22px] transition-colors tracking-wide">About</a>
+                <a href="#" class="text-brand-text/60 hover:text-brand-text font-body text-[22px] transition-colors tracking-wide">Contact</a>
+            </div>
+
+            <div class="w-1/4 flex justify-end items-center gap-4" id="auth-container">
+                <span class="text-brand-blue font-body font-bold text-[22px] tracking-wide hidden sm:block">Sreeram</span>
+                <div class="relative">
+                    <!-- Flowbite Profile Icon -->
+                    <div class="w-14 h-14 rounded-full border-[3px] border-white shadow-md bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden">
+                        <svg class="w-8 h-8" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                            <path fill-rule="evenodd" d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z" clip-rule="evenodd"/>
+                        </svg>
+                    </div>
+                </div>
+                <!-- Small Logout Button -->
+                <button onclick="window.location.href='index.html'" id="btn-logout" class="px-5 py-2 ml-2 rounded-xl border-[1.5px] border-brand-blue text-brand-blue font-body font-semibold text-sm hover:bg-brand-blue hover:text-white transition-all duration-300 shadow-sm focus:ring-4 focus:ring-blue-300">
+                    Logout
+                </button>
+            </div>
+        </nav>
+
+        <main class="flex-1 flex flex-col lg:flex-row items-center justify-between pb-12 lg:pb-0 relative z-10">
+            
+            <div class="w-full lg:w-[55%] flex flex-col gap-6 text-brand-text mt-10 lg:mt-0">
+                <div class="flex flex-col">
+                    <h2 class="font-body text-2xl lg:text-[28px] tracking-wide text-brand-text/90 mb-4">commute, simplified</h2>
+                    <h1 class="title-hop-in text-[70px] md:text-[100px] lg:text-[130px] text-brand-text leading-none">HOP IN</h1>
+                </div>
+
+                <div class="flex items-center gap-8 mt-10">
+                    <button onclick="window.location.href='create.html'" id="btn-create" class="px-10 py-3 rounded-[20px] border-[1.5px] border-white text-white font-body font-semibold text-xl hover:bg-white hover:text-brand-blue transition-all duration-300 shadow-sm focus:ring-4 focus:ring-blue-300">
+                        Create
+                    </button>
+                    <button onclick="window.location.href='book.html'" id="btn-book" class="px-10 py-3 rounded-[20px] border-[1.5px] border-white text-white font-body font-semibold text-xl hover:bg-white hover:text-brand-blue transition-all duration-300 shadow-sm focus:ring-4 focus:ring-blue-300">
+                        Book
+                    </button>
+                </div>
+            </div>
+
+            <div class="w-full lg:w-[45%] flex justify-center items-center relative z-20 mt-16 lg:mt-0">
+                
+                <img id="hero-illustration" 
+                     src="{% static 'hopin_app/images/landing.png' %}"
+                     alt="Hero Illustration" 
+                     class="max-w-none object-contain drop-shadow-2xl relative" 
+                     style="width: 100%; min-width: 100%; transform: translateX(-5%) translateY(-10%);" />
+
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+</body>
+</html>

@@ -24,7 +24,7 @@
           <label>Route: </label>
           <select id="routeSelect" name="route" required>
             <option value="" disabled selected>Select Route</option>
-            {% for route in availableroutes %}
+            {% for route in previousroutes %}
                 <option value="{{ route }}">{{ route }}</option>
             {% endfor %}
             <option value="other">Other</option>
