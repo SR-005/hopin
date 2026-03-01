@@ -127,13 +127,15 @@ def testriderfunction(request):
 
     if request.method=="POST":
         location=request.POST.get("location")
+        latitude=request.POST.get("latitude")
+        longitude=request.POST.get("longitude")
         direction=request.POST.get("direction")
 
         if request.POST.get("route")=="other":
             route=request.POST.get("customroute")
         else:
             route=request.POST.get("route")
-        #print(location,route,direction)     
+        print(location,latitude,longitude,route,direction)     
 
         #collecting active trip details- for route optimization
         availabletrips=[]
