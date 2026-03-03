@@ -18,6 +18,7 @@
       <form method="POST">
         {% csrf_token %}
 
+        {% comment %} location {% endcomment %}
         <div class="mb-2">
           <label>Location: </label>
           <input id="location-input" type="text" name="preferedlocation">
@@ -27,17 +28,9 @@
         </div>
         <div id="map" style="height:400px;" class="mb-3"></div>
 
+        {% comment %} route {% endcomment %}
         <div class="mb-2">
-          <label>Route: </label>
-          <select id="routeSelect" name="route" required>
-            <option value="" disabled selected>Select Route</option>
-            {% for route in previousroutes %}
-                <option value="{{ route }}">{{ route }}</option>
-            {% endfor %}
-            <option value="other">Other</option>
-          </select>
-
-          <input type="text" id="newRoute" name="customroute" style="display:none;" placeholder="Enter new route">
+          <input type="hidden" name="route_geometry" id="route_geometry">
         </div>
 
         <div class="mb-2">
@@ -72,107 +65,193 @@
     </div>
 
 
-    <script>
-      /* ================= ROUTE LOGIC ================= */
-      const routeSelect = document.getElementById("routeSelect");
-      const newRouteInput = document.getElementById("newRoute");
+  <script>
+    const collegeLat = 10.0469;
+    const collegeLng = 76.3467;
 
-      routeSelect.addEventListener("change", function() {
-          if (this.value === "other") {
-              newRouteInput.style.display = "block";
-              newRouteInput.required = true;
+    /* ================= MAP INITIALIZATION ================= */
+    const map = L.map('map').setView([10.8505, 76.2711], 8);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Add AISAT marker
+    const collegeMarker = L.marker([collegeLat, collegeLng])
+        .addTo(map)
+        .bindPopup("AISAT Engineering College")
+        .openPopup();
+
+    let marker = L.marker([10.8505, 76.2711], { draggable: true }).addTo(map);
+
+    /* ================= ROUTE FUNCTION ================= */
+    function drawRoute(userLat, userLng) {
+
+          const direction = document.querySelector(
+              'input[name="prefereddirection"]:checked'
+          ).value;
+
+          let startLat, startLng, endLat, endLng;
+
+          if (direction === "to") {
+              startLat = userLat;
+              startLng = userLng;
+              endLat = collegeLat;
+              endLng = collegeLng;
           } else {
-              newRouteInput.style.display = "none";
-              newRouteInput.required = false;
-              newRouteInput.value = "";
-          }
-      });
-
-
-      /* ================= MAP INIT ================= */
-      const map = L.map('map').setView([10.8505, 76.2711], 8);
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
-
-      let marker = L.marker([10.8505, 76.2711], { draggable: true }).addTo(map);
-
-      // Update hidden inputs on drag
-      marker.on('dragend', function () {
-          const position = marker.getLatLng();
-          document.getElementById('lat').value = position.lat;
-          document.getElementById('lng').value = position.lng;
-      });
-
-      // Allow clicking anywhere on map
-      map.on('click', function(e) {
-          const lat = e.latlng.lat;
-          const lng = e.latlng.lng;
-
-          marker.setLatLng([lat, lng]);
-
-          document.getElementById('lat').value = lat;
-          document.getElementById('lng').value = lng;
-      });
-
-
-      /* ================= AUTOCOMPLETE ================= */
-      const input = document.getElementById("location-input");
-      const resultsBox = document.getElementById("autocomplete-results");
-
-      let debounceTimer;
-
-      input.addEventListener("input", function () {
-          const query = input.value.trim();
-          clearTimeout(debounceTimer);
-
-          if (query.length < 3) {
-              resultsBox.innerHTML = "";
-              return;
+              startLat = collegeLat;
+              startLng = collegeLng;
+              endLat = userLat;
+              endLng = userLng;
           }
 
-          debounceTimer = setTimeout(() => {
-              fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5&accept-language=en`)
-                  .then(response => response.json())
-                  .then(data => {
+          const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson&alternatives=true`;
 
-                      resultsBox.innerHTML = "";
+          fetch(url)
+              .then(response => response.json())
+              .then(data => {
 
-                      data.forEach(place => {
-                          const item = document.createElement("a");
-                          item.className = "list-group-item list-group-item-action";
-                          item.textContent = place.display_name;
+                  if (!data.routes || data.routes.length === 0) return;
 
-                          item.addEventListener("click", () => {
+                  // Remove old routes
+                  if (window.routeLayers) {
+                      window.routeLayers.forEach(obj => map.removeLayer(obj.layer));
+                  }
 
-                              input.value = place.display_name;
+                  window.routeLayers = [];
 
-                              const lat = parseFloat(place.lat);
-                              const lon = parseFloat(place.lon);
+                  data.routes.forEach((routeObj, index) => {
 
-                              document.getElementById("lat").value = lat;
-                              document.getElementById("lng").value = lon;
+                      const layer = L.geoJSON(routeObj.geometry, {
+                          style: {
+                              color: index === 0 ? "blue" : "gray",
+                              weight: 6,
+                              opacity: 0.8
+                          }
+                      }).addTo(map);
 
-                              map.setView([lat, lon], 16);
-                              marker.setLatLng([lat, lon]);
+                      const routeData = {
+                          layer: layer,
+                          geometry: routeObj.geometry
+                      };
 
-                              resultsBox.innerHTML = "";
+                      // Default select first route
+                      if (index === 0) {
+                          document.getElementById("route_geometry").value =
+                              JSON.stringify(routeObj.geometry);
+                      }
+
+                      // Click to select route
+                      layer.on("click", function() {
+
+                          window.routeLayers.forEach(obj => {
+                              obj.layer.setStyle({ color: "gray" });
                           });
 
-                          resultsBox.appendChild(item);
-                      });
-                  });
-          }, 400);
-      });
+                          layer.setStyle({ color: "blue" });
 
-      // Close dropdown on outside click
-      document.addEventListener("click", function (e) {
-          if (!input.contains(e.target)) {
-              resultsBox.innerHTML = "";
-          }
-      });
-    </script>
+                          document.getElementById("route_geometry").value =
+                              JSON.stringify(routeObj.geometry);
+                      });
+
+                      window.routeLayers.push(routeData);
+                  });
+
+              });
+      }
+
+    /* ================= MAP EVENTS ================= */
+
+    marker.on('dragend', function () {
+        const position = marker.getLatLng();
+
+        document.getElementById('lat').value = position.lat;
+        document.getElementById('lng').value = position.lng;
+
+        drawRoute(position.lat, position.lng);
+    });
+
+    map.on('click', function(e) {
+
+        // Only change pickup if SHIFT is pressed
+        if (!e.originalEvent.shiftKey) return;
+
+        const lat = e.latlng.lat;
+        const lng = e.latlng.lng;
+
+        marker.setLatLng([lat, lng]);
+
+        document.getElementById('lat').value = lat;
+        document.getElementById('lng').value = lng;
+
+        drawRoute(lat, lng);
+    });
+
+    document.querySelectorAll('input[name="prefereddirection"]').forEach(radio => {
+        radio.addEventListener("change", function() {
+            const position = marker.getLatLng();
+            drawRoute(position.lat, position.lng);
+        });
+    });
+
+    /* ================= AUTOCOMPLETE ================= */
+    const input = document.getElementById("location-input");
+    const resultsBox = document.getElementById("autocomplete-results");
+
+    let debounceTimer;
+
+    input.addEventListener("input", function () {
+        const query = input.value.trim();
+        clearTimeout(debounceTimer);
+
+        if (query.length < 3) {
+            resultsBox.innerHTML = "";
+            return;
+        }
+
+        debounceTimer = setTimeout(() => {
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`)
+                .then(response => response.json())
+                .then(data => {
+
+                    resultsBox.innerHTML = "";
+
+                    data.forEach(place => {
+                        const item = document.createElement("a");
+                        item.className = "list-group-item list-group-item-action";
+                        item.textContent = place.display_name;
+
+                        item.addEventListener("click", () => {
+
+                            input.value = place.display_name;
+
+                            const lat = parseFloat(place.lat);
+                            const lon = parseFloat(place.lon);
+
+                            document.getElementById("lat").value = lat;
+                            document.getElementById("lng").value = lon;
+
+                            map.setView([lat, lon], 16);
+                            marker.setLatLng([lat, lon]);
+
+                            drawRoute(lat, lon);
+
+                            resultsBox.innerHTML = "";
+                        });
+
+                        resultsBox.appendChild(item);
+                    });
+                });
+        }, 400);
+    });
+
+    document.addEventListener("click", function (e) {
+        if (!input.contains(e.target)) {
+            resultsBox.innerHTML = "";
+        }
+    });
+
+  </script>
 
     
 
