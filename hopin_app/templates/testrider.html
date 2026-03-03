@@ -17,6 +17,7 @@
       <form method="POST">
         {% csrf_token %}
 
+        {% comment %} location {% endcomment %}
         <div class="mb-2">
           <label>Location: </label>
           <input type="text" id="location-input" name="location" required>
@@ -26,19 +27,7 @@
         </div>
         <div id="map" style="height:400px;" class="mb-3"></div>
 
-        <div class="mb-2">
-          <label>Route: </label>
-          <select id="routeSelect" name="route" required>
-            <option value="" disabled selected>Select Route</option>
-            {% for route in previousroutes %}
-                <option value="{{ route }}">{{ route }}</option>
-            {% endfor %}
-            <option value="other">Other</option>
-          </select>
-
-          <input type="text" id="newRoute" name="customroute" style="display:none;" placeholder="Enter new route" required>
-        </div>
-
+        {% comment %} direction {% endcomment %}
         <div class="mb-2">
           <div class="form-check">
             <input class="form-check-input" type="radio" value="to" name="direction" id="radioDefault1" checked>
@@ -48,7 +37,6 @@
             <input class="form-check-input" type="radio" value="from" name="direction" id="radioDefault2">
             <label class="form-check-label" for="radioDefault2">From College</label>
           </div>
-
         </div>
 
         <button type="submit">Enter</button>
@@ -56,21 +44,8 @@
     </div>
 
     <script>
-      const routeSelect = document.getElementById("routeSelect");
-      const newRouteInput = document.getElementById("newRoute");
-
-      routeSelect.addEventListener("change", function() {
-          if (this.value === "other") {
-              newRouteInput.style.display = "block";
-              newRouteInput.required = true;   // make required only when visible
-          } else {
-              newRouteInput.style.display = "none";
-              newRouteInput.required = false;  // remove required when hidden
-              newRouteInput.value = "";        // clear old value
-          }
-      });
-
-      /* ================= MAP INIT ================= */
+    
+      {% comment %} initilaizing map {% endcomment %}
       const map = L.map('map').setView([10.8505, 76.2711], 8);
 
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -79,15 +54,15 @@
 
       let marker = L.marker([10.8505, 76.2711], { draggable: true }).addTo(map);
 
-      // Update hidden inputs on drag
+      {% comment %} map button actions {% endcomment %}
       marker.on('dragend', function () {
           const position = marker.getLatLng();
           document.getElementById('lat').value = position.lat;
           document.getElementById('lng').value = position.lng;
       });
 
-      // Allow clicking anywhere on map
       map.on('click', function(e) {
+        
           const lat = e.latlng.lat;
           const lng = e.latlng.lng;
 
@@ -98,7 +73,7 @@
       });
 
 
-      /* ================= AUTOCOMPLETE ================= */
+      {% comment %} location suggession {% endcomment %}
       const input = document.getElementById("location-input");
       const resultsBox = document.getElementById("autocomplete-results");
 
@@ -147,7 +122,6 @@
           }, 400);
       });
 
-      // Close dropdown on outside click
       document.addEventListener("click", function (e) {
           if (!input.contains(e.target)) {
               resultsBox.innerHTML = "";

@@ -33,6 +33,7 @@
           <input type="hidden" name="route_geometry" id="route_geometry">
         </div>
 
+        {% comment %} direction {% endcomment %}
         <div class="mb-2">
           <div class="form-check">
             <input class="form-check-input" type="radio" value="to" name="prefereddirection" id="radioDefault1" checked>
@@ -42,19 +43,21 @@
             <input class="form-check-input" type="radio" value="from" name="prefereddirection" id="radioDefault2">
             <label class="form-check-label" for="radioDefault2">From College</label>
           </div>
-
         </div>
 
+        {% comment %} vehicle type {% endcomment %}
         <div class="mb-2">
           <label>Vehicle Type: </label>
           <input type="text" name="vehicletype" value="{{ lasttrip.vehicletype }}">
         </div>
 
+        {% comment %} vehicle number {% endcomment %}
         <div class="mb-2">
           <label>Vehicle Number: </label>
           <input type="text" name="vehiclenumber" value="{{ lasttrip.vehiclenumber }}">
         </div>
 
+        {% comment %} vehicle model {% endcomment %}
         <div class="mb-2">
           <label>Vehicle Model: </label>
           <input type="text" name="vehiclemodel" value="{{ lasttrip.vehiclemodel }}">
@@ -69,14 +72,12 @@
     const collegeLat = 10.0469;
     const collegeLng = 76.3467;
 
-    /* ================= MAP INITIALIZATION ================= */
+    {% comment %} initilaizing map {% endcomment %}
     const map = L.map('map').setView([10.8505, 76.2711], 8);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '&copy; OpenStreetMap contributors'}).addTo(map);
 
-    // Add AISAT marker
+    {% comment %} aisat default location {% endcomment %}
     const collegeMarker = L.marker([collegeLat, collegeLng])
         .addTo(map)
         .bindPopup("AISAT Engineering College")
@@ -84,9 +85,8 @@
 
     let marker = L.marker([10.8505, 76.2711], { draggable: true }).addTo(map);
 
-    /* ================= ROUTE FUNCTION ================= */
+    {% comment %} drawing route on the map {% endcomment %}
     function drawRoute(userLat, userLng) {
-
           const direction = document.querySelector(
               'input[name="prefereddirection"]:checked'
           ).value;
@@ -113,7 +113,6 @@
 
                   if (!data.routes || data.routes.length === 0) return;
 
-                  // Remove old routes
                   if (window.routeLayers) {
                       window.routeLayers.forEach(obj => map.removeLayer(obj.layer));
                   }
@@ -135,13 +134,11 @@
                           geometry: routeObj.geometry
                       };
 
-                      // Default select first route
                       if (index === 0) {
                           document.getElementById("route_geometry").value =
                               JSON.stringify(routeObj.geometry);
                       }
 
-                      // Click to select route
                       layer.on("click", function() {
 
                           window.routeLayers.forEach(obj => {
@@ -158,10 +155,9 @@
                   });
 
               });
-      }
+    }
 
-    /* ================= MAP EVENTS ================= */
-
+    {% comment %} map button actions {% endcomment %}
     marker.on('dragend', function () {
         const position = marker.getLatLng();
 
@@ -171,10 +167,9 @@
         drawRoute(position.lat, position.lng);
     });
 
+    {% comment %} click only works when SHIFT is pressed!! {% endcomment %}
     map.on('click', function(e) {
-
-        // Only change pickup if SHIFT is pressed
-        if (!e.originalEvent.shiftKey) return;
+        if (!e.originalEvent.shiftKey) return;      
 
         const lat = e.latlng.lat;
         const lng = e.latlng.lng;
@@ -194,7 +189,7 @@
         });
     });
 
-    /* ================= AUTOCOMPLETE ================= */
+    {% comment %} location suggession {% endcomment %}
     const input = document.getElementById("location-input");
     const resultsBox = document.getElementById("autocomplete-results");
 
@@ -210,7 +205,7 @@
         }
 
         debounceTimer = setTimeout(() => {
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`)
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5&lang=eng`)
                 .then(response => response.json())
                 .then(data => {
 
