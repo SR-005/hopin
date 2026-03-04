@@ -16,47 +16,43 @@ def price(location1,location2):
 #price((10.1071868,76.3597351),(10.0463,76.3242))
 
 #Haversine's Distance Function- Spacial Score Computation
-def haversinefunction(location1,location2):
-    distance=haversine(location1, location2)
-    spatialscore=1/(1+distance)
-    return spatialscore
+def haversinefunction(riderlatitude,riderlongitude,routegeometry):
 
-def finalscore(riderroute,availabletrips):
-    #creating an array with all route text- including riders input route(as first element)
-    allroutes=[riderroute]
-    for trip in availabletrips:
-        allroutes.append(trip[0])
-    print("Available Routes: ",allroutes)
-    vectorizer=TfidfVectorizer()
-    matrix=vectorizer.fit_transform(allroutes)
+    coordinates=routegeometry["coordinates"]
+    minimumdistance=0
 
-    similarity=cosine_similarity(matrix[0:1],matrix[1:])[0]
-    print("After Cosine Similarity: ",similarity)
+    for driverlatitude,driverlongitude in coordinates:
+        print("Entered Function")
+        print(driverlatitude,driverlongitude)
+        distance=haversine((riderlatitude,riderlongitude),
+                           (driverlatitude,driverlongitude),
+                           unit=Unit.KILOMETERS)
+        if distance>minimumdistance:
+            minimumdistance=distance
+
+    spatialscore=1/(1+minimumdistance)
+    return minimumdistance,spatialscore
+
+def finalscore(riderlatitude,riderlongitude,availabletrips):
 
     finallist=[]
-    for i,ride in enumerate(availabletrips):
-        semanticscore=similarity[i]
+    print("riderlatitude",riderlatitude)
+    print("riderlongitude",riderlongitude)
+    print("availabletrips",availabletrips)
 
-        driverlocation=availabletrips[i][1]
-        riderlocation=(10.1071868,76.3597351)
-        spacialscore=haversinefunction(driverlocation,riderlocation)
-        #print("Spacial Score of ",i+1,": ",spacialscore)
+    for trip in availabletrips:
+        distance,spacialscore=haversinefunction(riderlatitude,riderlongitude,trip.routegeometry)
 
-        final=(sematicweight*semanticscore+spacialweight*spacialscore)
-        #print("Final Score of ",i+1,": ",final,"\n")
+        finallist.append([
+            trip,
+            distance,
+            spacialscore
+        ])
 
-        finallist.append({
-            "ride":ride,
-            "distance":round(float(spacialscore),4),
-            "similarity":round(float(semanticscore),4),
-            "final":round(float(final),4)
-        })
-        print("Final List",i+1,": ",finallist[-1],"\n")
-
-    ranked = sorted(finallist, key=lambda x: x["final"], reverse=True)
-    print(ranked)
+    ranked = sorted(finallist, key=lambda x: x[2], reverse=True)
+    print("Ranked: ",ranked)
 
     return 0
 
-finalscore("via pipeline",[["via main road",(10.1071868,76.3597351)],["via high court",(10.1265,76.3533)],  
-                           ["via pipeline road",(10.1071868,76.3597351)],["via pipeline road",(10.0463,76.3242)]])  #aluva,pulinchode,aluva,hmt
+'''finalscore("via pipeline",[["via main road",(10.1071868,76.3597351)],["via high court",(10.1265,76.3533)],  
+                           ["via pipeline road",(10.1071868,76.3597351)],["via pipeline road",(10.0463,76.3242)]])  #aluva,pulinchode,aluva,hmt'''

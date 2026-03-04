@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='trip',
             name='routegeometry',
-            field=models.JSONField(default=None),
+            field=models.JSONField(null=True, blank=True),
         ),
     ]

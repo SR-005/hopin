@@ -4,6 +4,8 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 import json
 from .models import userdetail, trip
+from .ml.routeopt import finalscore
+
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
@@ -107,9 +109,10 @@ def testdriverfunction(request):
             newtrip.usercredentials=request.user
 
             routegeometry=json.loads(request.POST.get("routegeometry"))
-            print(type(routegeometry))
 
             newtrip.routegeometry=routegeometry
+            coordinates=routegeometry["coordinates"]
+            print(coordinates)
             newtrip.save()
         else:
             print("Form not Valid")
@@ -124,15 +127,19 @@ def testriderfunction(request):
         latitude=request.POST.get("latitude")
         longitude=request.POST.get("longitude")
         direction=request.POST.get("direction")
-        
-        print(location,latitude,longitude,route,direction)     
+
+        print(location,latitude,longitude,direction)     
 
         #collecting active trip details- for route optimization
         availabletrips=[]
         activetrips=trip.objects.filter(status="ACTIVE")
         for trips in activetrips:
             availabletrips.append(trips)
+
         print("Available Trip Routes: ",availabletrips)
 
-    
-    return render(request, "testrider.html",)
+        latitude=float(latitude)
+        longitude=float(longitude)
+        finalscore(latitude,longitude,availabletrips)
+        
+    return render(request, "testrider.html")
