@@ -52,7 +52,7 @@ def finalscore(riderlatitude,riderlongitude,availabletrips):
     ranked = sorted(finallist, key=lambda x: x[2], reverse=True)
     print("Ranked: ",ranked)
 
-    return 0
+    return ranked
 
 '''finalscore("via pipeline",[["via main road",(10.1071868,76.3597351)],["via high court",(10.1265,76.3533)],  
                            ["via pipeline road",(10.1071868,76.3597351)],["via pipeline road",(10.0463,76.3242)]])  #aluva,pulinchode,aluva,hmt'''

@@ -121,7 +121,7 @@ def testdriverfunction(request):
     return render(request, "testdriver.html",{"lasttrip": lasttrip})
 
 def testriderfunction(request):
-
+    rides=None
     if request.method=="POST":
         location=request.POST.get("location")
         latitude=request.POST.get("latitude")
@@ -140,6 +140,7 @@ def testriderfunction(request):
 
         latitude=float(latitude)
         longitude=float(longitude)
-        finalscore(latitude,longitude,availabletrips)
-        
-    return render(request, "testrider.html")
+
+        rides=finalscore(latitude,longitude,availabletrips)
+        print("TYPE: ",type(rides[0][0]))
+    return render(request, "testrider.html",{"rides":rides})

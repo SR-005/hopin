@@ -43,6 +43,12 @@
       </form>
     </div>
 
+    {% if rides %}
+        {% for trip, distance, score in rides %}
+          <p>{{ trip.usercredentials }}</p>
+        {% endfor %}
+      {% endif %}
+
     <script>
     
       {% comment %} initilaizing map {% endcomment %}
