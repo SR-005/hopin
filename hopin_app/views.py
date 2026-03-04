@@ -12,12 +12,21 @@ User = get_user_model()
 # Main Landing Page View
 def landingfunction(request):
     user = None
+    username=None
+    firstname=None
     try:
         print("Current User Email: ", request.user.email)
+        if request.user.email!=None:
+            status="true"
+        username=User.objects.get(email=request.user.email)
+        username=str(username.first_name).upper()
+        username=username.split()
+        firstname=username[0]
     except:
         print("User is not Logged in or Logged Out")
+        status="false"
 
-    return render(request, "landing.html", {"user": user})
+    return render(request, "landing.html", {"status":status,"user":user,"firstname":firstname})
 
 # Main Logout Function
 def logoutfunction(request):
@@ -35,8 +44,7 @@ def loginfunction(request):
             userpassword = loginform.cleaned_data["password"]
             print(useremail, userpassword)
 
-            user = authenticate(request, username=useremail,
-                                password=userpassword)
+            user = authenticate(request, username=useremail,password=userpassword)
             if user is not None:
                 login(request, user)
                 messages.success(request, "Login Successfull!!")
@@ -50,7 +58,6 @@ def loginfunction(request):
 # Main Sign Up Page View
 def signupfunction(request):
     if request.method == "POST":
-        print("Hello")
         # collect values from html form and validate it w.r.t signupForm
         signupform = signupForm(request.POST)
         if signupform.is_valid():
@@ -60,24 +67,21 @@ def signupfunction(request):
             userpassword = signupform.cleaned_data["password"]
 
             # create_user is a Django Built in function to create a User to User Model
-            newuser = User.objects.create_user(
-                email=useremail, password=userpassword)
+            newuser = User.objects.create_user(email=useremail, password=userpassword)
             newuser.first_name = firstname
             newuser.last_name = lastname
             newuser.save()
-
             messages.success(request, "Account has been successfully created.")
+
+            user = authenticate(request, username=useremail,password=userpassword)
+            login(request, user)
+            return redirect("landing")
 
         else:
             for errors in signupform.errors.items():  # returns a tuple of errors from the form
                 # we use indexing to catch the exact error message from tuple
                 messages.error(request, errors[1][0])
     return render(request, "signup.html")
-
-
-
-def newlandingfunction(request):
-    return render(request,"landing2.html")
 
 def testdriverfunction(request):
     userobject=request.user
