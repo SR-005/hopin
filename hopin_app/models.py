@@ -57,9 +57,9 @@ class trip(models.Model):
     id=models.AutoField(primary_key=True)
     usercredentials=models.ForeignKey(User, on_delete=models.CASCADE, related_name="driver")
     preferedlocation=models.CharField()                 #location suggession
-    latitude=models.CharField(default="0")
-    longitude=models.CharField(default="0")
-    route=models.CharField()                         #routes
+    latitude=models.FloatField()
+    longitude=models.FloatField()
+    routegeometry=models.JSONField(null=True, blank=True)                         #route path (lat and long)
     prefereddirection=models.CharField()                #direction suggession
     vehicletype=models.CharField()                      #car or bike
     vehiclenumber=models.CharField(max_length=12)       #KL 41 **** ****

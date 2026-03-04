@@ -2,6 +2,7 @@ from .forms import signupForm, loginForm, createtripForm
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.contrib import messages
+import json
 from .models import userdetail, trip
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -83,15 +84,13 @@ def signupfunction(request):
                 messages.error(request, errors[1][0])
     return render(request, "signup.html")
 
+
+
+
+
 def testdriverfunction(request):
     userobject=request.user
     userasdriver=trip.objects.filter(usercredentials=userobject)
-
-    # retrieve previous routes from their history
-    previousroutes=[]
-    for details in userasdriver:
-        previousroutes.append(details.route)
-    print(previousroutes)
 
     # retrieve last vehicle information
     index=len(userasdriver)-1
@@ -107,38 +106,25 @@ def testdriverfunction(request):
             newtrip = createtripform.save(commit=False)
             newtrip.usercredentials=request.user
 
-            if request.POST.get("route")=="other":
-                trip.route = request.POST.get("customroute")
-            else:
-                trip.route = request.POST.get("route")
+            routegeometry=json.loads(request.POST.get("routegeometry"))
+            print(type(routegeometry))
+
+            newtrip.routegeometry=routegeometry
             newtrip.save()
         else:
             print("Form not Valid")
             print(request.POST)
 
-    return render(request, "testdriver.html",
-                  {"previousroutes": previousroutes, "lasttrip": lasttrip})
+    return render(request, "testdriver.html",{"lasttrip": lasttrip})
 
 def testriderfunction(request):
-    userobject = request.user
-    userasdriver = trip.objects.filter(usercredentials=userobject)
-
-    # retrieve previous routes from their history
-    previousroutes = []
-    for details in userasdriver:
-        previousroutes.append(details.route)
-    print(previousroutes)
 
     if request.method=="POST":
         location=request.POST.get("location")
         latitude=request.POST.get("latitude")
         longitude=request.POST.get("longitude")
         direction=request.POST.get("direction")
-
-        if request.POST.get("route")=="other":
-            route=request.POST.get("customroute")
-        else:
-            route=request.POST.get("route")
+        
         print(location,latitude,longitude,route,direction)     
 
         #collecting active trip details- for route optimization
@@ -149,4 +135,4 @@ def testriderfunction(request):
         print("Available Trip Routes: ",availabletrips)
 
     
-    return render(request, "testrider.html",{"previousroutes": previousroutes})
+    return render(request, "testrider.html",)

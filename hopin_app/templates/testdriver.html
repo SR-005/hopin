@@ -30,7 +30,7 @@
 
         {% comment %} route {% endcomment %}
         <div class="mb-2">
-          <input type="hidden" name="route_geometry" id="route_geometry">
+          <input type="hidden" name="routegeometry" id="routegeometry">
         </div>
 
         {% comment %} direction {% endcomment %}
@@ -135,7 +135,7 @@
                       };
 
                       if (index === 0) {
-                          document.getElementById("route_geometry").value =
+                          document.getElementById("routegeometry").value =
                               JSON.stringify(routeObj.geometry);
                       }
 
@@ -147,7 +147,7 @@
 
                           layer.setStyle({ color: "blue" });
 
-                          document.getElementById("route_geometry").value =
+                          document.getElementById("routegeometry").value =
                               JSON.stringify(routeObj.geometry);
                       });
 
