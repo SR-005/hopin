@@ -47,8 +47,10 @@
         {% for trip, distance, score in rides %}
         <form method="POST" action="{% url 'testrider' %}">
           {% csrf_token %}
+
           <p>{{ trip.usercredentials }}</p>
-          <button type="submit" name="action" value="riderequest">Request</button>
+          <input type="hidden" name="rideid" id="rideid" value="{{ trip.id }}">
+          <button type="submit" name="action" value="requestride">Request</button>
         </form>
         {% endfor %}
       {% endif %}

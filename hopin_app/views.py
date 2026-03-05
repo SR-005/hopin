@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 import json
-from .models import userdetail, trip
+from .models import userdetail, trip, riderequest
 from .ml.routeopt import finalscore
 
 from django.contrib.auth import get_user_model
@@ -148,6 +148,9 @@ def riderdetails(request):
 
 #request for a ride to driver
 def requestride(request):
+    rideid=request.POST.get("rideid")
+    ride=get_object_or_404(trip, id=rideid)
+    riderequest.objects.create(trip=ride,rider=request.user)
     return 0
 
 def testriderfunction(request):
