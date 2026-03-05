@@ -51,6 +51,12 @@
           <input type="text" name="vehicletype" value="{{ lasttrip.vehicletype }}">
         </div>
 
+        {% comment %} available seats {% endcomment %}
+        <div class="mb-2">
+          <label>Available Seats: </label>
+          <input type="number" name="availableseats">
+        </div>
+
         {% comment %} vehicle number {% endcomment %}
         <div class="mb-2">
           <label>Vehicle Number: </label>
@@ -67,13 +73,13 @@
       </form>
     </div>
 
-    {% if activetrip %}
-        {% for trip in activetrip %}
+    {% if requests %}
+        {% for request in requests %}
         <form method="POST" action="{% url 'testdriver' %}">
           {% csrf_token %}
 
-          <p>{{ trip.preferedlocation }}</p>
-          <input type="hidden" name="rideid" id="rideid" value="{{ trip.id }}">
+          <p>{{ request.rider }}</p>
+          <input type="hidden" name="requestid" id="requestid" value="{{ request.id }}">
           <button type="submit" name="action" value="accept">Accept</button>
           <button type="submit" name="action" value="reject">Reject</button>
         </form>

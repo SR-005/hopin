@@ -62,6 +62,7 @@ class trip(models.Model):
     routegeometry=models.JSONField(null=True, blank=True)                         #route path (lat and long)
     prefereddirection=models.CharField()                #direction suggession
     vehicletype=models.CharField()                      #car or bike
+    availableseats=models.IntegerField(null=True, blank=True)
     vehiclenumber=models.CharField(max_length=12)       #KL 41 **** ****
     vehiclemodel=models.CharField()                     #car or bike model name
     status=models.CharField(default="ACTIVE")

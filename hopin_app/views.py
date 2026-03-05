@@ -89,9 +89,8 @@ def signupfunction(request):
     return render(request, "signup.html")
 
 
-
 #------------------------------------------------------DRIVER PAGE FUNCTIONS------------------------------------------------------
-
+#create new trip
 def tripdetails(request):
     if request.method=="POST":
         createtripform=createtripForm(request.POST)
@@ -110,19 +109,39 @@ def tripdetails(request):
             print("Form not Valid")
             print(request.POST)
 
-
-def acceptride():
+#accept a ride request
+def acceptride(request):
     print("ACCEPT")
-    return 0
+    currentrequest=riderequest.objects.get(id=request.POST.get("requestid"))
+    currentride=currentrequest.trip
+    
+    if currentride.availableseats>0:
+        currentrequest.status="ACCEPTED"
+        currentrequest.save()
 
-def rejectride():
+        currentride.availableseats=currentride.availableseats-1
+        currentride.save()
+    else:
+        print("SEAT FULL!!")
+
+#reject a ride request
+def rejectride(request):
     print("REJECT")
-    return 0
+    currentrequest=riderequest.objects.get(id=request.POST.get("requestid"))
+    currentrequest.status="REJECTED"
+    currentrequest.save()
 
+#driver page routing function
 def testdriverfunction(request):
+    requests=None
+
     #fetch trips of the current user
     trips=trip.objects.filter(usercredentials=request.user)
-    print(trips[0])
+    try:
+        requests=riderequest.objects.filter(trip=trips[0],status="PENDING")
+    except:
+        pass
+
     # retrieve last vehicle information
     index=len(trips)-1
     if index>0:
@@ -134,11 +153,11 @@ def testdriverfunction(request):
     if action=="tripdetails":
         tripdetails(request)
     elif action=="accept":
-        acceptride()
+        acceptride(request)
     elif action=="reject":
-        rejectride()
+        rejectride(request)
 
-    return render(request, "testdriver.html",{"activetrip":trips,"lasttrip": lasttrip})
+    return render(request, "testdriver.html",{"requests":requests,"lasttrip": lasttrip})
 
 
 #------------------------------------------------------RIDER PAGE FUNCTIONS------------------------------------------------------
@@ -171,8 +190,12 @@ def requestride(request):
     riderequest.objects.create(trip=ride,rider=request.user)
     return 0
 
+#rider page routing function
 def testriderfunction(request):
     rides=None
+    requests=None
+
+    requests=riderequest.objects.filter(rider=request.user)
     if request.method=="POST":
         action=request.POST.get("action")
 
@@ -181,4 +204,4 @@ def testriderfunction(request):
         elif action=="requestride":
             requestride(request)
 
-    return render(request, "testrider.html",{"rides":rides})
+    return render(request, "testrider.html",{"rides":rides,"requests":requests})

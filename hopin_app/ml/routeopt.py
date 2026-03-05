@@ -19,14 +19,14 @@ def price(location1,location2):
 def haversinefunction(riderlatitude,riderlongitude,routegeometry):
 
     coordinates=routegeometry["coordinates"]
-    minimumdistance=0
+    minimumdistance=float("inf")
 
-    for driverlatitude,driverlongitude in coordinates:
+    for driverlongitude,driverlatitude in coordinates:
         distance=haversine((riderlatitude,riderlongitude),
                            (driverlatitude,driverlongitude),
                            unit=Unit.KILOMETERS)
         
-        if distance>minimumdistance:
+        if distance<minimumdistance:
             minimumdistance=distance
 
     spatialscore=1/(1+minimumdistance)
