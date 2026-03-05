@@ -43,6 +43,7 @@
       </form>
     </div>
 
+    <h1>Available Rides</h1>
     {% if rides %}
         {% for trip, distance, score in rides %}
         <form method="POST" action="{% url 'testrider' %}">
@@ -53,6 +54,23 @@
           <button type="submit" name="action" value="requestride">Request</button>
         </form>
         {% endfor %}
+      {% else %}
+        <p>No Rides Available</p>
+      {% endif %}
+
+    <h1>Ongoing Request</h1>
+    {% if requests %}
+        {% for request in requests %}
+        <form method="POST" action="{% url 'testrider' %}">
+          {% csrf_token %}
+
+          <p>{{ request.trip }}</p>
+          <input type="hidden" name="requestid" id="requestid" value="{{ request.id }}">
+          <button type="submit" name="action" value="cancelrequest">Cancel</button>
+        </form>
+        {% endfor %}
+      {% else %}
+        <p>No Ongoing Request</p>
       {% endif %}
 
     <script>

@@ -190,6 +190,10 @@ def requestride(request):
     riderequest.objects.create(trip=ride,rider=request.user)
     return 0
 
+def cancelrequest(request):
+    currentrequest=riderequest.objects.get(id=request.POST.get("requestid"))
+    currentrequest.delete()
+
 #rider page routing function
 def testriderfunction(request):
     rides=None
@@ -203,5 +207,7 @@ def testriderfunction(request):
             rides=riderdetails(request)
         elif action=="requestride":
             requestride(request)
+        elif action=="cancelrequest":
+            cancelrequest(request)
 
     return render(request, "testrider.html",{"rides":rides,"requests":requests})
