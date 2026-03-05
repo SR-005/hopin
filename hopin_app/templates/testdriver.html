@@ -15,7 +15,7 @@
     
     {% comment %} form div {% endcomment %}
     <div class="d-flex justify-content-center mt-5">
-      <form method="POST">
+      <form method="POST" action="{% url 'testdriver' %}">
         {% csrf_token %}
 
         {% comment %} location {% endcomment %}
@@ -63,10 +63,22 @@
           <input type="text" name="vehiclemodel" value="{{ lasttrip.vehiclemodel }}">
         </div>
 
-        <button type="submit">Enter</button>
+        <button type="submit" name="action" value="tripdetails">Enter</button>
       </form>
     </div>
 
+    {% if activetrip %}
+        {% for trip in activetrip %}
+        <form method="POST" action="{% url 'testdriver' %}">
+          {% csrf_token %}
+
+          <p>{{ trip.preferedlocation }}</p>
+          <input type="hidden" name="rideid" id="rideid" value="{{ trip.id }}">
+          <button type="submit" name="action" value="accept">Accept</button>
+          <button type="submit" name="action" value="reject">Reject</button>
+        </form>
+        {% endfor %}
+      {% endif %}
 
   <script>
     const collegeLat = 10.0469;

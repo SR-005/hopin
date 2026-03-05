@@ -92,17 +92,7 @@ def signupfunction(request):
 
 #------------------------------------------------------DRIVER PAGE FUNCTIONS------------------------------------------------------
 
-def testdriverfunction(request):
-    userobject=request.user
-    userasdriver=trip.objects.filter(usercredentials=userobject)
-
-    # retrieve last vehicle information
-    index=len(userasdriver)-1
-    if index>0:
-        lasttrip=userasdriver[index]
-    else:
-        lasttrip=None
-
+def tripdetails(request):
     if request.method=="POST":
         createtripform=createtripForm(request.POST)
         if createtripform.is_valid():
@@ -120,7 +110,35 @@ def testdriverfunction(request):
             print("Form not Valid")
             print(request.POST)
 
-    return render(request, "testdriver.html",{"lasttrip": lasttrip})
+
+def acceptride():
+    print("ACCEPT")
+    return 0
+
+def rejectride():
+    print("REJECT")
+    return 0
+
+def testdriverfunction(request):
+    #fetch trips of the current user
+    trips=trip.objects.filter(usercredentials=request.user)
+    print(trips[0])
+    # retrieve last vehicle information
+    index=len(trips)-1
+    if index>0:
+        lasttrip=trips[index]
+    else:
+        lasttrip=None
+
+    action=request.POST.get("action")
+    if action=="tripdetails":
+        tripdetails(request)
+    elif action=="accept":
+        acceptride()
+    elif action=="reject":
+        rejectride()
+
+    return render(request, "testdriver.html",{"activetrip":trips,"lasttrip": lasttrip})
 
 
 #------------------------------------------------------RIDER PAGE FUNCTIONS------------------------------------------------------
