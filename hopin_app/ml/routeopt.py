@@ -22,11 +22,10 @@ def haversinefunction(riderlatitude,riderlongitude,routegeometry):
     minimumdistance=0
 
     for driverlatitude,driverlongitude in coordinates:
-        print("Entered Function")
-        print(driverlatitude,driverlongitude)
         distance=haversine((riderlatitude,riderlongitude),
                            (driverlatitude,driverlongitude),
                            unit=Unit.KILOMETERS)
+        
         if distance>minimumdistance:
             minimumdistance=distance
 

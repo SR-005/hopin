@@ -1,6 +1,6 @@
 from .forms import signupForm, loginForm, createtripForm
 from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 import json
 from .models import userdetail, trip
@@ -12,6 +12,8 @@ User = get_user_model()
 
 # Create your views here.
 
+
+#------------------------------------------------------LANDING PAGE FUNCTIONS------------------------------------------------------
 # Main Landing Page View
 def landingfunction(request):
     user = None
@@ -88,7 +90,7 @@ def signupfunction(request):
 
 
 
-
+#------------------------------------------------------DRIVER PAGE FUNCTIONS------------------------------------------------------
 
 def testdriverfunction(request):
     userobject=request.user
@@ -120,27 +122,42 @@ def testdriverfunction(request):
 
     return render(request, "testdriver.html",{"lasttrip": lasttrip})
 
+
+#------------------------------------------------------RIDER PAGE FUNCTIONS------------------------------------------------------
+#default ride function
+def riderdetails(request):
+    location=request.POST.get("location")
+    latitude=request.POST.get("latitude")
+    longitude=request.POST.get("longitude")
+    direction=request.POST.get("direction")
+
+    print(location,latitude,longitude,direction)     
+
+    #collecting active trip details- for route optimization
+    availabletrips=[]
+    activetrips=trip.objects.filter(status="ACTIVE")
+    for trips in activetrips:
+        availabletrips.append(trips)
+
+    print("Available Trip Routes: ",availabletrips)
+    latitude=float(latitude)
+    longitude=float(longitude)
+
+    rides=finalscore(latitude,longitude,availabletrips)
+    return rides
+
+#request for a ride to driver
+def requestride(request):
+    return 0
+
 def testriderfunction(request):
     rides=None
     if request.method=="POST":
-        location=request.POST.get("location")
-        latitude=request.POST.get("latitude")
-        longitude=request.POST.get("longitude")
-        direction=request.POST.get("direction")
+        action=request.POST.get("action")
 
-        print(location,latitude,longitude,direction)     
+        if action=="riderdetails":
+            rides=riderdetails(request)
+        elif action=="requestride":
+            requestride(request)
 
-        #collecting active trip details- for route optimization
-        availabletrips=[]
-        activetrips=trip.objects.filter(status="ACTIVE")
-        for trips in activetrips:
-            availabletrips.append(trips)
-
-        print("Available Trip Routes: ",availabletrips)
-
-        latitude=float(latitude)
-        longitude=float(longitude)
-
-        rides=finalscore(latitude,longitude,availabletrips)
-        print("TYPE: ",type(rides[0][0]))
     return render(request, "testrider.html",{"rides":rides})

@@ -68,3 +68,12 @@ class trip(models.Model):
     
     def __str__(self):
         return self.usercredentials.email
+
+class riderequest(models.Model):
+    id=models.AutoField(primary_key=True)
+    trip=models.ForeignKey(trip, on_delete=models.CASCADE, related_name="tripdetails")
+    rider=models.ForeignKey(User, on_delete=models.CASCADE, related_name="riderdetails")
+    status=models.CharField(default="PENDING")
+
+    def __str__(self):
+        return f"{self.rider.email} → Ride {self.trip.usercredentials}"
