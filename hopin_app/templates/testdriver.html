@@ -20,7 +20,8 @@
         {% endfor %}
     {% endif %}
 
-    <h1 class="text-center">Accepted Rides</h1>
+    {% comment %} accepted rides {% endcomment %}
+    <h1>Accepted Rides</h1>
     {% if accepted %}
         {% for request in accepted %}
             <form method="POST" action="{% url 'testdriver' %}">
@@ -104,6 +105,7 @@
       </form>
     </div>
 
+    <h1>Incoming Ride Requests</h1>
     {% if requests %}
         {% for request in requests %}
         <form method="POST" action="{% url 'testdriver' %}">

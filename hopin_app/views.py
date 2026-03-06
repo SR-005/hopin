@@ -262,6 +262,7 @@ def testriderfunction(request):
 
     requests=riderequest.objects.filter(rider=request.user, status="PENDING")
     accepted=riderequest.objects.filter(rider=request.user, status="ACCEPTED")
+    
     if request.method=="POST":
         action=request.POST.get("action")
 
