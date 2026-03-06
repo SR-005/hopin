@@ -111,7 +111,6 @@ def tripdatetimevalidation(request):
     #time validation: TO college (before 8:00AM)
     if direction=="to":
         if ridetime!=time(8,0):
-            print("DATE")
             messages.error(request, "Rides must arrive at college at 8:00 AM")
             return redirect("testdriver")
         
@@ -122,7 +121,6 @@ def tripdatetimevalidation(request):
     #time validation: FROM college (between 1:30PM and 8:00PM)
     elif direction=="from":
         if ridetime<time(13,30) or ridetime>time(20,00):
-            print("DATE")
             messages.error(request, "Rides must be scheduled between 1:30PM and 8:00PM")
             return redirect("testdriver")
         
@@ -176,11 +174,13 @@ def rejectride(request):
 #driver page routing function
 def testdriverfunction(request):
     requests=None
-
+    accepted=None
+    
     #fetch trips of the current user
     trips=trip.objects.filter(usercredentials=request.user)
     try:
         requests=riderequest.objects.filter(trip=trips[0],status="PENDING")
+        accepted=riderequest.objects.filter(trip=trips[0],status="ACCEPTED")
     except:
         pass
 
@@ -199,7 +199,7 @@ def testdriverfunction(request):
     elif action=="reject":
         rejectride(request)
 
-    return render(request, "testdriver.html",{"requests":requests,"lasttrip": lasttrip})
+    return render(request, "testdriver.html",{"requests":requests,"accepted":accepted,"lasttrip": lasttrip})
 
 
 #------------------------------------------------------RIDER PAGE FUNCTIONS------------------------------------------------------
@@ -252,11 +252,13 @@ def cleanup(request):
 
 #rider page routing function
 def testriderfunction(request):
-    cleanup()       #calling cleanup function to delete expired rides
+    cleanup(request)       #calling cleanup function to delete expired rides
     rides=None
     requests=None
+    accepted=None
 
-    requests=riderequest.objects.filter(rider=request.user)
+    requests=riderequest.objects.filter(rider=request.user, status="PENDING")
+    accepted=riderequest.objects.filter(rider=request.user, status="ACCEPTED")
     if request.method=="POST":
         action=request.POST.get("action")
 
@@ -267,4 +269,4 @@ def testriderfunction(request):
         elif action=="cancelrequest":
             cancelrequest(request)
 
-    return render(request, "testrider.html",{"rides":rides,"requests":requests})
+    return render(request, "testrider.html",{"rides":rides,"requests":requests,"accepted":accepted})

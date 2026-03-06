@@ -11,6 +11,7 @@
   <body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     
+    {% comment %} default message segment {% endcomment %}
     {% if messages %}
         {% for message in messages %}
             <script>
@@ -19,8 +20,22 @@
         {% endfor %}
     {% endif %}
 
+    <h1 class="text-center">Accepted Rides</h1>
+    {% if accepted %}
+        {% for request in accepted %}
+            <form method="POST" action="{% url 'testdriver' %}">
+                {% csrf_token %}
+
+                <p>{{ request.rider }}</p>
+                <input type="hidden" name="requestid" id="requestid" value="{{ request.id }}">
+                <button type="submit" name="action" value="startride">Start Ride</button>
+            </form>
+        {% endfor %}
+    {% else %}
+        <p>No Accepted Rides</p>
+    {% endif %}
+
     <h1 class="text-center">Create a trip</h1>
-    
     {% comment %} form div {% endcomment %}
     <div class="d-flex justify-content-center mt-5">
       <form method="POST" action="{% url 'testdriver' %}">
@@ -100,6 +115,8 @@
           <button type="submit" name="action" value="reject">Reject</button>
         </form>
         {% endfor %}
+    {% else %}
+        <p>No Incoming Request</p>
       {% endif %}
 
   <script>
@@ -110,11 +127,15 @@
     const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
 
-    const todayStr = today.toISOString().split("T")[0];
-    const tomorrowStr = tomorrow.toISOString().split("T")[0];
+    function formatDate(d){
+        let month = (d.getMonth() + 1).toString().padStart(2,'0');
+        let day = d.getDate().toString().padStart(2,'0');
+        return `${d.getFullYear()}-${month}-${day}`;
+    }
 
-    dateInput.min = todayStr;
-    dateInput.max = tomorrowStr;
+    dateInput.min = formatDate(today);
+    dateInput.max = formatDate(tomorrow);
+    
 
     {% comment %} time manager {% endcomment %}
     const directionRadios = document.querySelectorAll("input[name='prefereddirection']");
