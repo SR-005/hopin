@@ -102,8 +102,8 @@ def tripdatetimevalidation(request):
     ridedate = datetime.strptime(request.POST.get("ridedate"), "%Y-%m-%d").date()
 
     #date validation
-    today=date.today()
-    now=timezone.now().time()
+    today=timezone.localdate()
+    now=timezone.localtime().time()
     if ridedate not in [today, today + timedelta(days=1)]:
         messages.error(request, "Rides can only be scheduled for Today or Tomorrow")
         return redirect("testdriver")
@@ -127,18 +127,21 @@ def tripdatetimevalidation(request):
         if ridedate==today and ridetime<=now:
             messages.error(request, "Cannot schedule a ride in the past")
             return redirect("testdriver")
+    return None
 
 #create new trip
 def tripdetails(request):
     if request.method=="POST":
         createtripform=createtripForm(request.POST)
         if createtripform.is_valid():
+            #ride time validation
+            datetimevalid=tripdatetimevalidation(request)
+            if datetimevalid:
+                return datetimevalid
+            
             # commit=False: saves the form content but doesnot upload it into db yet
             newtrip = createtripform.save(commit=False)
             newtrip.usercredentials=request.user
-
-            #ride time validation
-            tripdatetimevalidation(request)
                 
             #make ride geometry into JSON format for db storage
             routegeometry=json.loads(request.POST.get("routegeometry"))
