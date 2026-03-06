@@ -2,7 +2,10 @@ from .forms import signupForm, loginForm, createtripForm
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.utils import timezone
+
 import json
+from datetime import date,time,datetime,timedelta
 from .models import userdetail, trip, riderequest
 from .ml.routeopt import finalscore
 
@@ -90,6 +93,43 @@ def signupfunction(request):
 
 
 #------------------------------------------------------DRIVER PAGE FUNCTIONS------------------------------------------------------
+#Trip time validation
+def tripdatetimevalidation(request):
+    direction=request.POST.get("prefereddirection")
+    print("TIME: ",request.POST.get("ridetime"))
+
+    ridetime=datetime.strptime(request.POST.get("ridetime"), "%H:%M").time()
+    ridedate = datetime.strptime(request.POST.get("ridedate"), "%Y-%m-%d").date()
+
+    #date validation
+    today=date.today()
+    now=timezone.now().time()
+    if ridedate not in [today, today + timedelta(days=1)]:
+        messages.error(request, "Rides can only be scheduled for Today or Tomorrow")
+        return redirect("testdriver")
+
+    #time validation: TO college (before 8:00AM)
+    if direction=="to":
+        if ridetime!=time(8,0):
+            print("DATE")
+            messages.error(request, "Rides must arrive at college at 8:00 AM")
+            return redirect("testdriver")
+        
+        if ridedate==today and now>time(8,0):
+            messages.error(request, "Cannot schedule today's 8:00 AM ride after it has passed")
+            return redirect("testdriver")
+        
+    #time validation: FROM college (between 1:30PM and 8:00PM)
+    elif direction=="from":
+        if ridetime<time(13,30) or ridetime>time(20,00):
+            print("DATE")
+            messages.error(request, "Rides must be scheduled between 1:30PM and 8:00PM")
+            return redirect("testdriver")
+        
+        if ridedate==today and ridetime<=now:
+            messages.error(request, "Cannot schedule a ride in the past")
+            return redirect("testdriver")
+
 #create new trip
 def tripdetails(request):
     if request.method=="POST":
@@ -99,11 +139,13 @@ def tripdetails(request):
             newtrip = createtripform.save(commit=False)
             newtrip.usercredentials=request.user
 
+            #ride time validation
+            tripdatetimevalidation(request)
+                
+            #make ride geometry into JSON format for db storage
             routegeometry=json.loads(request.POST.get("routegeometry"))
-
             newtrip.routegeometry=routegeometry
-            coordinates=routegeometry["coordinates"]
-            print(coordinates)
+
             newtrip.save()
         else:
             print("Form not Valid")
@@ -190,12 +232,27 @@ def requestride(request):
     riderequest.objects.create(trip=ride,rider=request.user)
     return 0
 
+#cancel an active ride request
 def cancelrequest(request):
     currentrequest=riderequest.objects.get(id=request.POST.get("requestid"))
     currentrequest.delete()
 
+#clean up expired rides
+def cleanup(request):
+    now=timezone.now()
+    expired=trip.objects.filter(status="AVAILABLE",ridedate=now.date())
+
+    for trips in expired:
+        ride_datetime = datetime.combine(trip.ridedate,trip.ridetime)
+
+        if now > ride_datetime+timedelta(minutes=30):
+            trip.delete()
+
+    return 0
+
 #rider page routing function
 def testriderfunction(request):
+    cleanup()       #calling cleanup function to delete expired rides
     rides=None
     requests=None
 

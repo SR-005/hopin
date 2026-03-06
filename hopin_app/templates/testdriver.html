@@ -11,6 +11,14 @@
   <body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                alert("{{ message|escapejs }}");
+            </script>
+        {% endfor %}
+    {% endif %}
+
     <h1 class="text-center">Create a trip</h1>
     
     {% comment %} form div {% endcomment %}
@@ -44,6 +52,14 @@
             <label class="form-check-label" for="radioDefault2">From College</label>
           </div>
         </div>
+
+        {% comment %} Date {% endcomment %}
+        <label>Date</label>
+        <input type="date" name="ridedate" required>
+
+        {% comment %} Time {% endcomment %}
+        <label>Time</label>
+        <input type="time" id="ridetime" name="ridetime" required>
 
         {% comment %} vehicle type {% endcomment %}
         <div class="mb-2">
@@ -87,6 +103,40 @@
       {% endif %}
 
   <script>
+    {% comment %} date manager {% endcomment %}
+    const dateInput = document.querySelector("input[name='ridedate']");
+
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+
+    const todayStr = today.toISOString().split("T")[0];
+    const tomorrowStr = tomorrow.toISOString().split("T")[0];
+
+    dateInput.min = todayStr;
+    dateInput.max = tomorrowStr;
+
+    {% comment %} time manager {% endcomment %}
+    const directionRadios = document.querySelectorAll("input[name='prefereddirection']");
+    const timeInput = document.getElementById("ridetime");
+
+    directionRadios.forEach(radio => {
+        radio.addEventListener("change", function(){
+
+            if(this.value === "to"){
+                timeInput.value = "08:00";
+                timeInput.readOnly = true;
+            }
+
+            else{
+                timeInput.readOnly = false;
+                timeInput.value = "13:30";
+            }
+
+        });
+    });
+
+
     const collegeLat = 10.0469;
     const collegeLng = 76.3467;
 
