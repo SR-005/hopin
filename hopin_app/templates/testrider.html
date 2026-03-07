@@ -69,7 +69,11 @@
 
           <p>{{ trip.usercredentials }}</p>
           <input type="hidden" name="rideid" id="rideid" value="{{ trip.id }}">
-          <button type="submit" name="action" value="requestride">Request</button>
+          {% if trip.id in requestedrides %}
+              <button disabled>Requested</button>
+          {% else %}
+              <button type="submit" name="action" value="requestride">Request</button>
+          {% endif %}
         </form>
         {% endfor %}
       {% else %}

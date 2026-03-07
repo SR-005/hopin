@@ -49,7 +49,7 @@ def finalscore(riderlatitude,riderlongitude,availabletrips):
         ])
 
     ranked = sorted(finallist, key=lambda x: x[2], reverse=True)
-    print("Ranked: ",ranked)
+    #print("Ranked: ",ranked)
 
     return ranked
 

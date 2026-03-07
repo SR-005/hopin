@@ -259,6 +259,7 @@ def testriderfunction(request):
     rides=None
     requests=None
     accepted=None
+    requestedrides=None
 
     requests=riderequest.objects.filter(rider=request.user, status="PENDING")
     accepted=riderequest.objects.filter(rider=request.user, status="ACCEPTED")
@@ -268,9 +269,23 @@ def testriderfunction(request):
 
         if action=="riderdetails":
             rides=riderdetails(request)
+
+            requestedrides=[]
+            ongoing=list(requests.values_list("id", flat=True))
+            print(ongoing)
+            for currentrequest in requests:
+                print("Current Request ID: ",currentrequest.id)
+                if currentrequest.id in ongoing:
+                    print("hello")
+                    currenttrip=currentrequest.trip
+                    print("Current Trip ID: ",currenttrip.id)
+                    requestedrides.append(currenttrip.id)
+            print("LIST: ",requestedrides)
+
+
         elif action=="requestride":
             requestride(request)
         elif action=="cancelrequest":
             cancelrequest(request)
 
-    return render(request, "testrider.html",{"rides":rides,"requests":requests,"accepted":accepted})
+    return render(request, "testrider.html",{"rides":rides,"requests":requests,"accepted":accepted,"requestedrides":requestedrides})
