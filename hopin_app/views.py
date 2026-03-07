@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
+from django.db.models import Q
 
 import json
 from datetime import date,time,datetime,timedelta
@@ -217,7 +218,7 @@ def riderdetails(request):
 
     #collecting active trip details- for route optimization
     availabletrips=[]
-    activetrips=trip.objects.filter(status="ACTIVE",availableseats__gt=0)
+    activetrips=trip.objects.filter(status="ACTIVE")
     for trips in activetrips:
         availabletrips.append(trips)
 
@@ -242,14 +243,16 @@ def cancelrequest(request):
 
 #clean up expired rides
 def cleanup(request):
-    now=timezone.now()
-    expired=trip.objects.filter(status="AVAILABLE",ridedate=now.date())
 
-    for trips in expired:
-        ride_datetime = datetime.combine(trip.ridedate,trip.ridetime)
+    trips = trip.objects.filter(status="ACTIVE")
+    now = timezone.localtime()
 
-        if now > ride_datetime+timedelta(minutes=30):
-            trip.delete()
+    for t in trips:
+        ride_datetime = datetime.combine(t.ridedate, t.ridetime)
+        ride_datetime = timezone.make_aware(ride_datetime)
+
+        if ride_datetime < now:
+            t.delete()
 
     return 0
 
