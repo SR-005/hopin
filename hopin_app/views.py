@@ -217,7 +217,7 @@ def riderdetails(request):
 
     #collecting active trip details- for route optimization
     availabletrips=[]
-    activetrips=trip.objects.filter(status="ACTIVE")
+    activetrips=trip.objects.filter(status="ACTIVE",availableseats__gt=0)
     for trips in activetrips:
         availabletrips.append(trips)
 
@@ -261,6 +261,7 @@ def testriderfunction(request):
     accepted=None
     requestedrides=None
 
+    allrequest=riderequest.objects.filter(rider=request.user)
     requests=riderequest.objects.filter(rider=request.user, status="PENDING")
     accepted=riderequest.objects.filter(rider=request.user, status="ACCEPTED")
     
@@ -270,17 +271,14 @@ def testriderfunction(request):
         if action=="riderdetails":
             rides=riderdetails(request)
 
+            #building a list of ongoing requests
             requestedrides=[]
-            ongoing=list(requests.values_list("id", flat=True))
-            print(ongoing)
-            for currentrequest in requests:
-                print("Current Request ID: ",currentrequest.id)
+            ongoing=list(allrequest.values_list("id", flat=True))
+            for currentrequest in allrequest:
                 if currentrequest.id in ongoing:
-                    print("hello")
                     currenttrip=currentrequest.trip
-                    print("Current Trip ID: ",currenttrip.id)
                     requestedrides.append(currenttrip.id)
-            print("LIST: ",requestedrides)
+            print("Active Requsted Trip ID: ",requestedrides)
 
 
         elif action=="requestride":

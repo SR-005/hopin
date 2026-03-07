@@ -15,12 +15,13 @@
     <h1>Accepted Rides</h1>
     {% if accepted %}
         {% for request in accepted %}
-            <form method="POST" action="{% url 'testdriver' %}">
+            <form method="POST" action="{% url 'testrider' %}">
                 {% csrf_token %}
 
                 <p>{{ request.rider }}</p>
                 <input type="hidden" name="requestid" id="requestid" value="{{ request.id }}">
                 <button type="submit" name="action" value="viewride">See more</button>
+                <button type="submit" name="action" value="cancelrequest">Cancel</button>
             </form>
         {% endfor %}
     {% else %}
