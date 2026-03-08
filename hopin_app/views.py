@@ -189,14 +189,27 @@ def testdriverfunction(request):
     requests=None
     accepted=None
     lasttrip=None
+    startride=False
 
     #fetch trips of the current user
     try:
         lasttrip=trip.objects.get(usercredentials=request.user)
+        if lasttrip.status!="ONGOING":
+            
+            currenttime = timezone.localtime()
+            ridetime = datetime.combine(lasttrip.ridedate, lasttrip.ridetime)
+            ridetime = timezone.make_aware(ridetime)
+            starttime = ridetime - timedelta(minutes=30)
+            print("C: ",currenttime)
+            print("S: ",starttime)
+            if currenttime>=starttime:
+                print("It's time to Start")
+                startride=True
+
         requests=riderequest.objects.filter(trip=lasttrip,status="PENDING")
         accepted=riderequest.objects.filter(trip=lasttrip,status="ACCEPTED")
-    except:
-        pass
+    except Exception as e:
+        print(e)
 
     action=request.POST.get("action")
     if action=="tripdetails":
@@ -208,7 +221,7 @@ def testdriverfunction(request):
     elif action=="delete":
         deleteride(request)
 
-    return render(request, "testdriver.html",{"requests":requests,"accepted":accepted,"lasttrip": lasttrip})
+    return render(request, "testdriver.html",{"requests":requests,"accepted":accepted,"lasttrip": lasttrip,"startride":startride})
 
 
 #------------------------------------------------------RIDER PAGE FUNCTIONS------------------------------------------------------
