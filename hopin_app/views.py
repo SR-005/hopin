@@ -238,21 +238,27 @@ def requestride(request):
 
 #cancel an active ride request
 def cancelrequest(request):
-    currentrequest=riderequest.objects.get(id=request.POST.get("requestid"))
-    currentrequest.delete()
+    cancelrequest=riderequest.objects.get(id=request.POST.get("requestid"))
+    cancelride=cancelrequest.trip
+    print(cancelride)
+    if cancelrequest.status=="ACCEPTED":
+        print("Reducing Seats")
+        print(cancelride.availableseats)
+        cancelride.availableseats=cancelride.availableseats+1       #increase trip seats if ride is cancelled after acceptance
+        cancelride.save()
+    cancelrequest.delete()
 
 #clean up expired rides
 def cleanup(request):
+    unengagedtrips=trip.objects.filter(status="ACTIVE")
+    now=timezone.localtime()
 
-    trips = trip.objects.filter(status="ACTIVE")
-    now = timezone.localtime()
+    for trips in unengagedtrips:
+        ridedatetime=datetime.combine(trips.ridedate, trips.ridetime)
+        ridedatetime=timezone.make_aware(ridedatetime)
 
-    for t in trips:
-        ride_datetime = datetime.combine(t.ridedate, t.ridetime)
-        ride_datetime = timezone.make_aware(ride_datetime)
-
-        if ride_datetime < now:
-            t.delete()
+        if ridedatetime < now:
+            trips.delete()
 
     return 0
 

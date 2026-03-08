@@ -37,7 +37,7 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []  # no username required
+    REQUIRED_FIELDS = []        # no username required
 
     objects = UserManager() 
 
@@ -57,16 +57,16 @@ class trip(models.Model):
     id=models.AutoField(primary_key=True)
     usercredentials=models.ForeignKey(User, on_delete=models.CASCADE, related_name="driver")
     preferedlocation=models.CharField()                 #location suggession
-    latitude=models.FloatField()
-    longitude=models.FloatField()
+    latitude=models.FloatField(null=False, blank=False)
+    longitude=models.FloatField(null=False, blank=False)
     routegeometry=models.JSONField(null=True, blank=True)                         #route path (lat and long)
-    prefereddirection=models.CharField()                #direction suggession
-    ridedate=models.DateField(null=True, blank=True)
-    ridetime=models.TimeField(null=True, blank=True)
-    vehicletype=models.CharField()                      #car or bike
-    availableseats=models.IntegerField(null=True, blank=True)
-    vehiclenumber=models.CharField(max_length=12)       #KL 41 **** ****
-    vehiclemodel=models.CharField()                     #car or bike model name
+    prefereddirection=models.CharField(null=False, blank=False)                #direction suggession
+    ridedate=models.DateField(null=False, blank=False)
+    ridetime=models.TimeField(null=False, blank=False)
+    vehicletype=models.CharField(null=False, blank=False)                      #car or bike
+    availableseats=models.IntegerField(null=False, blank=False)
+    vehiclenumber=models.CharField(max_length=12,null=False, blank=False)       #KL 41 **** ****
+    vehiclemodel=models.CharField(null=False, blank=False)                     #car or bike model name
     status=models.CharField(default="ACTIVE")
     
     def __str__(self):
