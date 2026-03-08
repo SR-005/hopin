@@ -55,7 +55,7 @@ class userdetail(models.Model):
     
 class trip(models.Model):
     id=models.AutoField(primary_key=True)
-    usercredentials=models.ForeignKey(User, on_delete=models.CASCADE, related_name="driver")
+    usercredentials=models.ForeignKey(User, on_delete=models.CASCADE, related_name="driver",unique=True)
     preferedlocation=models.CharField()                 #location suggession
     latitude=models.FloatField(null=False, blank=False)
     longitude=models.FloatField(null=False, blank=False)

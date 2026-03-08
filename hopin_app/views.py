@@ -111,7 +111,10 @@ def tripdatetimevalidation(request):
 
     #time validation: TO college (before 8:00AM)
     if direction=="to":
-        if ridetime!=time(8,0):
+        if ridetime<time(7,00):
+            messages.error(request, "Rides can only be scheduled from 7:00AM")
+            return redirect("testdriver")
+        elif ridetime>time(8,00):
             messages.error(request, "Rides must arrive at college at 8:00 AM")
             return redirect("testdriver")
         
@@ -175,25 +178,25 @@ def rejectride(request):
     currentrequest.status="REJECTED"
     currentrequest.save()
 
+#delete a posted ride
+def deleteride(request):
+    print("DELETEING RIDE")
+    deleteride=trip.objects.get(id=request.POST.get("tripid"))
+    deleteride.delete()
+
 #driver page routing function
 def testdriverfunction(request):
     requests=None
     accepted=None
-    
+    lasttrip=None
+
     #fetch trips of the current user
-    trips=trip.objects.filter(usercredentials=request.user)
     try:
-        requests=riderequest.objects.filter(trip=trips[0],status="PENDING")
-        accepted=riderequest.objects.filter(trip=trips[0],status="ACCEPTED")
+        lasttrip=trip.objects.get(usercredentials=request.user)
+        requests=riderequest.objects.filter(trip=lasttrip,status="PENDING")
+        accepted=riderequest.objects.filter(trip=lasttrip,status="ACCEPTED")
     except:
         pass
-
-    # retrieve last vehicle information
-    index=len(trips)-1
-    if index>0:
-        lasttrip=trips[index]
-    else:
-        lasttrip=None
 
     action=request.POST.get("action")
     if action=="tripdetails":
@@ -202,6 +205,8 @@ def testdriverfunction(request):
         acceptride(request)
     elif action=="reject":
         rejectride(request)
+    elif action=="delete":
+        deleteride(request)
 
     return render(request, "testdriver.html",{"requests":requests,"accepted":accepted,"lasttrip": lasttrip})
 
@@ -240,9 +245,7 @@ def requestride(request):
 def cancelrequest(request):
     cancelrequest=riderequest.objects.get(id=request.POST.get("requestid"))
     cancelride=cancelrequest.trip
-    print(cancelride)
     if cancelrequest.status=="ACCEPTED":
-        print("Reducing Seats")
         print(cancelride.availableseats)
         cancelride.availableseats=cancelride.availableseats+1       #increase trip seats if ride is cancelled after acceptance
         cancelride.save()
