@@ -1,3 +1,7 @@
+html {
+    scroll-behavior: smooth;
+}
+
 @font-face {
     font-family: 'Black Mango';
     src:  url('../fonts/Black_Mango _SemiBold.ttf') format('truetype');
