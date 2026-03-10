@@ -63,6 +63,8 @@ class trip(models.Model):
     prefereddirection=models.CharField(null=False, blank=False)                #direction suggession
     ridedate=models.DateField(null=False, blank=False)
     ridetime=models.TimeField(null=False, blank=False)
+    currentlatitude=models.FloatField(null=True, blank=True)            #used for live location tracking
+    currentlongitude=models.FloatField(null=True, blank=True)           #used for live location tracking
     vehicletype=models.CharField(null=False, blank=False)                      #car or bike
     availableseats=models.IntegerField(null=False, blank=False)
     vehiclenumber=models.CharField(max_length=12,null=False, blank=False)       #KL 41 **** ****

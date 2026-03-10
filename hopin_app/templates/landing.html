@@ -22,56 +22,58 @@
         {% endfor %}
     {% endif %}
 
-    <div class="bg-curve"></div>
-    <nav class="w-full flex items-center px-6 lg:px-12 py-6 fixed top-0 left-0 z-50 -ml-4">
-        <div class="flex items-center w-1/4">
-            <img src="{% static 'hopin_app/images/logo.png' %}" class="h-14" alt="Hop In Logo">
-        </div>
+    <section id="home">
+        <div class="bg-curve"></div>
+        <nav class="w-full flex items-center px-6 lg:px-12 py-6 fixed top-0 left-0 z-50 -ml-4">
+            <div class="flex items-center w-1/4">
+                <img src="{% static 'hopin_app/images/logo.png' %}" class="h-14" alt="Hop In Logo">
+            </div>
 
-        <ul class="hidden md:flex space-x-16 font-['Playfair_Display'] tracking-widest font-extrabold text-[18px] absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-            <li><a href="#home" class="nav-item text-[#EAE9DF] opacity-100 nav-link-active hover:opacity-100 transition-opacity">Home</a></li>
-            <li><a href="#about" class="nav-item text-[#EAE9DF] opacity-50 hover:opacity-100 transition-opacity">About</a></li>
-            <li><a href="#contact" class="nav-item text-[#EAE9DF] opacity-50 hover:opacity-100 transition-opacity">Contact</a></li>
-        </ul>
-        
-        <div class="flex justify-end items-center gap-6 w-1/4 ml-auto" id="auth-container">            
-        </div>
-
-    </nav>
-
-    <div class="relative z-10 w-full max-w-[1400px] mx-auto px-6 lg:px-16 flex flex-col min-h-screen pt-16">
-        <main class="flex-1 flex flex-col lg:flex-row items-center justify-between pb-12 lg:pb-0 relative z-10">
+            <ul class="hidden md:flex space-x-16 font-['Playfair_Display'] tracking-widest font-extrabold text-[18px] absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+                <li><a href="#home" class="nav-item text-[#EAE9DF] opacity-100 nav-link-active hover:opacity-100 transition-opacity">Home</a></li>
+                <li><a href="#about" class="nav-item text-[#EAE9DF] opacity-50 hover:opacity-100 transition-opacity">About</a></li>
+                <li><a href="#contact" class="nav-item text-[#EAE9DF] opacity-50 hover:opacity-100 transition-opacity">Contact</a></li>
+            </ul>
             
-            <div class="w-full lg:w-[55%] flex flex-col gap-6 text-[#EAE9DF] mt-10 lg:mt-0">
-                <div class="flex flex-col">
-                    <h2 class="font-['Black_Mango'] text-2xl lg:text-3xl tracking-wide opacity-90 mb-4">commute, simplified</h2>
-                    <h1 class="title-hop-in text-[70px] md:text-[100px] lg:text-[130px] leading-none">HOP IN</h1>
-                </div>
-
-                <div class="flex items-center gap-8 mt-10">
-                    <a href="{% url 'testdriver' %}">
-                        <button  id="btn-create" class="px-10 py-3 rounded-[14px] border-[1.5px] border-white text-white font-['Black_Mango'] font-semibold text-xl hover:bg-white hover:text-[#191265] transition-all duration-300 shadow-sm focus:ring-4 focus:ring-blue-300">
-                            Create
-                        </button>
-                    </a>
-                    <a href="{% url 'testrider' %}">
-                        <button onclick="window.location.href='book.html'" id="btn-book" class="px-10 py-3 rounded-[14px] border-[1.5px] border-white text-white font-['Black_Mango'] font-semibold text-xl hover:bg-white hover:text-[#191265] transition-all duration-300 shadow-sm focus:ring-4 focus:ring-blue-300">
-                            Book
-                        </button>
-                    </a>
-                </div>
+            <div class="flex justify-end items-center gap-6 w-1/4 ml-auto" id="auth-container">            
             </div>
 
-            <div class="w-full lg:w-[80%] flex justify-center items-center relative z-20 mt-16 lg:mt-0">
-                <img id="hero-illustration" 
-                     src="{% static 'hopin_app/images/landing.png' %}"
-                     alt="Hero Illustration" 
-                     class="max-w-none object-contain drop-shadow-2xl relative" 
-                     style="width: 75%; height: auto; transform: translateX(15%) translateY(-5%);" />
-            </div>
+        </nav>
 
-        </main>
-    </div>
+        <div class="relative z-10 w-full max-w-[1400px] mx-auto px-6 lg:px-16 flex flex-col min-h-screen pt-16">
+            <main class="flex-1 flex flex-col lg:flex-row items-center justify-between pb-12 lg:pb-0 relative z-10">
+                
+                <div class="w-full lg:w-[55%] flex flex-col gap-6 text-[#EAE9DF] mt-10 lg:mt-0">
+                    <div class="flex flex-col">
+                        <h2 class="font-['Black_Mango'] text-2xl lg:text-3xl tracking-wide opacity-90 mb-4">commute, simplified</h2>
+                        <h1 class="title-hop-in text-[70px] md:text-[100px] lg:text-[130px] leading-none">HOP IN</h1>
+                    </div>
+
+                    <div class="flex items-center gap-8 mt-10">
+                        <a href="{% url 'testdriver' %}">
+                            <button  id="btn-create" class="px-10 py-3 rounded-[14px] border-[1.5px] border-white text-white font-['Black_Mango'] font-semibold text-xl hover:bg-white hover:text-[#191265] transition-all duration-300 shadow-sm focus:ring-4 focus:ring-blue-300">
+                                Create
+                            </button>
+                        </a>
+                        <a href="{% url 'testrider' %}">
+                            <button onclick="window.location.href='book.html'" id="btn-book" class="px-10 py-3 rounded-[14px] border-[1.5px] border-white text-white font-['Black_Mango'] font-semibold text-xl hover:bg-white hover:text-[#191265] transition-all duration-300 shadow-sm focus:ring-4 focus:ring-blue-300">
+                                Book
+                            </button>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="w-full lg:w-[80%] flex justify-center items-center relative z-20 mt-16 lg:mt-0">
+                    <img id="hero-illustration" 
+                        src="{% static 'hopin_app/images/landing.png' %}"
+                        alt="Hero Illustration" 
+                        class="max-w-none object-contain drop-shadow-2xl relative" 
+                        style="width: 75%; height: auto; transform: translateX(15%) translateY(-5%);" />
+                </div>
+
+            </main>
+        </div>
+    </section>
 
     <section id="about" class="min-h-screen pt-64 px-6 lg:px-16 text-[#EAE9DF] relative z-10">
         <!-- This div acts as a neat box for your content -->

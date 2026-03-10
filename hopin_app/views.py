@@ -312,3 +312,12 @@ def testriderfunction(request):
             cancelrequest(request)
 
     return render(request, "testrider.html",{"rides":rides,"requests":requests,"accepted":accepted,"requestedrides":requestedrides})
+
+
+
+
+
+
+
+def testlocationfunction(request):
+    return render(request, "testlocation.html")
