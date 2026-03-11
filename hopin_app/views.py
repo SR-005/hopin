@@ -27,6 +27,7 @@ def landingfunction(request):
     try:
         print("Current User Email: ", request.user.email)
         if request.user.email!=None:
+            user=request.user
             status="true"
         username=User.objects.get(email=request.user.email)
         username=str(username.first_name).upper()
@@ -219,9 +220,24 @@ def deleteride(request):
     deleteride=trip.objects.get(id=request.POST.get("tripid"))
     deleteride.delete()
 
+#to render tracking page
 def testtrackingfunction(request):
-    return render(request, "testtracking.html")
+    currentrideid=None
+    currentrequest=riderequest.objects.get(rider=request.user, status="ACCEPTED")
+    currentrideid=currentrequest.trip.id
 
+    return render(request, "testtracking.html",{"rideid":currentrideid})
+
+#to set location to show rider where currently driver is
+def fetchtracking(request,rideid):
+    currentride=trip.objects.get(id=rideid)
+    print("Tracked Latitiude: ",currentride.currentlatitude)
+    print("Tracked Longitude: ",currentride.currentlongitude)
+    return JsonResponse({
+        "lat": currentride.currentlatitude,
+        "lng": currentride.currentlongitude
+    })
+    
 #driver page routing function
 def testdriverfunction(request):
     cleanup(request)       #calling cleanup function to delete expired rides
