@@ -65,6 +65,7 @@ class trip(models.Model):
     ridetime=models.TimeField(null=False, blank=False)
     currentlatitude=models.FloatField(null=True, blank=True)            #used for live location tracking
     currentlongitude=models.FloatField(null=True, blank=True)           #used for live location tracking
+    lastlocationupdate=models.DateTimeField(null=True, blank=True)
     vehicletype=models.CharField(null=False, blank=False)                      #car or bike
     availableseats=models.IntegerField(null=False, blank=False)
     vehiclenumber=models.CharField(max_length=12,null=False, blank=False)       #KL 41 **** ****

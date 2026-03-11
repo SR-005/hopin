@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q
+from django.http import JsonResponse
 
 import json
 from datetime import date,time,datetime,timedelta
@@ -92,6 +93,40 @@ def signupfunction(request):
                 messages.error(request, errors[1][0])
     return render(request, "signup.html")
 
+
+#---------------------------------------------------------COMMON FUNCTIONS---------------------------------------------------------
+
+#clean up expired rides
+def cleanup(request):
+    unengagedtrips=trip.objects.filter(status="ACTIVE")
+    now=timezone.localtime()
+
+    for trips in unengagedtrips:
+        ridedatetime=datetime.combine(trips.ridedate, trips.ridetime)
+        ridedatetime=timezone.make_aware(ridedatetime)
+
+        if ridedatetime < now:
+            trips.delete()
+
+    return 0
+
+#live location fetching from driver
+def testlocationfunction(request):
+    if request.method=="POST":
+        print("HELLO")
+        data=json.loads(request.body)
+        latitude=data["latitude"]
+        longitude=data["longitude"]
+
+        print("Current Latitude: ",latitude)
+        print("Current Longitude: ",longitude)
+
+        currentride=trip.objects.get(usercredentials=request.user, status="ACTIVE")
+        currentride.currentlatitude=latitude
+        currentride.currentlongitude=longitude
+        currentride.lastlocationupdate=timezone.now()      #fetches current time
+        currentride.save()
+    return render(request, "testlocation.html")
 
 #------------------------------------------------------DRIVER PAGE FUNCTIONS------------------------------------------------------
 #Trip time validation
@@ -186,15 +221,16 @@ def deleteride(request):
 
 #driver page routing function
 def testdriverfunction(request):
+    cleanup(request)       #calling cleanup function to delete expired rides
     requests=None
     accepted=None
     lasttrip=None
-    startride=False
+    startride=True
 
     #fetch trips of the current user
     try:
         lasttrip=trip.objects.get(usercredentials=request.user)
-        if lasttrip.status!="ONGOING":
+        '''if lasttrip.status!="ONGOING":
             
             currenttime = timezone.localtime()
             ridetime = datetime.combine(lasttrip.ridedate, lasttrip.ridetime)
@@ -204,7 +240,7 @@ def testdriverfunction(request):
             print("S: ",starttime)
             if currenttime>=starttime:
                 print("It's time to Start")
-                startride=True
+                startride=True'''
 
         requests=riderequest.objects.filter(trip=lasttrip,status="PENDING")
         accepted=riderequest.objects.filter(trip=lasttrip,status="ACCEPTED")
@@ -264,20 +300,6 @@ def cancelrequest(request):
         cancelride.save()
     cancelrequest.delete()
 
-#clean up expired rides
-def cleanup(request):
-    unengagedtrips=trip.objects.filter(status="ACTIVE")
-    now=timezone.localtime()
-
-    for trips in unengagedtrips:
-        ridedatetime=datetime.combine(trips.ridedate, trips.ridetime)
-        ridedatetime=timezone.make_aware(ridedatetime)
-
-        if ridedatetime < now:
-            trips.delete()
-
-    return 0
-
 #rider page routing function
 def testriderfunction(request):
     cleanup(request)       #calling cleanup function to delete expired rides
@@ -319,5 +341,3 @@ def testriderfunction(request):
 
 
 
-def testlocationfunction(request):
-    return render(request, "testlocation.html")
