@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,18 +9,20 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="{% static 'hopin_app/css/landing.css' %}">
 
 </head>
+
 <body class="min-h-screen overflow-x-hidden relative bg-[#191265]">
     {# default message display snippet- as web popup #}
     {% if messages %}
-        {% for message in messages %}
-            <script>
-            alert("{{ message|escapejs }}");
-            </script>
-        {% endfor %}
+    {% for message in messages %}
+    <script>
+        alert("{{ message|escapejs }}");
+    </script>
+    {% endfor %}
     {% endif %}
 
     <div class="bg-curve"></div>
@@ -28,34 +31,39 @@
             <img src="{% static 'hopin_app/images/logo.png' %}" class="h-14" alt="Hop In Logo">
         </div>
 
-        <ul class="hidden md:flex space-x-16 font-['Playfair_Display'] tracking-widest font-extrabold text-[18px] absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-            <li><a href="index.html" class="text-[#EAE9DF] hover:opacity-70 transition-opacity nav-link-active">Home</a></li>
+        <ul
+            class="hidden md:flex space-x-16 font-['Playfair_Display'] tracking-widest font-extrabold text-[18px] absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+            <li><a href="index.html" class="text-[#EAE9DF] hover:opacity-70 transition-opacity nav-link-active">Home</a>
+            </li>
             <li><a href="#" class="text-[#EAE9DF] hover:opacity-70 transition-opacity">History</a></li>
             <li><a href="#" class="text-[#EAE9DF] hover:opacity-70 transition-opacity">Contact</a></li>
         </ul>
-        
-        <div class="flex justify-end items-center gap-6 w-1/4 ml-auto" id="auth-container">            
+
+        <div class="flex justify-end items-center gap-6 w-1/4 ml-auto" id="auth-container">
         </div>
 
     </nav>
 
     <div class="relative z-10 w-full max-w-[1400px] mx-auto px-6 lg:px-16 flex flex-col min-h-screen pt-16">
         <main class="flex-1 flex flex-col lg:flex-row items-center justify-between pb-12 lg:pb-0 relative z-10">
-            
+
             <div class="w-full lg:w-[55%] flex flex-col gap-6 text-[#EAE9DF] mt-10 lg:mt-0">
                 <div class="flex flex-col">
-                    <h2 class="font-['Black_Mango'] text-2xl lg:text-3xl tracking-wide opacity-90 mb-4">commute, simplified</h2>
+                    <h2 class="font-['Black_Mango'] text-2xl lg:text-3xl tracking-wide opacity-90 mb-4">commute,
+                        simplified</h2>
                     <h1 class="title-hop-in text-[70px] md:text-[100px] lg:text-[130px] leading-none">HOP IN</h1>
                 </div>
 
                 <div class="flex items-center gap-8 mt-10">
                     <a href="{% url 'testdriver' %}">
-                        <button  id="btn-create" class="px-10 py-3 rounded-[14px] border-[1.5px] border-white text-white font-['Black_Mango'] font-semibold text-xl hover:bg-white hover:text-[#191265] transition-all duration-300 shadow-sm focus:ring-4 focus:ring-blue-300">
+                        <button id="btn-create"
+                            class="px-10 py-3 rounded-[14px] border-[1.5px] border-white text-white font-['Black_Mango'] font-semibold text-xl hover:bg-white hover:text-[#191265] transition-all duration-300 shadow-sm focus:ring-4 focus:ring-blue-300">
                             Create
                         </button>
                     </a>
                     <a href="{% url 'testrider' %}">
-                        <button onclick="window.location.href='book.html'" id="btn-book" class="px-10 py-3 rounded-[14px] border-[1.5px] border-white text-white font-['Black_Mango'] font-semibold text-xl hover:bg-white hover:text-[#191265] transition-all duration-300 shadow-sm focus:ring-4 focus:ring-blue-300">
+                        <button onclick="window.location.href='book.html'" id="btn-book"
+                            class="px-10 py-3 rounded-[14px] border-[1.5px] border-white text-white font-['Black_Mango'] font-semibold text-xl hover:bg-white hover:text-[#191265] transition-all duration-300 shadow-sm focus:ring-4 focus:ring-blue-300">
                             Book
                         </button>
                     </a>
@@ -63,11 +71,9 @@
             </div>
 
             <div class="w-full lg:w-[80%] flex justify-center items-center relative z-20 mt-16 lg:mt-0">
-                <img id="hero-illustration" 
-                     src="{% static 'hopin_app/images/landing.png' %}"
-                     alt="Hero Illustration" 
-                     class="max-w-none object-contain drop-shadow-2xl relative" 
-                     style="width: 75%; height: auto; transform: translateX(15%) translateY(-5%);" />
+                <img id="hero-illustration" src="{% static 'hopin_app/images/landing.png' %}" alt="Hero Illustration"
+                    class="max-w-none object-contain drop-shadow-2xl relative"
+                    style="width: 75%; height: auto; transform: translateX(15%) translateY(-5%);" />
             </div>
 
         </main>
@@ -79,26 +85,58 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
 
-            const isLoggedIn = {{ status|lower }};; 
-
+            const isLoggedIn = "{{ status|lower }}" === "true";
             const authContainer = document.getElementById('auth-container');
 
             if (isLoggedIn) {
                 authContainer.innerHTML = `
-                    <span class="text-[#191265] font-['Playfair_Display'] font-extrabold text-[18px] tracking-wide hidden sm:block">{{ firstname }}</span>
-                    <div class="relative">
-                        <div class="w-12 h-12 rounded-full border-2 border-white shadow-md bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden">
-                            <svg class="w-8 h-8" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                                <path fill-rule="evenodd" d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z" clip-rule="evenodd"/>
-                            </svg>
-                        </div>
-                    </div>
-                    <!-- Outlined Logout Button that is RED by default and highlights solid RED on hover -->
-                    <a href="{% url 'logout' %}"
-                        <button class="px-5 py-2 ml-2 rounded-[14px] border-[1.5px] border-red-500 text-red-500 bg-transparent font-['Black_Mango'] font-semibold text-sm hover:bg-red-500 hover:text-white transition-all duration-300 shadow-sm focus:ring-4 focus:ring-red-300">
-                            Logout
-                        </button>
-                    </a>
+                  <div class="flex items-center gap-4">
+
+    <span class="text-[#191265] font-['Playfair_Display'] font-extrabold text-[18px] tracking-wide hidden sm:block">
+       {{ firstname }}
+    </span>
+
+    <!-- Profile Button -->
+    <button id="user-menu-button" data-dropdown-toggle="user-dropdown"
+        class="flex text-sm rounded-full focus:ring-4 focus:ring-gray-300">
+
+        <div class="w-12 h-12 rounded-full border-2 border-white shadow-md bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden">
+            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                <path fill-rule="evenodd"
+                    d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z"
+                    clip-rule="evenodd" />
+            </svg>
+        </div>
+
+    </button>
+
+    <!-- Dropdown -->
+    <div id="user-dropdown"
+        class="hidden z-50 my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow w-44">
+
+        <div class="px-4 py-3">
+            <span class="block font-['Playfair_Display'] font-extrabold text-[#191265]">{{ user.email }}</span>
+        </div>
+
+        <ul class="py-2 text-sm text-gray-700">
+
+            <li>
+                <a href="#" class="block px-4 py-2 hover:bg-gray-200">
+                    Profile
+                </a>
+            </li>
+
+           
+            <li>
+                <a href="{% url 'logout' %}" class="block px-4 py-2 hover:bg-red-100 text-red-600">
+                    Logout
+                </a>
+            </li>
+
+        </ul>
+    </div>
+
+</div>
                 `;
             } else {
                 authContainer.innerHTML = `
@@ -109,4 +147,5 @@
         });
     </script>
 </body>
+
 </html>
