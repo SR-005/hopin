@@ -38,7 +38,7 @@
                         class="nav-item text-[#EAE9DF] opacity-100 nav-link-active hover:opacity-100 transition-opacity">Home</a>
                 </li>
                 <li><a href="#about"
-                        class="nav-item text-[#EAE9DF] opacity-50 hover:opacity-100 transition-opacity">About</a></li>
+                        class="nav-item nav-scroll text-[#EAE9DF] opacity-50 hover:opacity-100 transition-opacity">About</a></li>
                 <li><a href="#contact"
                         class="nav-item text-[#EAE9DF] opacity-50 hover:opacity-100 transition-opacity">Contact</a></li>
             </ul>
@@ -113,19 +113,33 @@
 
         document.addEventListener("DOMContentLoaded", () => {
 
-            const sections = document.querySelectorAll("section[id], div[id]");
+            const sections = document.querySelectorAll("section[id]");
             const navLinks = document.querySelectorAll(".nav-item");
 
             function updateActiveLink() {
                 let currentSection = "";
 
-                sections.forEach(section => {
-                    const sectionTop = section.offsetTop - 200;
-                    const sectionHeight = section.offsetHeight;
+                const scrollMiddle = window.scrollY + window.innerHeight / 2;
 
-                    if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+                sections.forEach(section => {
+
+                    let sectionTop = section.offsetTop;
+                    let sectionBottom = sectionTop + section.offsetHeight;
+
+                    // Extend HOME so there is no gap
+                    if (section.id === "home") {
+                        sectionBottom += 650;
+                    }
+
+                    // Delay ABOUT activation
+                    if (section.id === "about") {
+                        sectionTop += 620;
+                    }
+
+                    if (scrollMiddle >= sectionTop && scrollMiddle <= sectionBottom) {
                         currentSection = section.id;
                     }
+
                 });
 
                 navLinks.forEach(link => {
@@ -137,11 +151,72 @@
                         link.classList.add("nav-link-active", "opacity-100");
                     }
                 });
+
+                const loginBtn = document.getElementById("login-btn");
+                const signupBtn = document.getElementById("signup-btn");
+
+                if (loginBtn && signupBtn) {
+
+                    // Reset button base style
+                    signupBtn.className =
+                    "px-8 py-2.5 rounded-[14px] font-['Playfair_Display'] font-extrabold tracking-wide transition-all duration-300 shadow-sm text-[18px] border";
+
+                    if (currentSection === "home") {
+
+                        loginBtn.style.color = "#191265";
+
+                        signupBtn.classList.add(
+                            "bg-[#191265]","text-white","border-[#191265]",
+                            "hover:bg-white","hover:text-[#191265]","hover:border-[#191265]"
+                        );
+                    }
+
+                    if (currentSection === "about" || currentSection === "contact") {
+
+                        loginBtn.style.color = "#EAE9DF";
+
+                        signupBtn.classList.add(
+                            "bg-white","text-[#191265]","border-white",
+                            "hover:bg-[#191265]","hover:text-white","hover:border-white"
+                        );
+                    }
+
+                }
             }
 
             window.addEventListener("scroll", updateActiveLink);
+            updateActiveLink();
+
+            document.querySelectorAll(".nav-item").forEach(link => {
+
+                link.addEventListener("click", function(e) {
+
+                    e.preventDefault();
+
+                    const targetId = this.getAttribute("href").substring(1);
+                    const targetSection = document.getElementById(targetId);
+
+                    let offset = 0;   // default offset for navbar
+
+                    // Special adjustment for About if needed
+                    if (targetId === "about") {
+                        offset = 250;
+                    }
+
+                    const position = targetSection.offsetTop + offset ;
+
+                    window.scrollTo({
+                        top: position,
+                        behavior: "smooth"
+                    });
+
+                });
+
+            });
 
         });
+
+        
 
         document.addEventListener('DOMContentLoaded', () => {
 
@@ -200,8 +275,12 @@
                 `;
             } else {
                 authContainer.innerHTML = `
-                    <a href="{% url 'login' %}" class="text-[#191265] font-['Playfair_Display'] font-extrabold text-[18px] hover:opacity-75 transition-opacity hidden sm:block pr-2">Login</a>
-                    <a href="{% url 'signup' %}" class="px-8 py-2.5 rounded-[14px] bg-[#191265] text-white font-['Playfair_Display'] font-extrabold tracking-wide transition-all duration-300 shadow-sm text-[18px] hover:bg-opacity-90">Sign up</a>
+                    <a id="login-btn" href="{% url 'login' %}" class="text-[#191265] font-['Playfair_Display'] font-extrabold text-[18px] hover:opacity-75 transition-opacity hidden sm:block pr-2">Login</a>
+
+                    <a id="signup-btn" href="{% url 'signup' %}" 
+                    class="px-8 py-2.5 rounded-[14px] bg-[#191265] text-white font-['Playfair_Display'] font-extrabold tracking-wide transition-all duration-300 shadow-sm text-[18px] hover:bg-[#191265] hover:text-white">
+                    Sign up
+                    </a>
                 `;
             }
         });
