@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
+from django.db.models import Q
+from django.http import JsonResponse
 
 import json
 from datetime import date,time,datetime,timedelta
@@ -92,6 +94,40 @@ def signupfunction(request):
     return render(request, "signup.html")
 
 
+#---------------------------------------------------------COMMON FUNCTIONS---------------------------------------------------------
+
+#clean up expired rides
+def cleanup(request):
+    unengagedtrips=trip.objects.filter(status="ACTIVE")
+    now=timezone.localtime()
+
+    for trips in unengagedtrips:
+        ridedatetime=datetime.combine(trips.ridedate, trips.ridetime)
+        ridedatetime=timezone.make_aware(ridedatetime)
+
+        if ridedatetime < now:
+            trips.delete()
+
+    return 0
+
+#live location fetching from driver
+def testlocationfunction(request):
+    if request.method=="POST":
+        print("HELLO")
+        data=json.loads(request.body)
+        latitude=data["latitude"]
+        longitude=data["longitude"]
+
+        print("Current Latitude: ",latitude)
+        print("Current Longitude: ",longitude)
+
+        currentride=trip.objects.get(usercredentials=request.user, status="ACTIVE")
+        currentride.currentlatitude=latitude
+        currentride.currentlongitude=longitude
+        currentride.lastlocationupdate=timezone.now()      #fetches current time
+        currentride.save()
+    return render(request, "testlocation.html")
+
 #------------------------------------------------------DRIVER PAGE FUNCTIONS------------------------------------------------------
 #Trip time validation
 def tripdatetimevalidation(request):
@@ -110,7 +146,10 @@ def tripdatetimevalidation(request):
 
     #time validation: TO college (before 8:00AM)
     if direction=="to":
-        if ridetime!=time(8,0):
+        if ridetime<time(7,00):
+            messages.error(request, "Rides can only be scheduled from 7:00AM")
+            return redirect("testdriver")
+        elif ridetime>time(8,00):
             messages.error(request, "Rides must arrive at college at 8:00 AM")
             return redirect("testdriver")
         
@@ -174,25 +213,42 @@ def rejectride(request):
     currentrequest.status="REJECTED"
     currentrequest.save()
 
+#delete a posted ride
+def deleteride(request):
+    print("DELETEING RIDE")
+    deleteride=trip.objects.get(id=request.POST.get("tripid"))
+    deleteride.delete()
+
+def testtrackingfunction(request):
+    return render(request, "testtracking.html")
+
 #driver page routing function
 def testdriverfunction(request):
+    cleanup(request)       #calling cleanup function to delete expired rides
     requests=None
     accepted=None
-    
-    #fetch trips of the current user
-    trips=trip.objects.filter(usercredentials=request.user)
-    try:
-        requests=riderequest.objects.filter(trip=trips[0],status="PENDING")
-        accepted=riderequest.objects.filter(trip=trips[0],status="ACCEPTED")
-    except:
-        pass
+    lasttrip=None
+    startride=True
 
-    # retrieve last vehicle information
-    index=len(trips)-1
-    if index>0:
-        lasttrip=trips[index]
-    else:
-        lasttrip=None
+    #fetch trips of the current user
+    try:
+        lasttrip=trip.objects.get(usercredentials=request.user)
+        '''if lasttrip.status!="ONGOING":
+            
+            currenttime = timezone.localtime()
+            ridetime = datetime.combine(lasttrip.ridedate, lasttrip.ridetime)
+            ridetime = timezone.make_aware(ridetime)
+            starttime = ridetime - timedelta(minutes=30)
+            print("C: ",currenttime)
+            print("S: ",starttime)
+            if currenttime>=starttime:
+                print("It's time to Start")
+                startride=True'''
+
+        requests=riderequest.objects.filter(trip=lasttrip,status="PENDING")
+        accepted=riderequest.objects.filter(trip=lasttrip,status="ACCEPTED")
+    except Exception as e:
+        print(e)
 
     action=request.POST.get("action")
     if action=="tripdetails":
@@ -201,8 +257,10 @@ def testdriverfunction(request):
         acceptride(request)
     elif action=="reject":
         rejectride(request)
+    elif action=="delete":
+        deleteride(request)
 
-    return render(request, "testdriver.html",{"requests":requests,"accepted":accepted,"lasttrip": lasttrip})
+    return render(request, "testdriver.html",{"requests":requests,"accepted":accepted,"lasttrip": lasttrip,"startride":startride})
 
 
 #------------------------------------------------------RIDER PAGE FUNCTIONS------------------------------------------------------
@@ -237,21 +295,13 @@ def requestride(request):
 
 #cancel an active ride request
 def cancelrequest(request):
-    currentrequest=riderequest.objects.get(id=request.POST.get("requestid"))
-    currentrequest.delete()
-
-#clean up expired rides
-def cleanup(request):
-    now=timezone.now()
-    expired=trip.objects.filter(status="AVAILABLE",ridedate=now.date())
-
-    for trips in expired:
-        ride_datetime = datetime.combine(trip.ridedate,trip.ridetime)
-
-        if now > ride_datetime+timedelta(minutes=30):
-            trip.delete()
-
-    return 0
+    cancelrequest=riderequest.objects.get(id=request.POST.get("requestid"))
+    cancelride=cancelrequest.trip
+    if cancelrequest.status=="ACCEPTED":
+        print(cancelride.availableseats)
+        cancelride.availableseats=cancelride.availableseats+1       #increase trip seats if ride is cancelled after acceptance
+        cancelride.save()
+    cancelrequest.delete()
 
 #rider page routing function
 def testriderfunction(request):
@@ -259,7 +309,9 @@ def testriderfunction(request):
     rides=None
     requests=None
     accepted=None
+    requestedrides=None
 
+    allrequest=riderequest.objects.filter(rider=request.user)
     requests=riderequest.objects.filter(rider=request.user, status="PENDING")
     accepted=riderequest.objects.filter(rider=request.user, status="ACCEPTED")
     
@@ -268,9 +320,27 @@ def testriderfunction(request):
 
         if action=="riderdetails":
             rides=riderdetails(request)
+
+            #building a list of ongoing requests
+            requestedrides=[]
+            ongoing=list(allrequest.values_list("id", flat=True))
+            for currentrequest in allrequest:
+                if currentrequest.id in ongoing:
+                    currenttrip=currentrequest.trip
+                    requestedrides.append(currenttrip.id)
+            print("Active Requsted Trip ID: ",requestedrides)
+
+
         elif action=="requestride":
             requestride(request)
         elif action=="cancelrequest":
             cancelrequest(request)
 
-    return render(request, "testrider.html",{"rides":rides,"requests":requests,"accepted":accepted})
+    return render(request, "testrider.html",{"rides":rides,"requests":requests,"accepted":accepted,"requestedrides":requestedrides})
+
+
+
+
+
+
+

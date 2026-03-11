@@ -29,7 +29,15 @@
 
                 <p>{{ request.rider }}</p>
                 <input type="hidden" name="requestid" id="requestid" value="{{ request.id }}">
-                <button type="submit" name="action" value="startride">Start Ride</button>
+                {% if startride %}
+                    <a href="{% url 'testlocation' %}"
+                        <button type="submit" name="action" value="startride">Start Ride</button>
+                    </a>
+                {% else %}
+                    <a href="{% url 'testrider' %}"
+                        <button type="submit" name="action" value="startride" disabled>Start Ride</button>
+                    </a>
+                {% endif %}
             </form>
         {% endfor %}
     {% else %}
@@ -105,6 +113,24 @@
       </form>
     </div>
 
+    <h1>Active Rides</h1>
+    {% if lasttrip %}
+        <form method="POST" action="{% url 'testdriver' %}">
+          {% csrf_token %}
+
+          <input type="hidden" name="tripid" id="tripid" value="{{ lasttrip.id }}">
+          <p>{{ lasttrip.preferedlocation }}</p>
+          <p>{{ lasttrip.prefereddirection }} College </p>
+          <p>Date: {{ lasttrip.ridedate }}</p>
+          <p>Time: {{ lasttrip.ridetime }}</p>
+          <p>Bike/Car: {{ lasttrip.vehicletype }}</p>
+          <p>Model: {{ lasttrip.vehiclename }}</p>
+          <button type="submit" name="action" value="delete">Delete Ride</button>
+        </form>
+    {% else %}
+        <p>No Actice Rides</p>
+    {% endif %}
+
     <h1>Incoming Ride Requests</h1>
     {% if requests %}
         {% for request in requests %}
@@ -119,7 +145,7 @@
         {% endfor %}
     {% else %}
         <p>No Incoming Request</p>
-      {% endif %}
+    {% endif %}
 
   <script>
     {% comment %} date manager {% endcomment %}
@@ -147,12 +173,10 @@
         radio.addEventListener("change", function(){
 
             if(this.value === "to"){
-                timeInput.value = "08:00";
-                timeInput.readOnly = true;
+                timeInput.value = "07:45";            
             }
 
             else{
-                timeInput.readOnly = false;
                 timeInput.value = "13:30";
             }
 
