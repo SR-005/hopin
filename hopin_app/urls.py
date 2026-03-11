@@ -4,7 +4,8 @@ from . import views
 urlpatterns = [
     path("testcreatetrip/", views.testdriverfunction, name="testdriver"),   #test driver
     path("testrider/", views.testriderfunction, name="testrider"),   #test rider
-    path("testlocation/", views.testlocationfunction, name="testlocation"),   #test rider
+    path("testlocation/", views.testlocationfunction, name="testlocation"),   #test live location
+    path("testtracking/", views.testtrackingfunction, name="testtracking"),   #test tracking
 
     path("", views.landingfunction, name="landing"),
     path("login/", views.loginfunction, name="login"),

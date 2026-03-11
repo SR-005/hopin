@@ -219,6 +219,9 @@ def deleteride(request):
     deleteride=trip.objects.get(id=request.POST.get("tripid"))
     deleteride.delete()
 
+def testtrackingfunction(request):
+    return render(request, "testtracking.html")
+
 #driver page routing function
 def testdriverfunction(request):
     cleanup(request)       #calling cleanup function to delete expired rides
