@@ -1,6 +1,3 @@
-import math
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 from haversine import haversine, Unit
 
 sematicweight=0.6
