@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hop-In</title>
+    <link rel="stylesheet" href="{% static 'hopin_app/css/login.css' %}">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+
+    <section class="flex h-screen overflow-hidden">
+
+        <!-- LEFT SIDE -->
+        <div class="w-3/5 bg-gray-100 flex flex-col justify-center px-20">
+
+            <h1 class="text-5xl font-bold text-indigo-900 leading-tight">
+                Your Ride is <br>
+                <span class="text-indigo-900">One Search Away</span>
+            </h1>
+
+            <p class="mt-6 text-xl text-gray-700">
+                Search your route, grab a seat,<br>
+                let's go.
+            </p>
+
+            <button class="mt-8 bg-indigo-900 text-white px-16 py-3 rounded-full w-fit">
+                Search
+            </button>
+
+        </div>
+
+        <!-- RIGHT SIDE (DIAGONAL) -->
+        <div class="w-2/5 bg-indigo-900 
+  [clip-path:polygon(20%_0,100%_0,100%_100%,0_100%)]
+  flex items-center justify-center relative">
+
+            <img src="phone.png" class="w-64">
+
+        </div>
+
+    </section>
+</body>
