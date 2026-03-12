@@ -30,7 +30,7 @@
                 <p>{{ request.rider }}</p>
                 <input type="hidden" name="requestid" id="requestid" value="{{ request.id }}">
                 {% if startride %}
-                    <a href="{% url 'testlocation' %}"
+                    <a href="{% url 'testlocation' request.trip.id %}"
                         <button type="submit" name="action" value="startride">Start Ride</button>
                     </a>
                 {% else %}

@@ -112,7 +112,9 @@ def cleanup(request):
     return 0
 
 #live location fetching from driver
-def testlocationfunction(request):
+def testlocationfunction(request,rideid):
+    ride=get_object_or_404(trip, id=rideid, status="ONGOING")
+
     if request.method=="POST":
         print("HELLO")
         data=json.loads(request.body)
@@ -123,8 +125,8 @@ def testlocationfunction(request):
         print("Current Longitude: ",longitude)
 
         currentride=trip.objects.get(usercredentials=request.user, status="ACTIVE")
-        currentride.currentlatitude=10.117947374702501
-        currentride.currentlongitude=76.35069417511802
+        currentride.currentlatitude=latitude
+        currentride.currentlongitude=longitude
         currentride.lastlocationupdate=timezone.now()      #fetches current time
         currentride.save()
 
@@ -132,7 +134,11 @@ def testlocationfunction(request):
         status=rideend(latitude,longitude,route)
         if status==True:
             currentride.status="COMPLETED"
+            currentrequest=riderequest.objects.get(trip=currentride,status="ACCEPTED")
+            currentrequest.status="COMPLETED"
+
             currentride.save()
+            currentrequest.save()
     return render(request, "testlocation.html")
 
 #------------------------------------------------------DRIVER PAGE FUNCTIONS------------------------------------------------------
@@ -239,10 +245,10 @@ def fetchtracking(request,rideid):
     })
 
 #to render tracking page
-def testtrackingfunction(request):
+def testtrackingfunction(request,rideid):
     currentrideid=None
-    currentrequest=riderequest.objects.get(rider=request.user, status="ACCEPTED")
-    currentrideid=currentrequest.trip.id
+    currentride=get_object_or_404(trip, id=rideid, status="ONGOING")
+    currentrideid=rideid
 
     return render(request, "testtracking.html",{"rideid":currentrideid})
 
@@ -338,6 +344,7 @@ def testriderfunction(request):
     allrequest=riderequest.objects.filter(rider=request.user)
     requests=riderequest.objects.filter(rider=request.user, status="PENDING")
     accepted=riderequest.objects.filter(rider=request.user, status="ACCEPTED")
+    pastrides=riderequest.objects.filter(rider=request.user, status="COMPLETED")
     
     if request.method=="POST":
         action=request.POST.get("action")
@@ -360,7 +367,8 @@ def testriderfunction(request):
         elif action=="cancelrequest":
             cancelrequest(request)
 
-    return render(request, "testrider.html",{"rides":rides,"requests":requests,"accepted":accepted,"requestedrides":requestedrides})
+    return render(request, "testrider.html",{"rides":rides,"requests":requests,"accepted":accepted,"requestedrides":requestedrides,
+                                             "pastrides":pastrides})
 
 
 

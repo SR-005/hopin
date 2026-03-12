@@ -20,7 +20,7 @@
 
                 <p>{{ request.rider }}</p>
                 <input type="hidden" name="requestid" id="requestid" value="{{ request.id }}">
-                <a href="{% url 'testtracking' %}" 
+                <a href="{% url 'testtracking' request.trip.id %}" 
                   <button type="submit" name="action" value="viewride">See more</button>
                 </a>
                 <button type="submit" name="action" value="cancelrequest">Cancel</button>
@@ -28,6 +28,17 @@
         {% endfor %}
     {% else %}
         <p>No Accepted Rides</p>
+    {% endif %}
+          </br>
+
+    {% comment %} past rides {% endcomment %}
+    <h1>Past Rides</h1>
+    {% if pastrides %}
+          {% for rides in pastrides %}
+            <p>{{ rides.trip.usercredentials }}</p>
+          {% endfor %}
+    {% else %}
+        <p>No Previous Rides</p>
     {% endif %}
 
     {% comment %} create new trip {% endcomment %}
