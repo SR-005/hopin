@@ -9,7 +9,7 @@ from django.http import JsonResponse
 import json
 from datetime import date,time,datetime,timedelta
 from .models import userdetail, trip, riderequest
-from .ml.routeopt import finalscore
+from .ml.routeopt import finalscore,rideend
 
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -123,10 +123,13 @@ def testlocationfunction(request):
         print("Current Longitude: ",longitude)
 
         currentride=trip.objects.get(usercredentials=request.user, status="ACTIVE")
-        currentride.currentlatitude=latitude
-        currentride.currentlongitude=longitude
+        currentride.currentlatitude=10.117947374702501
+        currentride.currentlongitude=76.35069417511802
         currentride.lastlocationupdate=timezone.now()      #fetches current time
         currentride.save()
+
+        route=route = currentride.routegeometry
+        rideend(latitude,longitude,route)
     return render(request, "testlocation.html")
 
 #------------------------------------------------------DRIVER PAGE FUNCTIONS------------------------------------------------------
@@ -220,14 +223,6 @@ def deleteride(request):
     deleteride=trip.objects.get(id=request.POST.get("tripid"))
     deleteride.delete()
 
-#to render tracking page
-def testtrackingfunction(request):
-    currentrideid=None
-    currentrequest=riderequest.objects.get(rider=request.user, status="ACCEPTED")
-    currentrideid=currentrequest.trip.id
-
-    return render(request, "testtracking.html",{"rideid":currentrideid})
-
 #to set location to show rider where currently driver is
 def fetchtracking(request,rideid):
     currentride=trip.objects.get(id=rideid)
@@ -238,7 +233,15 @@ def fetchtracking(request,rideid):
         "lng": currentride.currentlongitude,
         "route": json.dumps(currentride.routegeometry)
     })
-    
+
+#to render tracking page
+def testtrackingfunction(request):
+    currentrideid=None
+    currentrequest=riderequest.objects.get(rider=request.user, status="ACCEPTED")
+    currentrideid=currentrequest.trip.id
+
+    return render(request, "testtracking.html",{"rideid":currentrideid})
+
 #driver page routing function
 def testdriverfunction(request):
     cleanup(request)       #calling cleanup function to delete expired rides
