@@ -111,6 +111,11 @@ DATABASES = {
         'PASSWORD': os.getenv("DBPASSWORD"),
         'HOST': os.getenv("DBHOST"),
         'PORT': os.getenv("DBPORT"),
+        'OPTIONS': {
+            'sslmode': 'require',
+        },
+        'CONN_MAX_AGE': 600,
+        
     }
 }
 
