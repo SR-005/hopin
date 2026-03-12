@@ -20,7 +20,9 @@
 
                 <p>{{ request.rider }}</p>
                 <input type="hidden" name="requestid" id="requestid" value="{{ request.id }}">
-                <button type="submit" name="action" value="viewride">See more</button>
+                <a href="{% url 'testtracking' %}" 
+                  <button type="submit" name="action" value="viewride">See more</button>
+                </a>
                 <button type="submit" name="action" value="cancelrequest">Cancel</button>
             </form>
         {% endfor %}

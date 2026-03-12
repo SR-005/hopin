@@ -129,7 +129,10 @@ def testlocationfunction(request):
         currentride.save()
 
         route=route = currentride.routegeometry
-        rideend(latitude,longitude,route)
+        status=rideend(latitude,longitude,route)
+        if status==True:
+            currentride.status="COMPLETED"
+            currentride.save()
     return render(request, "testlocation.html")
 
 #------------------------------------------------------DRIVER PAGE FUNCTIONS------------------------------------------------------
@@ -231,7 +234,8 @@ def fetchtracking(request,rideid):
     return JsonResponse({
         "lat": currentride.currentlatitude,
         "lng": currentride.currentlongitude,
-        "route": json.dumps(currentride.routegeometry)
+        "route": json.dumps(currentride.routegeometry),
+        "status": currentride.status,
     })
 
 #to render tracking page

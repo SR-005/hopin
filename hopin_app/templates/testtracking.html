@@ -57,6 +57,12 @@
                 const lat = data.lat;
                 const lng = data.lng;
                 console.log(data);
+                
+                if(data.status === "COMPLETED"){
+                    clearInterval(trackingInterval);
+                    window.location.href = "/testrider";
+                    return;
+                }
 
                 driverMarker.setLatLng([lat, lng]);
 
@@ -121,7 +127,7 @@
 
 
 
-        setInterval(getDriverLocation, 3000);
+        const trackingInterval = setInterval(getDriverLocation, 3000);
     </script>
 </body>
 </html>

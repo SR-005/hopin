@@ -62,7 +62,10 @@ def rideend(currentlatitude,currentlongitude,route):
     
     if distance>=completionradius:
         print("Ride Ended")
-    return 0
+        status=True
+    else:
+        status=False
+    return status
 
 '''finalscore("via pipeline",[["via main road",(10.1071868,76.3597351)],["via high court",(10.1265,76.3533)],  
                            ["via pipeline road",(10.1071868,76.3597351)],["via pipeline road",(10.0463,76.3242)]])  #aluva,pulinchode,aluva,hmt'''
