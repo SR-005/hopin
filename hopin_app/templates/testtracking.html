@@ -44,6 +44,10 @@
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {attribution: "&copy; OpenStreetMap contributors"}).addTo(map);
 
         const driverMarker = L.marker([10.0469, 76.3467]).addTo(map).bindPopup("Driver");
+        let routeLine = null;
+        let routeCoords = [];
+        let remainingRouteLine = null;
+        let travelledRouteLine = null;
 
         function getDriverLocation(){
 
@@ -52,12 +56,70 @@
             .then(data => {
                 const lat = data.lat;
                 const lng = data.lng;
+                console.log(data);
 
                 driverMarker.setLatLng([lat, lng]);
-                map.setView([lat, lng], 15);
-            });
 
+                if(routeCoords.length === 0 && data.route){
+
+                    const routeGeoJSON = JSON.parse(data.route);
+                    routeCoords = routeGeoJSON.coordinates.map(coord => [coord[1], coord[0]]);
+
+                    remainingRouteLine = L.polyline(routeCoords, {
+                        color: "blue",
+                        weight: 5
+                    }).addTo(map);
+
+                    map.fitBounds(remainingRouteLine.getBounds());
+
+                    const coords = routeGeoJSON.coordinates;
+                    const start = coords[0];
+                    const end = coords[coords.length - 1];
+
+                    const startLatLng = [start[1], start[0]];
+                    const endLatLng = [end[1], end[0]];
+
+                    const startMarker = L.marker(startLatLng)
+                        .addTo(map)
+                        .bindPopup("Start");
+
+                    const endMarker = L.marker(endLatLng)
+                        .addTo(map)
+                        .bindPopup("Destination");
+            };
+
+
+        const driverPos = [lat, lng];
+
+        // find closest point on route
+        let closestIndex = 0;
+        let minDist = Infinity;
+
+        routeCoords.forEach((point, i) => {
+            const dist = map.distance(driverPos, point);
+            if(dist < minDist){
+                minDist = dist;
+                closestIndex = i;
+            }
+        });
+
+        // split route
+        const travelled = routeCoords.slice(0, closestIndex);
+        const remaining = routeCoords.slice(closestIndex);
+
+        // update remaining route (blue)
+        if(remainingRouteLine){
+            map.removeLayer(remainingRouteLine);
         }
+
+        remainingRouteLine = L.polyline(remaining, {
+            color: "blue",
+            weight: 5
+        }).addTo(map);
+
+        })}
+
+
 
         setInterval(getDriverLocation, 3000);
     </script>

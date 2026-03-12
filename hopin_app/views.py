@@ -235,7 +235,8 @@ def fetchtracking(request,rideid):
     print("Tracked Longitude: ",currentride.currentlongitude)
     return JsonResponse({
         "lat": currentride.currentlatitude,
-        "lng": currentride.currentlongitude
+        "lng": currentride.currentlongitude,
+        "route": json.dumps(currentride.routegeometry)
     })
     
 #driver page routing function

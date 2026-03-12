@@ -284,8 +284,7 @@
 
     {% comment %} click only works when SHIFT is pressed!! {% endcomment %}
     map.on('click', function(e) {
-        if (!e.originalEvent.shiftKey) return;      
-
+            
         const lat = e.latlng.lat;
         const lng = e.latlng.lng;
 
