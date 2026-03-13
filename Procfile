@@ -1,0 +1,1 @@
+web: gunicorn hopin_app.wsgi:application
