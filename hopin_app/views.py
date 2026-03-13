@@ -95,8 +95,10 @@ def signupfunction(request):
     return render(request, "signup.html")
 
 
-#---------------------------------------------------------COMMON FUNCTIONS---------------------------------------------------------
 
+
+
+#---------------------------------------------------------COMMON FUNCTIONS---------------------------------------------------------
 #clean up expired rides
 def cleanup(request):
     unengagedtrips=trip.objects.filter(status="ACTIVE")
@@ -110,6 +112,31 @@ def cleanup(request):
             trips.delete()
 
     return 0
+
+
+
+
+
+#---------------------------------------------------------LOCATION FUNCTIONS---------------------------------------------------------
+#to set location to show rider where currently driver is
+def fetchtracking(request,rideid):
+    currentride=trip.objects.get(id=rideid)
+    print("Tracked Latitiude: ",currentride.currentlatitude)
+    print("Tracked Longitude: ",currentride.currentlongitude)
+    return JsonResponse({
+        "lat": currentride.currentlatitude,
+        "lng": currentride.currentlongitude,
+        "route": json.dumps(currentride.routegeometry),
+        "status": currentride.status,
+    })
+
+#to render tracking page
+def testtrackingfunction(request,rideid):
+    currentrideid=None
+    currentride=get_object_or_404(trip, id=rideid, status="ONGOING")
+    currentrideid=rideid
+
+    return render(request, "testtracking.html",{"rideid":currentrideid})
 
 #live location fetching from driver
 def testlocationfunction(request,rideid):
@@ -140,6 +167,10 @@ def testlocationfunction(request,rideid):
             currentride.save()
             currentrequest.save()
     return render(request, "testlocation.html")
+
+
+
+
 
 #------------------------------------------------------DRIVER PAGE FUNCTIONS------------------------------------------------------
 #Trip time validation
@@ -200,9 +231,11 @@ def tripdetails(request):
             newtrip.routegeometry=routegeometry
 
             newtrip.save()
+            return redirect("testdriver")
         else:
             print("Form not Valid")
             print(request.POST)
+            return redirect("testdriver")
 
 #accept a ride request
 def acceptride(request):
@@ -216,8 +249,10 @@ def acceptride(request):
 
         currentride.availableseats=currentride.availableseats-1
         currentride.save()
+        return redirect("testdriver")
     else:
-        print("SEAT FULL!!")
+        messages.error(request, "Ride Max Capacity has already been filled!")
+        return redirect("testdriver")
 
 #reject a ride request
 def rejectride(request):
@@ -225,32 +260,24 @@ def rejectride(request):
     currentrequest=riderequest.objects.get(id=request.POST.get("requestid"))
     currentrequest.status="REJECTED"
     currentrequest.save()
+    return redirect("testdriver")
 
 #delete a posted ride
 def deleteride(request):
     print("DELETEING RIDE")
     deleteride=trip.objects.get(id=request.POST.get("tripid"))
     deleteride.delete()
+    messages.success(request, "Your Ride has been Deleted!")
+    return redirect("testdriver")
 
-#to set location to show rider where currently driver is
-def fetchtracking(request,rideid):
-    currentride=trip.objects.get(id=rideid)
-    print("Tracked Latitiude: ",currentride.currentlatitude)
-    print("Tracked Longitude: ",currentride.currentlongitude)
-    return JsonResponse({
-        "lat": currentride.currentlatitude,
-        "lng": currentride.currentlongitude,
-        "route": json.dumps(currentride.routegeometry),
-        "status": currentride.status,
-    })
 
-#to render tracking page
-def testtrackingfunction(request,rideid):
-    currentrideid=None
-    currentride=get_object_or_404(trip, id=rideid, status="ONGOING")
-    currentrideid=rideid
+def starttracking(request):
+    rideid=request.POST.get("tripid")
+    ride=trip.objects.get(id=rideid)
 
-    return render(request, "testtracking.html",{"rideid":currentrideid})
+    ride.status="ONGOING"
+    ride.save()
+    return redirect("testlocation", rideid=rideid)
 
 #driver page routing function
 def testdriverfunction(request):
@@ -282,15 +309,20 @@ def testdriverfunction(request):
 
     action=request.POST.get("action")
     if action=="tripdetails":
-        tripdetails(request)
+        return tripdetails(request)
     elif action=="accept":
-        acceptride(request)
+        return acceptride(request)
     elif action=="reject":
-        rejectride(request)
+        return rejectride(request)
     elif action=="delete":
-        deleteride(request)
+        return deleteride(request)
+    elif action=="startride":
+        return starttracking(request)
 
     return render(request, "testdriver.html",{"requests":requests,"accepted":accepted,"lasttrip": lasttrip,"startride":startride})
+
+
+
 
 
 #------------------------------------------------------RIDER PAGE FUNCTIONS------------------------------------------------------
@@ -321,17 +353,32 @@ def requestride(request):
     rideid=request.POST.get("rideid")
     ride=get_object_or_404(trip, id=rideid)
     riderequest.objects.create(trip=ride,rider=request.user)
-    return 0
+    return redirect("testrider")
 
 #cancel an active ride request
 def cancelrequest(request):
     cancelrequest=riderequest.objects.get(id=request.POST.get("requestid"))
     cancelride=cancelrequest.trip
+    
     if cancelrequest.status=="ACCEPTED":
         print(cancelride.availableseats)
         cancelride.availableseats=cancelride.availableseats+1       #increase trip seats if ride is cancelled after acceptance
         cancelride.save()
     cancelrequest.delete()
+    
+    messages.success(request, "Your Ride Request has been Cancelled!")
+    return redirect("testrider")
+
+def seemore(request):
+    rideid=request.POST.get("tripid")
+    print("RideID: ",rideid)
+    ride=trip.objects.get(id=rideid)
+
+    if ride.status!="ONGOING":
+        messages.error(request, "Driver has not started the ride yet!")
+        return redirect("testrider")
+    else:
+        return redirect("testtracking",rideid=rideid)
 
 #rider page routing function
 def testriderfunction(request):
@@ -361,11 +408,14 @@ def testriderfunction(request):
                     requestedrides.append(currenttrip.id)
             print("Active Requsted Trip ID: ",requestedrides)
 
-
         elif action=="requestride":
-            requestride(request)
+            return requestride(request)
+        
         elif action=="cancelrequest":
-            cancelrequest(request)
+            return cancelrequest(request)
+    
+        elif action=="seemore":
+            return seemore(request)
 
     return render(request, "testrider.html",{"rides":rides,"requests":requests,"accepted":accepted,"requestedrides":requestedrides,
                                              "pastrides":pastrides})

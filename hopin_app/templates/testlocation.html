@@ -32,7 +32,7 @@
             const lat=position.coords.latitude;
             const lng=position.coords.longitude;
 
-            fetch("/testlocation/", {
+            fetch("/testlocation/<rideid>", {
                 method: "POST",
                 headers:{
                     "Content-Type":"application/json",

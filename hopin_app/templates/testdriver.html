@@ -28,11 +28,9 @@
                 {% csrf_token %}
 
                 <p>{{ request.rider }}</p>
-                <input type="hidden" name="requestid" id="requestid" value="{{ request.id }}">
+                <input type="hidden" name="tripid" id="tripid" value="{{ request.trip.id }}">
                 {% if startride %}
-                    <a href="{% url 'testlocation' request.trip.id %}"
                         <button type="submit" name="action" value="startride">Start Ride</button>
-                    </a>
                 {% else %}
                     <a href="{% url 'testrider' %}"
                         <button type="submit" name="action" value="startride" disabled>Start Ride</button>
