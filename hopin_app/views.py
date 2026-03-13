@@ -141,9 +141,7 @@ def testtrackingfunction(request,rideid):
 #live location fetching from driver
 def testlocationfunction(request,rideid):
     ride=get_object_or_404(trip, id=rideid, status="ONGOING")
-
     if request.method=="POST":
-        print("HELLO")
         data=json.loads(request.body)
         latitude=data["latitude"]
         longitude=data["longitude"]
@@ -151,7 +149,7 @@ def testlocationfunction(request,rideid):
         print("Current Latitude: ",latitude)
         print("Current Longitude: ",longitude)
 
-        currentride=trip.objects.get(usercredentials=request.user, status="ACTIVE")
+        currentride=trip.objects.get(usercredentials=request.user, status="ONGOING")
         currentride.currentlatitude=latitude
         currentride.currentlongitude=longitude
         currentride.lastlocationupdate=timezone.now()      #fetches current time
@@ -160,13 +158,14 @@ def testlocationfunction(request,rideid):
         route=route = currentride.routegeometry
         status=rideend(latitude,longitude,route)
         if status==True:
-            currentride.status="COMPLETED"
+            '''currentride.status="COMPLETED"
             currentrequest=riderequest.objects.get(trip=currentride,status="ACCEPTED")
             currentrequest.status="COMPLETED"
 
             currentride.save()
-            currentrequest.save()
-    return render(request, "testlocation.html")
+            currentrequest.save()'''
+            print("Ride Ended")
+    return render(request, "testlocation.html",{"rideid":rideid})
 
 
 
@@ -368,6 +367,8 @@ def cancelrequest(request):
     
     messages.success(request, "Your Ride Request has been Cancelled!")
     return redirect("testrider")
+
+
 
 def seemore(request):
     rideid=request.POST.get("tripid")

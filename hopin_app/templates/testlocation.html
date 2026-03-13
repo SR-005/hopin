@@ -7,6 +7,8 @@
 </head>
 <body>
     <h1>Live Location</h1>
+    <input type="hidden" name="rideid" id="rideid" value="{{ rideid }}">
+
     <script>
         //csrf token for form submission
         function getCookie(name) {
@@ -25,14 +27,25 @@
         }
         const csrftoken = getCookie("csrftoken");
 
+        //send location
+        navigator.geolocation.watchPosition(
+            sendLocation,
+            console.error,
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 5000
+            }
+        );
 
-        //location udpate
         function sendLocation(position){
+            
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
 
-            const lat=position.coords.latitude;
-            const lng=position.coords.longitude;
+            const rideid = "{{ rideid }}";
 
-            fetch("/testlocation/<rideid>", {
+            fetch(`/testlocation/${rideid}/`, {
                 method: "POST",
                 headers:{
                     "Content-Type":"application/json",
@@ -43,7 +56,6 @@
                     longitude: lng
                 })
             });
-
         }
 
         setInterval(function(){
