@@ -1,55 +1,555 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hop-In</title>
-    <link rel="stylesheet" href="{% static 'hopin_app/css/login.css' %}">
+    <title>Hop In - Commute Simplified</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&display=swap"
         rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="rider.css">
+
 </head>
 
 <body>
+    <div class="relative overflow-hidden">
 
-
-    <section class="flex h-screen overflow-hidden">
-
-        <!-- LEFT SIDE -->
-        <div class="w-3/5 bg-gray-100 flex flex-col justify-center px-20">
-
-            <h1 class="text-5xl font-bold text-indigo-900 leading-tight">
-                Your Ride is <br>
-                <span class="text-indigo-900">One Search Away</span>
-            </h1>
-
-            <p class="mt-6 text-xl text-gray-700">
-                Search your route, grab a seat,<br>
-                let's go.
-            </p>
-
-            <button class="mt-8 bg-indigo-900 text-white px-16 py-3 rounded-full w-fit">
-                Search
-            </button>
-
+        <!-- Diagonal background covering section 1 + 2 -->
+        <div class="absolute top-0 right-0 w-full h-[200vh] bg-[#191265]
+[clip-path:polygon(65%_0%,100%_0%,100%_100%,0%_100%)] -z-10">
         </div>
+        <nav class="w-full flex items-center px-6 lg:px-12 py-6 absolute top-0 left-0 z-50 -ml-4">
+            <div class="flex items-center w-1/4">
+                <img src="{% static 'hopin_app/images/logo.png' %}" class="h-14" alt="Hop In Logo">
+            </div>
 
-        <!-- RIGHT SIDE (DIAGONAL) -->
-        <div class="w-2/5 bg-indigo-900 
-  [clip-path:polygon(20%_0,100%_0,100%_100%,0_100%)]
-  flex items-center justify-center relative">
+            <ul
+                class="hidden md:flex space-x-16 font-['Playfair_Display'] tracking-widest font-extrabold text-[18px] absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+                <li><a href="index.html"
+                        class="text-[#191265] hover:opacity-70 transition-opacity nav-link-active">Home</a>
+                </li>
+                <li><a href="#" class="text-[#191265] hover:opacity-70 transition-opacity">History</a></li>
+                <li><a href="#" class="text-[#191265] hover:opacity-70 transition-opacity">Contact</a></li>
+            </ul>
 
-            <img src="phone.png" class="w-64">
+            <div class="flex justify-end items-center gap-6 w-1/4 ml-auto" id="auth-container">
+
+                <div class="flex items-center gap-4">
+
+                    <span
+                        class="text-white font-['Playfair_Display'] font-extrabold text-[18px] tracking-wide hidden sm:block">
+                        Sreeram
+                    </span>
+
+                    <!-- Profile Button -->
+                    <button type="button" id="user-menu-button" data-dropdown-toggle="user-dropdown"
+                        class="flex text-sm rounded-full focus:ring-4 focus:ring-gray-300">
+
+                        <div
+                            class="w-12 h-12 rounded-full border-2 border-white shadow-md bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden">
+                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path fill-rule="evenodd"
+                                    d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+
+                    </button>
+
+                    <!-- Dropdown -->
+                    <div id="user-dropdown"
+                        class="hidden z-50 my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow w-44">
+
+                        <div class="px-4 py-3">
+                            <span class="block font-['Playfair_Display'] font-extrabold text-[#191265]">Sreeram</span>
+                            <span class="block text-sm    text-[#191265] truncate">user@email.com</span>
+                        </div>
+
+                        <ul class="py-2 text-sm text-gray-700">
+
+                            <li>
+                                <a href="#" class="block px-4 py-2 hover:bg-gray-200">
+                                    Profile
+                                </a>
+                            </li>
+
+
+                            <li>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 hover:bg-red-100 text-red-600">
+                                    Logout
+                                </a>
+                            </li>
+
+                        </ul>
+                    </div>
+
+                </div>
+
+        </nav>
+
+
+        <!-- SECTION 1 -->
+        <section class="h-screen flex items-center  px-[79px]">
+
+            <!-- LEFT SIDE (TEXT CONTENT) -->
+            <div class="flex flex-col text-[#191265]">
+
+                <h2 class="text-5xl font-bold font-['Bricolage_Grotesque']">
+                    Your Ride is
+                </h2>
+
+                <h1 class="text-6xl font-bold font-['Bricolage_Grotesque'] text-[#191265]">
+                    One Search Away
+                </h1>
+
+                <p class="text-3xl text-[#191265] mt-4">
+                    Search your route, grab a seat,<br>let's go.
+                </p>
+
+                <button
+                    class="bg-[#191265] mt-10 text-white w-[401px] text-2xl py-3 rounded-full font-['Bricolage_Grotesque']">
+                    Search
+                </button>
+                {% if ride_accepted %}
+
+                <div class="mt-4 w-[401px] relative">
+
+                    <!-- GREEN ACCEPTED BOX -->
+                    <div class="flex items-center justify-between border-2 border-green-600 rounded-full px-4 py-2">
+
+                        <div class="flex items-center gap-3">
+                            <img src="avatar.png" class="w-10 h-10 rounded-full">
+
+                            <div class="leading-tight">
+                                <p class="text-green-700 text-sm font-semibold">
+                                    Ride accepted by
+                                </p>
+
+                                <p class="text-green-700 font-bold">
+                                    {{ driver_name }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- ARROW BUTTON -->
+                        <button onclick="toggleRideCard()"
+                            class="bg-green-700 text-white w-10 h-10 rounded-full flex items-center justify-center shrink-0">
+
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                            </svg>
+
+                        </button>
+
+                    </div>
+
+                    <!-- DRIVER INFO CARD -->
+                    <div id="rideCard"
+                        class="hidden absolute top-[65px] left-0 w-[401px] bg-white border-2 border-gray-100 rounded-2xl p-4 shadow-lg z-50">
+
+                        <div class="flex justify-between items-center">
+
+                            <div class="flex gap-3 items-start">
+
+                                <img src="avatar.png" class="w-12 h-12 rounded-full">
+
+                                <div>
+                                    <p class="text-[#191265] font-semibold text-lg">
+                                        {{ driver_name }}
+                                    </p>
+
+                                    <p class="text-[#191265]">
+                                        <strong>Model:</strong> Bajaj Platina
+                                    </p>
+
+                                    <p class="text-[#191265]">
+                                        <strong>Reg Number:</strong> KL-41 XX XXXX
+                                    </p>
+
+                                    {% if trip.vehicletype == "Bike" %}
+
+                                    <div class="flex gap-2 mt-2">
+
+                                        {% if trip.helmet %}
+
+                                        <span class="bg-green-500 text-white text-xs px-2 py-1 rounded">
+                                            Helmet
+                                        </span>
+
+                                        {% else %}
+
+                                        <span class="bg-red-500 text-white text-xs px-2 py-1 rounded">
+                                            Helmet
+                                        </span>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <img src="bike.png" class="w-24">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {% endif %}
+            </div>
+
+
+            <!-- RIGHT SIDE (IMAGE) -->
+            <img src="{% static 'hopin_app/images/rider.png' %}" class="w-[538px] ml-[250px] mt-6 ">
+
+        </section>
+
+
+        <!-- SECTION 2 -->
+        <section class="flex justify-center gap-20 items-center h-screen bg-transparent">
+
+            <!-- LEFT FORM -->
+            <div class="border border-white/30 rounded-2xl p-8 w-[420px] bg-[#191265]/70 shadow-xl">
+                <h2 class="text-4xl text-white font-bold mb-6">
+                    Search <span class="text-gray-300">Ride</span>
+                </h2>
+
+                <label class="text-white text-extrabold">Pickup Location</label>
+                <input id="pickup" type="text" class="w-full bg-gray-300 rounded-xl p-3 mb-4">
+
+                <label class="text-white text-extrabold">Destination</label>
+                <input id="destination" type="text" class="w-full bg-gray-300 rounded-xl p-3 mb-4">
+
+                <label class="text-white text-extrabold">Direction</label>
+                <div class="flex gap-4 mb-4">
+
+                    <button id="toCollege"
+                        class="flex-1 bg-white/40 text-extrabold hover:bg-white/60 py-3 rounded-xl text-[#191265] font-semibold transition">
+                        To College
+                    </button>
+
+                    <button id="fromCollege"
+                        class="flex-1 bg-white/40 text-extrabold hover:bg-white/60 py-3 rounded-xl text-[#191265] font-semibold transition">
+                        From College
+                    </button>
+
+                </div>
+
+                <div class="flex gap-6 mb-6">
+
+                    <!-- DATE -->
+                    <div class="flex flex-col w-1/2">
+                        <label class="text-white text-extrabold mb-2">Date</label>
+
+                        <div class="relative">
+
+                            <input id="rideDate" type="text" placeholder="Select date" class="w-full bg-gray-300 rounded-xl p-3 pr-10 text-[#191265] outline-none cursor-pointer
+[&::-webkit-calendar-picker-indicator]:hidden" onfocus="this.type='date'; this.showPicker()"
+                                onblur="if(!this.value)this.type='text'">
+
+                            <!-- Your single calendar icon -->
+                            <svg class="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-[#191265] pointer-events-none"
+                                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+
+                        </div>
+                    </div>
+                    <!-- TIME -->
+                    <div class="flex flex-col w-1/2">
+                        <label class="text-white text-extrabold mb-2">Time</label>
+
+                        <div class="relative">
+
+                            <input id="rideTime" type="text" placeholder="Select time" class="w-full bg-gray-300 rounded-xl p-3 pr-10 text-[#191265] outline-none cursor-pointer
+[&::-webkit-calendar-picker-indicator]:hidden" onfocus="this.type='time'; this.showPicker()"
+                                onblur="if(!this.value)this.type='text'">
+
+                            <!-- Clock icon -->
+                            <svg class="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-[#191265] pointer-events-none"
+                                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M12 8v4l3 3m9-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+
+                        </div>
+                    </div>
+                </div>
+
+                <button class="w-full bg-white text-[#191265] text-extrabold py-3 rounded-xl font-bold">
+                    Search
+                </button>
+
+            </div>
+
+
+            <!-- RIGHT MAP -->
+            <div class="border border-gray-400 rounded-2xl p-6 w-[420px] flex flex-col items-center">
+
+                <div id="map" class="w-full h-[260px] rounded-xl"></div>
+
+                <button class="mt-4 w-full bg-white text-[#191265] py-2 rounded-xl font-bold">
+                    Submit
+                </button>
+
+            </div>
+        </section>
+    </div>
+    <!-- SECTION 3 -->
+    <section id="search-results" class="min-h-screen bg-[#191265] text-[#EAE9DF] pt-10">
+
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12">
+
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-3xl font-extrabold uppercase">Search Results</h1>
+
+                <div class="flex items-center gap-4">
+                    <span class="text-sm font-bold uppercase tracking-widest">
+                        {{ rides|length|default:"0" }} Rides Available
+                    </span>
+
+                    <a href="{% url 'testrider' %}">
+                        <button class="bg-white text-black font-bold py-2 px-6 rounded-xl hover:bg-gray-200">
+                            Modify Search
+                        </button>
+                    </a>
+                </div>
+            </div>
+
+
+            <!-- Two Column Layout -->
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+
+                <!-- LEFT SIDE (Ride Cards) -->
+                <div class="xl:col-span-8 flex flex-col gap-4 overflow-y-auto max-h-[700px] pr-3 custom-scrollbar">
+
+                    {% for trip, distance, score in rides %}
+
+                    <div class="bg-white rounded-[1.5rem] p-5 text-[#191265] shadow-lg">
+
+                        <div class="flex justify-between items-center mb-3">
+
+                            <div class="flex items-center gap-2">
+                                <img src="https://ui-avatars.com/api/?name={{ trip.usercredentials }}"
+                                    class="w-10 h-10 rounded-full">
+
+                                <span class="font-bold text-lg">
+                                    {{ trip.usercredentials }}
+                                </span>
+
+                                <span class="bg-[#9BCCA5] text-white text-xs px-2 py-1 rounded-full font-bold">
+                                    {{ trip.vehicletype }}
+                                </span>
+
+                            </div>
+
+                            <div class="font-extrabold text-2xl">
+                                ₹10.00
+                            </div>
+
+                        </div>
+
+
+                        <div class="flex items-center justify-between">
+
+                            <div class="text-center">
+                                <div class="font-bold">Source</div>
+                                <div class="text-sm">{{ trip.preferedlocation }}</div>
+                            </div>
+
+                            <div class="flex-1 flex items-center mx-4">
+                                <div class="w-2 h-2 bg-gray-500"></div>
+                                <div class="flex-1 h-[2px] bg-gray-500"></div>
+                            </div>
+
+                            <div class="text-center">
+                                <div class="font-bold">Destination</div>
+                                <div class="text-sm">College</div>
+                            </div>
+
+
+                            <form method="POST" action="{% url 'testrider' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="rideid" value="{{ trip.id }}">
+
+                                <button
+                                    class="bg-[#191265] text-white px-4 py-2 rounded-xl font-bold hover:bg-blue-900">
+                                    Request
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <!-- RIGHT SIDE (Map + Filter) -->
+                <div class="xl:col-span-4 bg-[#231A76] rounded-[2rem] p-5 flex flex-col gap-4 shadow-xl">
+
+                    <div class="w-full h-[250px] bg-gray-200 rounded-xl">
+                        <div id="tracking-map" class="w-full h-full"></div>
+                    </div>
+
+                    <div class="flex justify-between items-end shrink-0 mt-2">
+                        <h3 class="text-2xl font-['Playfair_Display'] font-bold text-white tracking-wide">Filter</h3>
+                        <a href="#" onclick="clearFilters(); return false;"
+                            class="text-xs font-bold text-gray-300 hover:text-white mb-1 transition-colors">
+                            clear all
+                        </a>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-4 text-[#191265]">
+
+                        <label class="flex items-center gap-3">
+                            <input type="radio" name="vehicle">
+                            <span class="font-bold">Bikes/Scooters</span>
+                        </label>
+
+                        <label class="flex items-center gap-3 mt-3">
+                            <input type="radio" name="vehicle">
+                            <span class="font-bold">Cars</span>
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
 
     </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+
+        window.addEventListener("load", function () {
+
+            const map = L.map('map').setView([10.0469, 76.3467], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 300);
+
+            let activeField = "pickup";
+            let marker = null;
+
+            const toBtn = document.getElementById("toCollege");
+            const fromBtn = document.getElementById("fromCollege");
+
+            const pickup = document.getElementById("pickup");
+            const destination = document.getElementById("destination");
+
+            const college = "AISAT Engineering College";
+
+            function resetButtons() {
+                toBtn.classList.remove("bg-white");
+                fromBtn.classList.remove("bg-white");
+
+                toBtn.classList.add("bg-white/40");
+                fromBtn.classList.add("bg-white/40");
+            }
+
+            toBtn.onclick = function () {
+                resetButtons();
+                this.classList.remove("bg-white/40");
+                this.classList.add("bg-white");
+
+                destination.value = college;
+                pickup.value = "";
+                activeField = "pickup";
+            }
+
+            fromBtn.onclick = function () {
+                resetButtons();
+                this.classList.remove("bg-white/40");
+                this.classList.add("bg-white");
+
+                pickup.value = college;
+                destination.value = "";
+                activeField = "destination";
+            }
+
+            map.on("click", function (e) {
+
+                const lat = e.latlng.lat.toFixed(5);
+                const lng = e.latlng.lng.toFixed(5);
+
+                const location = lat + "," + lng;
+
+                if (activeField === "pickup") {
+                    pickup.value = location;
+                } else {
+                    destination.value = location;
+                }
+
+            });
+
+        });
+
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const map = L.map("tracking-map").setView([10.0469, 76.3467], 12);
+
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "&copy; OpenStreetMap contributors"
+            }).addTo(map);
+
+            {% for trip, distance, score in rides %}
+            L.marker([
+                {{ trip.latitude |default: "10.0469" }},
+            {{ trip.longitude |default: "76.3467" }}
+        ])
+            .addTo(map)
+            .bindPopup("<b>{{ trip.usercredentials }}</b><br>Vehicle: {{ trip.vehicletype }}");
+        {% endfor %}
+
+});
+    </script>
+    <script>
+        function toggleRideCard() {
+            const card = document.getElementById("rideCard");
+            if (card) {
+                card.classList.toggle("hidden");
+            }
+        }
+        function clearFilters() {
+
+            const radios = document.querySelectorAll('input[name="vehicle"]');
+
+            radios.forEach(radio => {
+                radio.checked = false;
+            });
+
+        }
+    </script>
 </body>
+
+</html>

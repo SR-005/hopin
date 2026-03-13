@@ -13,5 +13,6 @@ urlpatterns = [
     path("login/", views.loginfunction, name="login"),
     path("signup/", views.signupfunction, name="signup"),
     path("logout/", views.logoutfunction, name="logout"),
+    path("rider/", views.driverfunction, name="logout")
     
 ]
