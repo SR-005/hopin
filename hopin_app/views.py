@@ -241,12 +241,16 @@ def acceptride(request):
     print("ACCEPT")
     currentrequest=riderequest.objects.get(id=request.POST.get("requestid"))
     currentride=currentrequest.trip
+    rider=currentrequest.rider
     
     if currentride.availableseats>0:
         currentrequest.status="ACCEPTED"
         currentrequest.save()
 
         currentride.availableseats=currentride.availableseats-1
+
+        riderequest.objects.filter(usercredentials=rider).exclude(id=currentrequest.id).delete()
+
         currentride.save()
         return redirect("testdriver")
     else:
