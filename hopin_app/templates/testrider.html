@@ -28,15 +28,16 @@
                 {% csrf_token %}
 
                 <p>{{ request.rider }}</p>
+                <input type="hidden" name="requestid" id="requestid" value="{{ request.id }}">
                 <input type="hidden" name="tripid" id="tripid" value="{{ request.trip.id }}">
                 <button type="submit" name="action" value="seemore">See more</button>
                 <button type="submit" name="action" value="cancelrequest">Cancel</button>
             </form>
         {% endfor %}
-    {% else %}
+      {% else %}
         <p>No Accepted Rides</p>
     {% endif %}
-          </br>
+    </br>
 
     {% comment %} past rides {% endcomment %}
     <h1>Past Rides</h1>
@@ -44,7 +45,7 @@
           {% for rides in pastrides %}
             <p>{{ rides.trip.usercredentials }}</p>
           {% endfor %}
-    {% else %}
+      {% else %}
         <p>No Previous Rides</p>
     {% endif %}
 
@@ -77,44 +78,153 @@
           </div>
         </div>
 
+
+
         <button type="submit" name="action" value="riderdetails">Enter</button>
       </form>
     </div>
 
     {% comment %} available rides on your route {% endcomment %}
     <h1>Available Rides</h1>
-    {% if rides %}
-        {% for trip, distance, score in rides %}
-        <form method="POST" action="{% url 'testrider' %}">
-          {% csrf_token %}
 
-          <p>{{ trip.usercredentials }}</p>
-          <input type="hidden" name="rideid" id="rideid" value="{{ trip.id }}">
-          {% if trip.id in requestedrides %}
-              <button disabled>Requested</button>
-          {% else %}
-              <button type="submit" name="action" value="requestride">Request</button>
-          {% endif %}
-        </form>
-        {% endfor %}
-      {% else %}
-        <p>No Rides Available</p>
+    {% if rides %}
+      {% for trip, distance, score in rides %}
+
+      <form method="POST" action="{% url 'testrider' %}">
+        {% csrf_token %}
+
+        <p>{{ trip.usercredentials }}</p>
+
+        <div id="map{{ trip.id }}" style="height:200px;width:25%;margin-bottom:10px;"></div>
+
+        <script>
+          document.addEventListener("DOMContentLoaded", function(){
+
+            const route = {{ trip.routegeometry|safe }};
+
+            const riderLat = {{ riderlatitude }};
+            const riderLng = {{ riderlongitude }};
+
+            const first = route.coordinates[0];
+            const startLat = first[1];
+            const startLng = first[0];
+
+            const map = L.map('map{{ trip.id }}').setView([startLat, startLng], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19
+            }).addTo(map);
+
+            // Convert GeoJSON coords
+            const latlngs = route.coordinates.map(coord => [coord[1], coord[0]]);
+
+            // Draw route
+            const polyline = L.polyline(latlngs, {
+                color: 'blue',
+                weight: 4
+            }).addTo(map);
+
+            // Ride Start marker
+            L.marker(latlngs[0])
+              .addTo(map)
+              .bindPopup("Ride Start");
+
+            // Destination marker
+            const last = latlngs[latlngs.length - 1];
+            L.marker(last)
+              .addTo(map)
+              .bindPopup("Destination");
+
+            // Rider pickup marker
+            L.marker([riderLat, riderLng])
+              .addTo(map)
+              .bindPopup("Your Pickup Location");
+
+            map.fitBounds(polyline.getBounds());
+
+          });
+        </script>
+
+        <input type="hidden" name="rideid" value="{{ trip.id }}">
+
+        {% if trip.id in requestedrides %}
+            <button disabled>Requested</button>
+        {% else %}
+            <button type="submit" name="action" value="requestride">Request</button>
+        {% endif %}
+
+      </form>
+
+      {% endfor %}
+    {% else %}
+      <p>No Rides Available</p>
     {% endif %}
 
     {% comment %} list of request you sent {% endcomment %}
-    <h1>Ongoing Request</h1>
+    <h1>Ongoing Rides</h1>
     {% if requests %}
-        {% for request in requests %}
-        <form method="POST" action="{% url 'testrider' %}">
-          {% csrf_token %}
+      {% for request in requests %}
+      <form method="POST" action="{% url 'testrider' %}">
+        {% csrf_token %}
 
-          <p>{{ request.trip }}</p>
-          <input type="hidden" name="requestid" id="requestid" value="{{ request.id }}">
-          <button type="submit" name="action" value="cancelrequest">Cancel</button>
-        </form>
-        {% endfor %}
-      {% else %}
-        <p>No Ongoing Request</p>
+        <p>{{ request.trip }}</p>
+
+        <div id="map{{ request.id }}" style="height:200px;width:20%;margin-bottom:10px;"></div>
+
+        <script>
+          document.addEventListener("DOMContentLoaded", function(){
+
+            const pickupLat = {{ request.pickuplatitude }};
+            const pickupLng = {{ request.pickuplongitude }};
+
+            const route = {{ request.trip.routegeometry|safe }};
+
+            const map = L.map('map{{ request.id }}').setView([pickupLat, pickupLng], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19
+            }).addTo(map);
+
+            // pickup marker
+            L.marker([pickupLat, pickupLng]).addTo(map)
+              .bindPopup("Pickup Location");
+
+            // convert GeoJSON coords to leaflet format
+            const latlngs = route.coordinates.map(coord => [coord[1], coord[0]]);
+
+            const polyline = L.polyline(latlngs, {
+                color: 'blue',
+                weight: 4
+            }).addTo(map);
+
+            // START coordinate
+            const start = route.coordinates[0];
+            const startLatLng = [start[1], start[0]];
+
+            L.marker(startLatLng)
+              .addTo(map)
+              .bindPopup("Ride Start");
+
+            // END coordinate
+            const end = route.coordinates[route.coordinates.length - 1];
+            const endLatLng = [end[1], end[0]];
+
+            L.marker(endLatLng)
+              .addTo(map)
+              .bindPopup("Ride Destination");
+
+            map.fitBounds(polyline.getBounds());
+
+          });
+        </script>
+
+        <input type="hidden" name="requestid" value="{{ request.id }}">
+        <button type="submit" name="action" value="cancelrequest">Cancel</button>
+
+      </form>
+      {% endfor %}
+    {% else %}
+      <p>No Ongoing Request</p>
     {% endif %}
 
     <script>

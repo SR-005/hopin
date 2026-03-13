@@ -79,6 +79,8 @@ class riderequest(models.Model):
     id=models.AutoField(primary_key=True)
     trip=models.ForeignKey(trip, on_delete=models.CASCADE, related_name="tripdetails")
     rider=models.ForeignKey(User, on_delete=models.CASCADE, related_name="riderdetails")
+    pickuplatitude=models.FloatField(null=True, blank=True)
+    pickuplongitude=models.FloatField(null=True, blank=True)
     status=models.CharField(default="PENDING")
 
     class Meta:

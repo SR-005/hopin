@@ -270,7 +270,9 @@ def deleteride(request):
     print("DELETEING RIDE")
     deleteride=trip.objects.get(id=request.POST.get("tripid"))
 
-    timeremaining=deleteride.starttime-timezone.now()
+    ridedatetime=datetime.combine(deleteride.ridedate, deleteride.ridetime)
+    ridedatetime=timezone.make_aware(ridedatetime)
+    timeremaining=ridedatetime-timezone.now()
 
     if timeremaining<=timedelta(minutes=20):
         messages.error(request, "Cannot delete ride within 20 minutes of start time.")
@@ -343,6 +345,8 @@ def riderdetails(request):
     longitude=request.POST.get("longitude")
     direction=request.POST.get("direction")
 
+    request.session["riderlatitude"]=latitude
+    request.session["riderlongitude"]=longitude
     print(location,latitude,longitude,direction)     
 
     #collecting active trip details- for route optimization
@@ -356,21 +360,29 @@ def riderdetails(request):
     longitude=float(longitude)
 
     rides=finalscore(latitude,longitude,availabletrips)
-    return rides
+    return rides,latitude,longitude
 
 #request for a ride to driver
 def requestride(request):
     rideid=request.POST.get("rideid")
     ride=get_object_or_404(trip, id=rideid)
-    riderequest.objects.create(trip=ride,rider=request.user)
+
+    latitude=request.session.get("riderlatitude")
+    longitude=request.session.get("riderlongitude")
+    print(latitude,",",longitude)
+
+    riderequest.objects.create(trip=ride,rider=request.user,pickuplatitude=latitude,pickuplongitude=longitude)
     return redirect("testrider")
 
 #cancel an active ride request
 def cancelrequest(request):
+    print(request.POST.get("requestid"))
     cancelrequest=riderequest.objects.get(id=request.POST.get("requestid"))
     cancelride=cancelrequest.trip
     
-    timeremaining=cancelride.starttime-timezone.now()
+    ridedatetime=datetime.combine(cancelride.ridedate, cancelride.ridetime)
+    ridedatetime=timezone.make_aware(ridedatetime)
+    timeremaining=ridedatetime-timezone.now()
     if timeremaining<=timedelta(minutes=30):
         messages.error(request, "Cannot cancel a ride within 30 minutes of start time.")
         return redirect("testrider")
@@ -383,7 +395,6 @@ def cancelrequest(request):
     
     messages.success(request, "Your Ride Request has been Cancelled!")
     return redirect("testrider")
-
 
 
 def seemore(request):
@@ -404,6 +415,8 @@ def testriderfunction(request):
     requests=None
     accepted=None
     requestedrides=None
+    latitude=None
+    longitude=None
 
     allrequest=riderequest.objects.filter(rider=request.user)
     requests=riderequest.objects.filter(rider=request.user, status="PENDING")
@@ -414,7 +427,7 @@ def testriderfunction(request):
         action=request.POST.get("action")
 
         if action=="riderdetails":
-            rides=riderdetails(request)
+            rides,latitude,longitude=riderdetails(request)
 
             #building a list of ongoing requests
             requestedrides=[]
@@ -435,7 +448,7 @@ def testriderfunction(request):
             return seemore(request)
 
     return render(request, "testrider.html",{"rides":rides,"requests":requests,"accepted":accepted,"requestedrides":requestedrides,
-                                             "pastrides":pastrides})
+                                             "pastrides":pastrides,"riderlatitude":latitude,"riderlongitude":longitude})
 
 
 
