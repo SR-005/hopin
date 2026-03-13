@@ -121,33 +121,89 @@
 
     <h1>Active Rides</h1>
     {% if lasttrip %}
-    <form method="POST" action="{% url 'testdriver' %}">
-        {% csrf_token %}
+        <form method="POST" action="{% url 'testdriver' %}">
+            {% csrf_token %}
 
-        <input type="hidden" name="tripid" id="tripid" value="{{ lasttrip.id }}">
-        <p>{{ lasttrip.preferedlocation }}</p>
-        <p>{{ lasttrip.prefereddirection }} College </p>
-        <p>Date: {{ lasttrip.ridedate }}</p>
-        <p>Time: {{ lasttrip.ridetime }}</p>
-        <p>Bike/Car: {{ lasttrip.vehicletype }}</p>
-        <p>Model: {{ lasttrip.vehiclename }}</p>
-        <button type="submit" name="action" value="delete">Delete Ride</button>
-    </form>
-    {% else %}
+            <input type="hidden" name="tripid" id="tripid" value="{{ lasttrip.id }}">
+            <p>{{ lasttrip.preferedlocation }}</p>
+            <p>{{ lasttrip.prefereddirection }} College </p>
+            <p>Date: {{ lasttrip.ridedate }}</p>
+            <p>Time: {{ lasttrip.ridetime }}</p>
+            <p>Bike/Car: {{ lasttrip.vehicletype }}</p>
+            <p>Model: {{ lasttrip.vehiclename }}</p>
+            <button type="submit" name="action" value="delete">Delete Ride</button>
+        </form>
+        {% else %}
     <p>No Actice Rides</p>
     {% endif %}
 
     <h1>Incoming Ride Requests</h1>
+
     {% if requests %}
     {% for request in requests %}
+
     <form method="POST" action="{% url 'testdriver' %}">
         {% csrf_token %}
 
         <p>{{ request.rider }}</p>
-        <input type="hidden" name="requestid" id="requestid" value="{{ request.id }}">
+
+        <div id="map{{ request.id }}" style="height:200px;width:25%;margin-bottom:10px;"></div>
+
+        <script>
+        document.addEventListener("DOMContentLoaded", function(){
+
+            const route = {{ request.trip.routegeometry|safe }};
+
+            const riderLat = {{ request.pickuplatitude }};
+            const riderLng = {{ request.pickuplongitude }};
+
+            const first = route.coordinates[0];
+            const startLat = first[1];
+            const startLng = first[0];
+
+            const map = L.map('map{{ request.id }}').setView([startLat, startLng], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19
+            }).addTo(map);
+
+            // Convert GeoJSON coords
+            const latlngs = route.coordinates.map(coord => [coord[1], coord[0]]);
+
+            // Draw route
+            const polyline = L.polyline(latlngs, {
+                color: 'blue',
+                weight: 4
+            }).addTo(map);
+
+            // Start marker
+            L.marker(latlngs[0])
+                .addTo(map)
+                .bindPopup("Ride Start");
+
+            // Destination marker
+            const last = latlngs[latlngs.length - 1];
+            L.marker(last)
+                .addTo(map)
+                .bindPopup("Destination");
+
+            // Rider pickup marker
+            L.marker([riderLat, riderLng])
+                .addTo(map)
+                .bindPopup("Rider Pickup");
+
+            map.fitBounds(polyline.getBounds());
+
+        });
+        </script>
+
+        <input type="hidden" name="requestid" value="{{ request.id }}">
+
         <button type="submit" name="action" value="accept">Accept</button>
         <button type="submit" name="action" value="reject">Reject</button>
+
     </form>
+
     {% endfor %}
     {% else %}
     <p>No Incoming Request</p>

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -524,8 +525,8 @@
 
             {% for trip, distance, score in rides %}
             L.marker([
-                {{ trip.latitude |default: "10.0469" }},
-            {{ trip.longitude |default: "76.3467" }}
+                10.0469,
+            76.3467
         ])
             .addTo(map)
             .bindPopup("<b>{{ trip.usercredentials }}</b><br>Vehicle: {{ trip.vehicletype }}");

@@ -95,7 +95,8 @@ def signupfunction(request):
     return render(request, "signup.html")
 
 
-
+def riderfunction(request):
+    return render(request, "rider.html")
 
 
 #---------------------------------------------------------COMMON FUNCTIONS---------------------------------------------------------
