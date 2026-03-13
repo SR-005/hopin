@@ -265,6 +265,13 @@ def rejectride(request):
 def deleteride(request):
     print("DELETEING RIDE")
     deleteride=trip.objects.get(id=request.POST.get("tripid"))
+
+    timeremaining=deleteride.starttime-timezone.now()
+
+    if timeremaining<=timedelta(minutes=20):
+        messages.error(request, "Cannot delete ride within 20 minutes of start time.")
+        return redirect("testdriver")
+
     deleteride.delete()
     messages.success(request, "Your Ride has been Deleted!")
     return redirect("testdriver")
@@ -359,6 +366,11 @@ def cancelrequest(request):
     cancelrequest=riderequest.objects.get(id=request.POST.get("requestid"))
     cancelride=cancelrequest.trip
     
+    timeremaining=cancelride.starttime-timezone.now()
+    if timeremaining<=timedelta(minutes=30):
+        messages.error(request, "Cannot cancel a ride within 30 minutes of start time.")
+        return redirect("testrider")
+
     if cancelrequest.status=="ACCEPTED":
         print(cancelride.availableseats)
         cancelride.availableseats=cancelride.availableseats+1       #increase trip seats if ride is cancelled after acceptance
