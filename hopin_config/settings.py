@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-9dmgd_1183@enwz6#tpf4ottqcwfjv+j*eqtsbc2$!6s1v=y(u
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
-CSRF_TRUSTED_ORIGINS = ["https://hopin.onrender.com"]
+CSRF_TRUSTED_ORIGINS = ["https://*.onrender.com"]
 
 # Application definition
 
