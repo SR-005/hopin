@@ -136,8 +136,12 @@ def testtrackingfunction(request,rideid):
     currentrideid=None
     currentride=get_object_or_404(trip, id=rideid, status="ONGOING")
     currentrideid=rideid
+    
+    currentrequest=riderequest.objects.get(trip=currentride,rider=request.user,status="ACCEPTED")
+    riderlatitude=currentrequest.pickuplatitude
+    riderlongitude=currentrequest.pickuplongitude
 
-    return render(request, "testtracking.html",{"rideid":currentrideid})
+    return render(request, "testtracking.html",{"rideid":currentrideid,"riderlatitude":riderlatitude,"riderlongitude":riderlongitude})
 
 #live location fetching from driver
 def testlocationfunction(request,rideid):
@@ -250,7 +254,7 @@ def acceptride(request):
 
         currentride.availableseats=currentride.availableseats-1
 
-        riderequest.objects.filter(usercredentials=rider).exclude(id=currentrequest.id).delete()
+        riderequest.objects.filter(rider=rider).exclude(id=currentrequest.id).delete()
 
         currentride.save()
         return redirect("testdriver")

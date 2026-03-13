@@ -44,6 +44,7 @@
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {attribution: "&copy; OpenStreetMap contributors"}).addTo(map);
 
         const driverMarker = L.marker([10.0469, 76.3467]).addTo(map).bindPopup("Driver");
+        const riderMarker = L.marker([{{ riderlatitude }}, {{ riderlongitude }}]).addTo(map).bindPopup("Rider");
         let routeLine = null;
         let routeCoords = [];
         let remainingRouteLine = null;
