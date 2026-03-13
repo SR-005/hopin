@@ -1,366 +1,375 @@
 <!doctype html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Create-a-trip</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script> 
-  </head>
-  <body>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+</head>
+
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+
     {% comment %} default message segment {% endcomment %}
     {% if messages %}
-        {% for message in messages %}
-            <script>
-                alert("{{ message|escapejs }}");
-            </script>
-        {% endfor %}
+    {% for message in messages %}
+    <script>
+        alert("{{ message|escapejs }}");
+    </script>
+    {% endfor %}
     {% endif %}
 
     {% comment %} accepted rides {% endcomment %}
     <h1>Accepted Rides</h1>
     {% if accepted %}
-        {% for request in accepted %}
-            <form method="POST" action="{% url 'testdriver' %}">
-                {% csrf_token %}
+    {% for request in accepted %}
+    <form method="POST" action="{% url 'testdriver' %}">
+        {% csrf_token %}
 
-                <p>{{ request.rider }}</p>
-                <input type="hidden" name="tripid" id="tripid" value="{{ request.trip.id }}">
-                {% if startride %}
-                        <button type="submit" name="action" value="startride">Start Ride</button>
-                {% else %}
-                    <a href="{% url 'testrider' %}"
-                        <button type="submit" name="action" value="startride" disabled>Start Ride</button>
-                    </a>
-                {% endif %}
-            </form>
-        {% endfor %}
+        <p>{{ request.rider }}</p>
+        <input type="hidden" name="tripid" id="tripid" value="{{ request.trip.id }}">
+        {% if startride %}
+        <button type="submit" name="action" value="startride">Start Ride</button>
+        {% else %}
+        <a href="{% url 'testrider' %}" <button type="submit" name="action" value="startride" disabled>Start
+            Ride</button>
+        </a>
+        {% endif %}
+    </form>
+    {% endfor %}
     {% else %}
-        <p>No Accepted Rides</p>
+    <p>No Accepted Rides</p>
     {% endif %}
 
     <h1 class="text-center">Create a trip</h1>
     {% comment %} form div {% endcomment %}
     <div class="d-flex justify-content-center mt-5">
-      <form method="POST" action="{% url 'testdriver' %}">
-        {% csrf_token %}
+        <form method="POST" action="{% url 'testdriver' %}">
+            {% csrf_token %}
 
-        {% comment %} location {% endcomment %}
-        <div class="mb-2">
-          <label>Location: </label>
-          <input id="location-input" type="text" name="preferedlocation">
-          <div id="autocomplete-results" class="list-group position-absolute w-100 shadow" style="z-index: 1000;"> </div>
-          <input type="hidden" name="latitude" id="lat">
-          <input type="hidden" name="longitude" id="lng">
-        </div>
-        <div id="map" style="height:400px;" class="mb-3"></div>
+            {% comment %} location {% endcomment %}
+            <div class="mb-2">
+                <label>Location: </label>
+                <input id="location-input" type="text" name="preferedlocation">
+                <div id="autocomplete-results" class="list-group position-absolute w-100 shadow" style="z-index: 1000;">
+                </div>
+                <input type="hidden" name="latitude" id="lat">
+                <input type="hidden" name="longitude" id="lng">
+            </div>
+            <div id="map" style="height:400px;" class="mb-3"></div>
 
-        {% comment %} route {% endcomment %}
-        <div class="mb-2">
-          <input type="hidden" name="routegeometry" id="routegeometry">
-        </div>
+            {% comment %} route {% endcomment %}
+            <div class="mb-2">
+                <input type="hidden" name="routegeometry" id="routegeometry">
+            </div>
 
-        {% comment %} direction {% endcomment %}
-        <div class="mb-2">
-          <div class="form-check">
-            <input class="form-check-input" type="radio" value="to" name="prefereddirection" id="radioDefault1" checked>
-            <label class="form-check-label" for="radioDefault1">To College</label>
-          </div>
-          <div class="form-check">
-            <input class="form-check-input" type="radio" value="from" name="prefereddirection" id="radioDefault2">
-            <label class="form-check-label" for="radioDefault2">From College</label>
-          </div>
-        </div>
+            {% comment %} direction {% endcomment %}
+            <div class="mb-2">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" value="to" name="prefereddirection" id="radioDefault1"
+                        checked>
+                    <label class="form-check-label" for="radioDefault1">To College</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" value="from" name="prefereddirection"
+                        id="radioDefault2">
+                    <label class="form-check-label" for="radioDefault2">From College</label>
+                </div>
+            </div>
 
-        {% comment %} Date {% endcomment %}
-        <label>Date</label>
-        <input type="date" name="ridedate" required>
+            {% comment %} Date {% endcomment %}
+            <label>Date</label>
+            <input type="date" name="ridedate" required>
 
-        {% comment %} Time {% endcomment %}
-        <label>Time</label>
-        <input type="time" id="ridetime" name="ridetime" required>
+            {% comment %} Time {% endcomment %}
+            <label>Time</label>
+            <input type="time" id="ridetime" name="ridetime" required>
 
-        {% comment %} vehicle type {% endcomment %}
-        <div class="mb-2">
-          <label>Vehicle Type: </label>
-          <input type="text" name="vehicletype" value="{{ lasttrip.vehicletype }}">
-        </div>
+            {% comment %} vehicle type {% endcomment %}
+            <div class="mb-2">
+                <label>Vehicle Type: </label>
+                <input type="text" name="vehicletype" value="{{ lasttrip.vehicletype }}">
+            </div>
 
-        {% comment %} available seats {% endcomment %}
-        <div class="mb-2">
-          <label>Available Seats: </label>
-          <input type="number" name="availableseats">
-        </div>
+            {% comment %} available seats {% endcomment %}
+            <div class="mb-2">
+                <label>Available Seats: </label>
+                <input type="number" name="availableseats">
+            </div>
 
-        {% comment %} vehicle number {% endcomment %}
-        <div class="mb-2">
-          <label>Vehicle Number: </label>
-          <input type="text" name="vehiclenumber" value="{{ lasttrip.vehiclenumber }}">
-        </div>
+            {% comment %} vehicle number {% endcomment %}
+            <div class="mb-2">
+                <label>Vehicle Number: </label>
+                <input type="text" name="vehiclenumber" value="{{ lasttrip.vehiclenumber }}">
+            </div>
 
-        {% comment %} vehicle model {% endcomment %}
-        <div class="mb-2">
-          <label>Vehicle Model: </label>
-          <input type="text" name="vehiclemodel" value="{{ lasttrip.vehiclemodel }}">
-        </div>
+            {% comment %} vehicle model {% endcomment %}
+            <div class="mb-2">
+                <label>Vehicle Model: </label>
+                <input type="text" name="vehiclemodel" value="{{ lasttrip.vehiclemodel }}">
+            </div>
 
-        <button type="submit" name="action" value="tripdetails">Enter</button>
-      </form>
+            <button type="submit" name="action" value="tripdetails">Enter</button>
+        </form>
     </div>
 
     <h1>Active Rides</h1>
     {% if lasttrip %}
-        <form method="POST" action="{% url 'testdriver' %}">
-          {% csrf_token %}
+    <form method="POST" action="{% url 'testdriver' %}">
+        {% csrf_token %}
 
-          <input type="hidden" name="tripid" id="tripid" value="{{ lasttrip.id }}">
-          <p>{{ lasttrip.preferedlocation }}</p>
-          <p>{{ lasttrip.prefereddirection }} College </p>
-          <p>Date: {{ lasttrip.ridedate }}</p>
-          <p>Time: {{ lasttrip.ridetime }}</p>
-          <p>Bike/Car: {{ lasttrip.vehicletype }}</p>
-          <p>Model: {{ lasttrip.vehiclename }}</p>
-          <button type="submit" name="action" value="delete">Delete Ride</button>
-        </form>
+        <input type="hidden" name="tripid" id="tripid" value="{{ lasttrip.id }}">
+        <p>{{ lasttrip.preferedlocation }}</p>
+        <p>{{ lasttrip.prefereddirection }} College </p>
+        <p>Date: {{ lasttrip.ridedate }}</p>
+        <p>Time: {{ lasttrip.ridetime }}</p>
+        <p>Bike/Car: {{ lasttrip.vehicletype }}</p>
+        <p>Model: {{ lasttrip.vehiclename }}</p>
+        <button type="submit" name="action" value="delete">Delete Ride</button>
+    </form>
     {% else %}
-        <p>No Actice Rides</p>
+    <p>No Actice Rides</p>
     {% endif %}
 
     <h1>Incoming Ride Requests</h1>
     {% if requests %}
-        {% for request in requests %}
-        <form method="POST" action="{% url 'testdriver' %}">
-          {% csrf_token %}
+    {% for request in requests %}
+    <form method="POST" action="{% url 'testdriver' %}">
+        {% csrf_token %}
 
-          <p>{{ request.rider }}</p>
-          <input type="hidden" name="requestid" id="requestid" value="{{ request.id }}">
-          <button type="submit" name="action" value="accept">Accept</button>
-          <button type="submit" name="action" value="reject">Reject</button>
-        </form>
-        {% endfor %}
+        <p>{{ request.rider }}</p>
+        <input type="hidden" name="requestid" id="requestid" value="{{ request.id }}">
+        <button type="submit" name="action" value="accept">Accept</button>
+        <button type="submit" name="action" value="reject">Reject</button>
+    </form>
+    {% endfor %}
     {% else %}
-        <p>No Incoming Request</p>
+    <p>No Incoming Request</p>
     {% endif %}
 
-  <script>
-    {% comment %} date manager {% endcomment %}
-    const dateInput = document.querySelector("input[name='ridedate']");
+    <script>
+        {% comment %} date manager {% endcomment %}
+        const dateInput = document.querySelector("input[name='ridedate']");
 
-    const today = new Date();
-    const tomorrow = new Date();
-    tomorrow.setDate(today.getDate() + 1);
+        const today = new Date();
+        const tomorrow = new Date();
+        tomorrow.setDate(today.getDate() + 1);
 
-    function formatDate(d){
-        let month = (d.getMonth() + 1).toString().padStart(2,'0');
-        let day = d.getDate().toString().padStart(2,'0');
-        return `${d.getFullYear()}-${month}-${day}`;
-    }
-
-    dateInput.min = formatDate(today);
-    dateInput.max = formatDate(tomorrow);
-    
-
-    {% comment %} time manager {% endcomment %}
-    const directionRadios = document.querySelectorAll("input[name='prefereddirection']");
-    const timeInput = document.getElementById("ridetime");
-
-    directionRadios.forEach(radio => {
-        radio.addEventListener("change", function(){
-
-            if(this.value === "to"){
-                timeInput.value = "07:45";            
-            }
-
-            else{
-                timeInput.value = "13:30";
-            }
-
-        });
-    });
-
-
-    const collegeLat = 10.0469;
-    const collegeLng = 76.3467;
-
-    {% comment %} initilaizing map {% endcomment %}
-    const map = L.map('map').setView([10.8505, 76.2711], 8);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '&copy; OpenStreetMap contributors'}).addTo(map);
-
-    {% comment %} aisat default location {% endcomment %}
-    const collegeMarker = L.marker([collegeLat, collegeLng])
-        .addTo(map)
-        .bindPopup("AISAT Engineering College")
-        .openPopup();
-
-    let marker = L.marker([10.8505, 76.2711], { draggable: true }).addTo(map);
-
-    {% comment %} drawing route on the map {% endcomment %}
-    function drawRoute(userLat, userLng) {
-          const direction = document.querySelector(
-              'input[name="prefereddirection"]:checked'
-          ).value;
-
-          let startLat, startLng, endLat, endLng;
-
-          if (direction === "to") {
-              startLat = userLat;
-              startLng = userLng;
-              endLat = collegeLat;
-              endLng = collegeLng;
-          } else {
-              startLat = collegeLat;
-              startLng = collegeLng;
-              endLat = userLat;
-              endLng = userLng;
-          }
-
-          const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson&alternatives=true`;
-
-          fetch(url)
-              .then(response => response.json())
-              .then(data => {
-
-                  if (!data.routes || data.routes.length === 0) return;
-
-                  if (window.routeLayers) {
-                      window.routeLayers.forEach(obj => map.removeLayer(obj.layer));
-                  }
-
-                  window.routeLayers = [];
-
-                  data.routes.forEach((routeObj, index) => {
-
-                      const layer = L.geoJSON(routeObj.geometry, {
-                          style: {
-                              color: index === 0 ? "blue" : "gray",
-                              weight: 6,
-                              opacity: 0.8
-                          }
-                      }).addTo(map);
-
-                      const routeData = {
-                          layer: layer,
-                          geometry: routeObj.geometry
-                      };
-
-                      if (index === 0) {
-                          document.getElementById("routegeometry").value =
-                              JSON.stringify(routeObj.geometry);
-                      }
-
-                      layer.on("click", function() {
-
-                          window.routeLayers.forEach(obj => {
-                              obj.layer.setStyle({ color: "gray" });
-                          });
-
-                          layer.setStyle({ color: "blue" });
-
-                          document.getElementById("routegeometry").value =
-                              JSON.stringify(routeObj.geometry);
-                      });
-
-                      window.routeLayers.push(routeData);
-                  });
-
-              });
-    }
-
-    {% comment %} map button actions {% endcomment %}
-    marker.on('dragend', function () {
-        const position = marker.getLatLng();
-
-        document.getElementById('lat').value = position.lat;
-        document.getElementById('lng').value = position.lng;
-
-        drawRoute(position.lat, position.lng);
-    });
-
-    {% comment %} click only works when SHIFT is pressed!! {% endcomment %}
-    map.on('click', function(e) {
-            
-        const lat = e.latlng.lat;
-        const lng = e.latlng.lng;
-
-        marker.setLatLng([lat, lng]);
-
-        document.getElementById('lat').value = lat;
-        document.getElementById('lng').value = lng;
-
-        drawRoute(lat, lng);
-    });
-
-    document.querySelectorAll('input[name="prefereddirection"]').forEach(radio => {
-        radio.addEventListener("change", function() {
-            const position = marker.getLatLng();
-            drawRoute(position.lat, position.lng);
-        });
-    });
-
-    {% comment %} location suggession {% endcomment %}
-    const input = document.getElementById("location-input");
-    const resultsBox = document.getElementById("autocomplete-results");
-
-    let debounceTimer;
-
-    input.addEventListener("input", function () {
-        const query = input.value.trim();
-        clearTimeout(debounceTimer);
-
-        if (query.length < 3) {
-            resultsBox.innerHTML = "";
-            return;
+        function formatDate(d) {
+            let month = (d.getMonth() + 1).toString().padStart(2, '0');
+            let day = d.getDate().toString().padStart(2, '0');
+            return `${d.getFullYear()}-${month}-${day}`;
         }
 
-        debounceTimer = setTimeout(() => {
-            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5&accept-language=en`)
+        dateInput.min = formatDate(today);
+        dateInput.max = formatDate(tomorrow);
+
+
+        {% comment %} time manager {% endcomment %}
+        const directionRadios = document.querySelectorAll("input[name='prefereddirection']");
+        const timeInput = document.getElementById("ridetime");
+
+        directionRadios.forEach(radio => {
+            radio.addEventListener("change", function () {
+
+                if (this.value === "to") {
+                    timeInput.value = "07:45";
+                }
+
+                else {
+                    timeInput.value = "13:30";
+                }
+
+            });
+        });
+
+
+        const collegeLat = 10.0469;
+        const collegeLng = 76.3467;
+
+        {% comment %} initilaizing map {% endcomment %}
+        const map = L.map('map').setView([10.8505, 76.2711], 8);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+
+        {% comment %} aisat default location {% endcomment %}
+        const collegeMarker = L.marker([collegeLat, collegeLng])
+            .addTo(map)
+            .bindPopup("AISAT Engineering College")
+            .openPopup();
+
+        let marker = L.marker([10.8505, 76.2711], { draggable: true }).addTo(map);
+
+        {% comment %} drawing route on the map {% endcomment %}
+        function drawRoute(userLat, userLng) {
+            const direction = document.querySelector(
+                'input[name="prefereddirection"]:checked'
+            ).value;
+
+            let startLat, startLng, endLat, endLng;
+
+            if (direction === "to") {
+                startLat = userLat;
+                startLng = userLng;
+                endLat = collegeLat;
+                endLng = collegeLng;
+            } else {
+                startLat = collegeLat;
+                startLng = collegeLng;
+                endLat = userLat;
+                endLng = userLng;
+            }
+
+            const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson&alternatives=true`;
+
+            fetch(url)
                 .then(response => response.json())
                 .then(data => {
 
-                    resultsBox.innerHTML = "";
+                    if (!data.routes || data.routes.length === 0) return;
 
-                    data.forEach(place => {
-                        const item = document.createElement("a");
-                        item.className = "list-group-item list-group-item-action";
-                        item.textContent = place.display_name;
+                    if (window.routeLayers) {
+                        window.routeLayers.forEach(obj => map.removeLayer(obj.layer));
+                    }
 
-                        item.addEventListener("click", () => {
+                    window.routeLayers = [];
 
-                            input.value = place.display_name;
+                    data.routes.forEach((routeObj, index) => {
 
-                            const lat = parseFloat(place.lat);
-                            const lon = parseFloat(place.lon);
+                        const layer = L.geoJSON(routeObj.geometry, {
+                            style: {
+                                color: index === 0 ? "blue" : "gray",
+                                weight: 6,
+                                opacity: 0.8
+                            }
+                        }).addTo(map);
 
-                            document.getElementById("lat").value = lat;
-                            document.getElementById("lng").value = lon;
+                        const routeData = {
+                            layer: layer,
+                            geometry: routeObj.geometry
+                        };
 
-                            map.setView([lat, lon], 16);
-                            marker.setLatLng([lat, lon]);
+                        if (index === 0) {
+                            document.getElementById("routegeometry").value =
+                                JSON.stringify(routeObj.geometry);
+                        }
 
-                            drawRoute(lat, lon);
+                        layer.on("click", function () {
 
-                            resultsBox.innerHTML = "";
+                            window.routeLayers.forEach(obj => {
+                                obj.layer.setStyle({ color: "gray" });
+                            });
+
+                            layer.setStyle({ color: "blue" });
+
+                            document.getElementById("routegeometry").value =
+                                JSON.stringify(routeObj.geometry);
                         });
 
-                        resultsBox.appendChild(item);
+                        window.routeLayers.push(routeData);
                     });
+
                 });
-        }, 400);
-    });
-
-    document.addEventListener("click", function (e) {
-        if (!input.contains(e.target)) {
-            resultsBox.innerHTML = "";
         }
-    });
 
-  </script>
+        {% comment %} map button actions {% endcomment %}
+        marker.on('dragend', function () {
+            const position = marker.getLatLng();
 
-    
+            document.getElementById('lat').value = position.lat;
+            document.getElementById('lng').value = position.lng;
 
-  </body>
+            drawRoute(position.lat, position.lng);
+        });
+
+        {% comment %} click only works when SHIFT is pressed!! {% endcomment %}
+        map.on('click', function (e) {
+
+            const lat = e.latlng.lat;
+            const lng = e.latlng.lng;
+
+            marker.setLatLng([lat, lng]);
+
+            document.getElementById('lat').value = lat;
+            document.getElementById('lng').value = lng;
+
+            drawRoute(lat, lng);
+        });
+
+        document.querySelectorAll('input[name="prefereddirection"]').forEach(radio => {
+            radio.addEventListener("change", function () {
+                const position = marker.getLatLng();
+                drawRoute(position.lat, position.lng);
+            });
+        });
+
+        {% comment %} location suggession {% endcomment %}
+        const input = document.getElementById("location-input");
+        const resultsBox = document.getElementById("autocomplete-results");
+
+        let debounceTimer;
+
+        input.addEventListener("input", function () {
+            const query = input.value.trim();
+            clearTimeout(debounceTimer);
+
+            if (query.length < 3) {
+                resultsBox.innerHTML = "";
+                return;
+            }
+
+            debounceTimer = setTimeout(() => {
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5&accept-language=en`)
+                    .then(response => response.json())
+                    .then(data => {
+
+                        resultsBox.innerHTML = "";
+
+                        data.forEach(place => {
+                            const item = document.createElement("a");
+                            item.className = "list-group-item list-group-item-action";
+                            item.textContent = place.display_name;
+
+                            item.addEventListener("click", () => {
+
+                                input.value = place.display_name;
+
+                                const lat = parseFloat(place.lat);
+                                const lon = parseFloat(place.lon);
+
+                                document.getElementById("lat").value = lat;
+                                document.getElementById("lng").value = lon;
+
+                                map.setView([lat, lon], 16);
+                                marker.setLatLng([lat, lon]);
+
+                                drawRoute(lat, lon);
+
+                                resultsBox.innerHTML = "";
+                            });
+
+                            resultsBox.appendChild(item);
+                        });
+                    });
+            }, 400);
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!input.contains(e.target)) {
+                resultsBox.innerHTML = "";
+            }
+        });
+
+    </script>
+
+
+
+</body>
+
 </html>
