@@ -1,4 +1,3 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -20,7 +19,7 @@
 
 </head>
 
-<body>
+<body class="scroll-smooth">
     <div class="relative overflow-hidden">
 
         <!-- Diagonal background covering section 1 + 2 -->
@@ -29,7 +28,7 @@
         </div>
         <nav class="w-full flex items-center px-6 lg:px-12 py-6 absolute top-0 left-0 z-50 -ml-4">
             <div class="flex items-center w-1/4">
-                <img src="{% static 'hopin_app/images/logo.png' %}" class="h-14" alt="Hop In Logo">
+                <img src="logo1.png" class="h-14" alt="Hop In Logo">
             </div>
 
             <ul
@@ -116,7 +115,7 @@
                     Search your route, grab a seat,<br>let's go.
                 </p>
 
-                <button
+                <button onclick="document.getElementById('search-section').scrollIntoView({behavior:'smooth'})"
                     class="bg-[#191265] mt-10 text-white w-[401px] text-2xl py-3 rounded-full font-['Bricolage_Grotesque']">
                     Search
                 </button>
@@ -213,88 +212,106 @@
 
 
             <!-- RIGHT SIDE (IMAGE) -->
-            <img src="{% static 'hopin_app/images/rider.png' %}" class="w-[538px] ml-[250px] mt-6 ">
+            <img src="rider.png" class="w-[538px] ml-[250px] mt-6 ">
 
         </section>
 
 
+
         <!-- SECTION 2 -->
-        <section class="flex justify-center gap-20 items-center h-screen bg-transparent">
+        <section id="search-section" class="flex justify-center gap-20 items-center h-screen bg-transparent">
 
             <!-- LEFT FORM -->
-            <div class="border border-white/30 rounded-2xl p-8 w-[420px] bg-[#191265]/70 shadow-xl">
-                <h2 class="text-4xl text-white font-bold mb-6">
-                    Search <span class="text-gray-300">Ride</span>
-                </h2>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="border border-white/30 rounded-2xl p-8 w-[420px] bg-[#191265]/70 shadow-xl">
+                    <h2 class="text-4xl text-white font-bold mb-6">
+                        Search <span class="text-gray-300">Ride</span>
+                    </h2>
 
-                <label class="text-white text-extrabold">Pickup Location</label>
-                <input id="pickup" type="text" class="w-full bg-gray-300 rounded-xl p-3 mb-4">
+                    <label class="text-white">Pickup Location</label>
 
-                <label class="text-white text-extrabold">Destination</label>
-                <input id="destination" type="text" class="w-full bg-gray-300 rounded-xl p-3 mb-4">
+                    <div class="relative mb-4">
+                        <input id="pickup" name="pickup" type="text" class="w-full bg-gray-300 rounded-xl p-3"
+                            autocomplete="off">
 
-                <label class="text-white text-extrabold">Direction</label>
-                <div class="flex gap-4 mb-4">
+                        <div id="pickup-results"
+                            class="absolute top-full left-0 w-full bg-white rounded-xl shadow-lg z-50 text-sm"></div>
+                    </div>
 
-                    <button id="toCollege"
-                        class="flex-1 bg-white/40 text-extrabold hover:bg-white/60 py-3 rounded-xl text-[#191265] font-semibold transition">
-                        To College
-                    </button>
 
-                    <button id="fromCollege"
-                        class="flex-1 bg-white/40 text-extrabold hover:bg-white/60 py-3 rounded-xl text-[#191265] font-semibold transition">
-                        From College
-                    </button>
+                    <label class="text-white">Destination</label>
 
-                </div>
+                    <div class="relative mb-4">
+                        <input id="destination" name="destination" type="text" class="w-full bg-gray-300 rounded-xl p-3"
+                            autocomplete="off">
 
-                <div class="flex gap-6 mb-6">
+                        <div id="destination-results"
+                            class="absolute top-full left-0 w-full bg-white rounded-xl shadow-lg z-50 text-sm"></div>
+                    </div>
+                    <label class="text-white">Direction</label>
+                    <div class="flex gap-4 mb-4">
+                        <button type="button" id="toCollege"
+                            class="flex-1 bg-white/40 hover:bg-white/60 py-3 rounded-xl text-[#191265] font-semibold transition">
+                            To College
+                        </button>
 
-                    <!-- DATE -->
-                    <div class="flex flex-col w-1/2">
-                        <label class="text-white text-extrabold mb-2">Date</label>
+                        <button type="button" id="fromCollege"
+                            class="flex-1 bg-white/40 hover:bg-white/60 py-3 rounded-xl text-[#191265] font-semibold transition">
+                            From College
+                        </button>
 
-                        <div class="relative">
+                    </div>
 
-                            <input id="rideDate" type="text" placeholder="Select date" class="w-full bg-gray-300 rounded-xl p-3 pr-10 text-[#191265] outline-none cursor-pointer
+                    <div class="flex gap-6 mb-6">
+
+                        <!-- DATE -->
+                        <div class="flex flex-col w-1/2">
+                            <label class="text-white mb-2">Date</label>
+
+                            <div class="relative">
+
+                                <input id="rideDate" type="text" placeholder="Select date" class="w-full bg-gray-300 rounded-xl p-3 pr-10 text-[#191265] outline-none cursor-pointer
 [&::-webkit-calendar-picker-indicator]:hidden" onfocus="this.type='date'; this.showPicker()"
-                                onblur="if(!this.value)this.type='text'">
+                                    onblur="if(!this.value)this.type='text'">
 
-                            <!-- Your single calendar icon -->
-                            <svg class="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-[#191265] pointer-events-none"
-                                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
+                                <!-- Your single calendar icon -->
+                                <svg class="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-[#191265] pointer-events-none"
+                                    fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
 
+                            </div>
                         </div>
-                    </div>
-                    <!-- TIME -->
-                    <div class="flex flex-col w-1/2">
-                        <label class="text-white text-extrabold mb-2">Time</label>
+                        <!-- TIME -->
+                        <div class="flex flex-col w-1/2">
+                            <label class="text-white mb-2">Time</label>
 
-                        <div class="relative">
+                            <div class="relative">
 
-                            <input id="rideTime" type="text" placeholder="Select time" class="w-full bg-gray-300 rounded-xl p-3 pr-10 text-[#191265] outline-none cursor-pointer
+                                <input id="rideTime" type="text" placeholder="Select time" class="w-full bg-gray-300 rounded-xl p-3 pr-10 text-[#191265] outline-none cursor-pointer
 [&::-webkit-calendar-picker-indicator]:hidden" onfocus="this.type='time'; this.showPicker()"
-                                onblur="if(!this.value)this.type='text'">
+                                    onblur="if(!this.value)this.type='text'">
 
-                            <!-- Clock icon -->
-                            <svg class="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-[#191265] pointer-events-none"
-                                fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M12 8v4l3 3m9-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                                <!-- Clock icon -->
+                                <svg class="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 text-[#191265] pointer-events-none"
+                                    fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M12 8v4l3 3m9-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
 
+                            </div>
                         </div>
                     </div>
+
+                    <button class="w-full bg-white text-[#191265] py-3 rounded-xl font-bold">
+                        Search
+                    </button>
                 </div>
+            </form>
 
-                <button class="w-full bg-white text-[#191265] text-extrabold py-3 rounded-xl font-bold">
-                    Search
-                </button>
 
-            </div>
 
 
             <!-- RIGHT MAP -->
@@ -302,10 +319,10 @@
 
                 <div id="map" class="w-full h-[260px] rounded-xl"></div>
 
-                <button class="mt-4 w-full bg-white text-[#191265] py-2 rounded-xl font-bold">
+                <button type="button" id="mapSubmit"
+                    class="mt-4 w-full bg-white text-[#191265] py-2 rounded-xl font-bold">
                     Submit
                 </button>
-
             </div>
         </section>
     </div>
@@ -323,11 +340,12 @@
                         {{ rides|length|default:"0" }} Rides Available
                     </span>
 
-                    <a href="{% url 'testrider' %}">
+                    <a href="#search-section">
                         <button class="bg-white text-black font-bold py-2 px-6 rounded-xl hover:bg-gray-200">
                             Modify Search
                         </button>
                     </a>
+
                 </div>
             </div>
 
@@ -406,10 +424,6 @@
                 <!-- RIGHT SIDE (Map + Filter) -->
                 <div class="xl:col-span-4 bg-[#231A76] rounded-[2rem] p-5 flex flex-col gap-4 shadow-xl">
 
-                    <div class="w-full h-[250px] bg-gray-200 rounded-xl">
-                        <div id="tracking-map" class="w-full h-full"></div>
-                    </div>
-
                     <div class="flex justify-between items-end shrink-0 mt-2">
                         <h3 class="text-2xl font-['Playfair_Display'] font-bold text-white tracking-wide">Filter</h3>
                         <a href="#" onclick="clearFilters(); return false;"
@@ -444,29 +458,220 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        document.addEventListener("DOMContentLoaded", function () {
 
-        window.addEventListener("load", function () {
+            const collegeLat = 10.0469;
+            const collegeLng = 76.3467;
+            const collegeName = "AISAT Engineering College";
 
-            const map = L.map('map').setView([10.0469, 76.3467], 13);
+            let direction = null;
+            let userLat = null;
+            let userLng = null;
+            let routeLayer = null;
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
+            const pickupInput = document.getElementById("pickup");
+            const destinationInput = document.getElementById("destination");
 
-            setTimeout(() => {
-                map.invalidateSize();
-            }, 300);
-
-            let activeField = "pickup";
-            let marker = null;
+            const pickupResults = document.getElementById("pickup-results");
+            const destinationResults = document.getElementById("destination-results");
 
             const toBtn = document.getElementById("toCollege");
             const fromBtn = document.getElementById("fromCollege");
 
-            const pickup = document.getElementById("pickup");
-            const destination = document.getElementById("destination");
+            /* ---------------- MAP ---------------- */
 
-            const college = "AISAT Engineering College";
+            const map = L.map("map").setView([collegeLat, collegeLng], 12);
+
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                attribution: "© OpenStreetMap contributors"
+            }).addTo(map);
+
+            L.marker([collegeLat, collegeLng])
+                .addTo(map)
+                .bindPopup(collegeName)
+                .openPopup();
+
+            const marker = L.marker([collegeLat, collegeLng], { draggable: true }).addTo(map);
+
+            marker.on("dragend", function () {
+                const pos = marker.getLatLng();
+                userLat = pos.lat;
+                userLng = pos.lng;
+            });
+
+            map.on("click", function (e) {
+
+                userLat = e.latlng.lat;
+                userLng = e.latlng.lng;
+
+                marker.setLatLng([userLat, userLng]);
+
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${userLat}&lon=${userLng}`)
+                    .then(res => res.json())
+                    .then(data => {
+
+                        const place = data.display_name;
+
+                        if (direction === "to") {
+                            pickupInput.value = place;
+                        }
+
+                        if (direction === "from") {
+                            destinationInput.value = place;
+                        }
+
+                    });
+
+            });
+
+            /* ---------------- AUTOCOMPLETE ---------------- */
+
+            function searchLocation(query, resultsBox, inputField) {
+
+                fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`)
+                    .then(res => res.json())
+                    .then(data => {
+
+                        resultsBox.innerHTML = "";
+
+                        data.features.forEach(place => {
+
+                            const name = place.properties.name || "";
+                            const city = place.properties.city || "";
+                            const country = place.properties.country || "";
+
+                            const display = `${name} ${city} ${country}`;
+
+                            const lat = place.geometry.coordinates[1];
+                            const lon = place.geometry.coordinates[0];
+
+                            const item = document.createElement("div");
+                            item.className = "p-2 hover:bg-gray-200 cursor-pointer";
+                            item.textContent = display;
+
+                            item.onclick = function () {
+
+                                inputField.value = display;
+
+                                map.setView([lat, lon], 15);
+                                marker.setLatLng([lat, lon]);
+
+                                userLat = lat;
+                                userLng = lon;
+
+                                resultsBox.innerHTML = "";
+                            };
+
+                            resultsBox.appendChild(item);
+                        });
+
+                    });
+            }
+            let timeout;
+
+            pickupInput.addEventListener("input", function () {
+
+                clearTimeout(timeout);
+
+                timeout = setTimeout(() => {
+
+                    if (this.value.length < 3) {
+                        pickupResults.innerHTML = "";
+                        return;
+                    }
+
+                    searchLocation(this.value, pickupResults, pickupInput);
+
+                }, 400);
+
+            });
+            destinationInput.addEventListener("input", function () {
+
+                if (this.value.length < 3) {
+                    destinationResults.innerHTML = "";
+                    return;
+                }
+
+                searchLocation(this.value, destinationResults, destinationInput);
+
+            });
+
+            document.addEventListener("click", function (e) {
+
+                if (!pickupInput.contains(e.target) && !pickupResults.contains(e.target)) {
+                    pickupResults.innerHTML = "";
+                }
+
+                if (!destinationInput.contains(e.target) && !destinationResults.contains(e.target)) {
+                    destinationResults.innerHTML = "";
+                }
+
+            });
+
+            /* ---------------- ROUTE DRAWING ---------------- */
+
+            function drawRoute() {
+
+                let startLat, startLng, endLat, endLng;
+
+                if (direction === "to") {
+
+                    startLat = userLat;
+                    startLng = userLng;
+
+                    endLat = collegeLat;
+                    endLng = collegeLng;
+
+                } else {
+
+                    startLat = collegeLat;
+                    startLng = collegeLng;
+
+                    endLat = userLat;
+                    endLng = userLng;
+
+                }
+
+                const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
+
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+
+                        const route = data.routes[0].geometry;
+
+                        if (routeLayer) {
+                            map.removeLayer(routeLayer);
+                        }
+
+                        routeLayer = L.geoJSON(route, {
+                            style: { color: "blue", weight: 5 }
+                        }).addTo(map);
+
+                        map.fitBounds(routeLayer.getBounds());
+
+                    });
+
+            }
+
+            document.getElementById("mapSubmit").addEventListener("click", function () {
+
+                if (!direction) {
+                    alert("Choose To College or From College first");
+                    return;
+                }
+
+                if (userLat === null) {
+                    alert("Select your location on the map");
+                    return;
+                }
+
+                drawRoute();
+
+            });
+
+            /* ---------------- DIRECTION BUTTONS ---------------- */
+            /* ---------------- DIRECTION BUTTONS ---------------- */
 
             function resetButtons() {
                 toBtn.classList.remove("bg-white");
@@ -476,47 +681,45 @@
                 fromBtn.classList.add("bg-white/40");
             }
 
-            toBtn.onclick = function () {
+            toBtn.addEventListener("click", function () {
+
+                direction = "to";   // important
+
                 resetButtons();
                 this.classList.remove("bg-white/40");
                 this.classList.add("bg-white");
 
-                destination.value = college;
-                pickup.value = "";
-                activeField = "pickup";
-            }
+                destinationInput.value = collegeName;
+                pickupInput.value = "";
 
-            fromBtn.onclick = function () {
-                resetButtons();
-                this.classList.remove("bg-white/40");
-                this.classList.add("bg-white");
-
-                pickup.value = college;
-                destination.value = "";
-                activeField = "destination";
-            }
-
-            map.on("click", function (e) {
-
-                const lat = e.latlng.lat.toFixed(5);
-                const lng = e.latlng.lng.toFixed(5);
-
-                const location = lat + "," + lng;
-
-                if (activeField === "pickup") {
-                    pickup.value = location;
-                } else {
-                    destination.value = location;
-                }
-
+                destinationInput.disabled = true;
+                pickupInput.disabled = false;
             });
 
-        });
+            fromBtn.addEventListener("click", function () {
 
+                direction = "from";   // important
+
+                resetButtons();
+                this.classList.remove("bg-white/40");
+                this.classList.add("bg-white");
+
+                pickupInput.value = collegeName;
+                destinationInput.value = "";
+
+                pickupInput.disabled = true;
+                destinationInput.disabled = false;
+            });
+        });
     </script>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
 
+        document.addEventListener("DOMContentLoaded", function () {
+            const collegeLat = 10.0469;
+            const collegeLng = 76.3467;
+            let userLat = null;
+            let userLng = null;
+            let routeLayer = null;
             const map = L.map("tracking-map").setView([10.0469, 76.3467], 12);
 
             L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -524,23 +727,48 @@
             }).addTo(map);
 
             {% for trip, distance, score in rides %}
+
             L.marker([
-                10.0469,
-            76.3467
-        ])
+                {{ trip.latitude |default: "10.051443" }},
+            {{ trip.longitude |default: "76.329357" }}
+    ])
             .addTo(map)
             .bindPopup("<b>{{ trip.usercredentials }}</b><br>Vehicle: {{ trip.vehicletype }}");
+
         {% endfor %}
 
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const ridesCount = {{ rides| length |default: "0"
+        }};
+
+        if (ridesCount > 0) {
+            document.getElementById("search-results")
+                .scrollIntoView({ behavior: "smooth" });
+        }
+
 });
+        const section3 = document.getElementById("search-results");
+
+        if (ridesCount > 0) {
+            section3.scrollIntoView({ behavior: "smooth" });
+        }
+
+});
+
     </script>
     <script>
+
         function toggleRideCard() {
+
             const card = document.getElementById("rideCard");
+
             if (card) {
                 card.classList.toggle("hidden");
             }
+
         }
+
         function clearFilters() {
 
             const radios = document.querySelectorAll('input[name="vehicle"]');
@@ -550,7 +778,9 @@
             });
 
         }
+
     </script>
+
 </body>
 
 </html>
