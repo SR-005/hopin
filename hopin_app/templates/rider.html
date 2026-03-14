@@ -19,7 +19,7 @@
 
 </head>
 
-<body>
+<body class="scroll-smooth">
     <div class="relative overflow-hidden">
 
         <!-- Diagonal background covering section 1 + 2 -->
@@ -217,7 +217,7 @@
         </section>
 
 
-        <!-- SECTION 2 -->
+
         <!-- SECTION 2 -->
         <section id="search-section" class="flex justify-center gap-20 items-center h-screen bg-transparent">
 
@@ -251,7 +251,6 @@
                     </div>
                     <label class="text-white">Direction</label>
                     <div class="flex gap-4 mb-4">
-
                         <button type="button" id="toCollege"
                             class="flex-1 bg-white/40 hover:bg-white/60 py-3 rounded-xl text-[#191265] font-semibold transition">
                             To College
@@ -341,11 +340,12 @@
                         {{ rides|length|default:"0" }} Rides Available
                     </span>
 
-                    <a href="{% url 'testrider' %}">
+                    <a href="#search-section">
                         <button class="bg-white text-black font-bold py-2 px-6 rounded-xl hover:bg-gray-200">
                             Modify Search
                         </button>
                     </a>
+
                 </div>
             </div>
 
@@ -458,17 +458,15 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-
         document.addEventListener("DOMContentLoaded", function () {
-
 
             const collegeLat = 10.0469;
             const collegeLng = 76.3467;
+            const collegeName = "AISAT Engineering College";
 
             let direction = null;
             let userLat = null;
             let userLng = null;
-
             let routeLayer = null;
 
             const pickupInput = document.getElementById("pickup");
@@ -479,113 +477,36 @@
 
             const toBtn = document.getElementById("toCollege");
             const fromBtn = document.getElementById("fromCollege");
-            const collegeName = "AISAT Engineering College";
-            let activeField = "pickup";
-            pickupInput.addEventListener("focus", () => {
-                activeField = "pickup";
-            });
 
-            destinationInput.addEventListener("focus", () => {
-                activeField = "destination";
-            });
-            function searchLocation(query, resultsBox, inputField) {
+            /* ---------------- MAP ---------------- */
 
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`)
-                    .then(res => res.json())
-                    .then(data => {
-
-                        resultsBox.innerHTML = "";
-
-                        data.forEach(place => {
-
-                            const item = document.createElement("div");
-
-                            item.className = "p-2 hover:bg-gray-200 cursor-pointer";
-
-                            item.textContent = place.display_name;
-
-                            item.onclick = function () {
-
-                                const lat = parseFloat(place.lat);
-                                const lon = parseFloat(place.lon);
-
-                                inputField.value = place.display_name;
-
-                                map.setView([lat, lon], 15);
-
-                                marker.setLatLng([lat, lon]);
-
-                                userLat = lat;
-                                userLng = lon;
-
-                                resultsBox.innerHTML = "";
-
-                            };
-
-                            resultsBox.appendChild(item);
-
-                        });
-
-                    });
-            }
-            pickupInput.addEventListener("input", function () {
-
-                if (this.value.length < 3) {
-                    pickupResults.innerHTML = "";
-                    return;
-                }
-
-                searchLocation(this.value, pickupResults, pickupInput);
-
-            });
-
-            destinationInput.addEventListener("input", function () {
-
-                if (this.value.length < 3) {
-                    destinationResults.innerHTML = "";
-                    return;
-                }
-
-                searchLocation(this.value, destinationResults, destinationInput);
-
-            });
-            // MAP
-            const map = L.map("map").setView([10.8505, 76.2711], 8);
+            const map = L.map("map").setView([collegeLat, collegeLng], 12);
 
             L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
                 attribution: "© OpenStreetMap contributors"
             }).addTo(map);
+
             L.marker([collegeLat, collegeLng])
                 .addTo(map)
-                .bindPopup("AISAT Engineering College")
+                .bindPopup(collegeName)
                 .openPopup();
 
-            let marker = L.marker([10.8505, 76.2711], { draggable: true }).addTo(map);
+            const marker = L.marker([collegeLat, collegeLng], { draggable: true }).addTo(map);
 
-
-            // MARKER DRAG
             marker.on("dragend", function () {
-
                 const pos = marker.getLatLng();
-
                 userLat = pos.lat;
                 userLng = pos.lng;
-
             });
 
-
-            // MAP CLICK
             map.on("click", function (e) {
 
-                const lat = e.latlng.lat;
-                const lng = e.latlng.lng;
+                userLat = e.latlng.lat;
+                userLng = e.latlng.lng;
 
-                marker.setLatLng([lat, lng]);
+                marker.setLatLng([userLat, userLng]);
 
-                userLat = lat;
-                userLng = lng;
-
-                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${userLat}&lon=${userLng}`)
                     .then(res => res.json())
                     .then(data => {
 
@@ -594,42 +515,76 @@
                         if (direction === "to") {
                             pickupInput.value = place;
                         }
-                        else if (direction === "from") {
+
+                        if (direction === "from") {
                             destinationInput.value = place;
                         }
+
                     });
 
             });
-            document.addEventListener("click", function (e) {
 
-                if (!pickupInput.contains(e.target)) {
-                    pickupResults.innerHTML = "";
-                }
+            /* ---------------- AUTOCOMPLETE ---------------- */
 
-                if (!destinationInput.contains(e.target)) {
-                    destinationResults.innerHTML = "";
-                }
+            function searchLocation(query, resultsBox, inputField) {
 
-            });
+                fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`)
+                    .then(res => res.json())
+                    .then(data => {
 
+                        resultsBox.innerHTML = "";
 
-            // AUTOCOMPLETE SEARCH
+                        data.features.forEach(place => {
 
+                            const name = place.properties.name || "";
+                            const city = place.properties.city || "";
+                            const country = place.properties.country || "";
 
-            // PICKUP AUTOCOMPLETE
+                            const display = `${name} ${city} ${country}`;
+
+                            const lat = place.geometry.coordinates[1];
+                            const lon = place.geometry.coordinates[0];
+
+                            const item = document.createElement("div");
+                            item.className = "p-2 hover:bg-gray-200 cursor-pointer";
+                            item.textContent = display;
+
+                            item.onclick = function () {
+
+                                inputField.value = display;
+
+                                map.setView([lat, lon], 15);
+                                marker.setLatLng([lat, lon]);
+
+                                userLat = lat;
+                                userLng = lon;
+
+                                resultsBox.innerHTML = "";
+                            };
+
+                            resultsBox.appendChild(item);
+                        });
+
+                    });
+            }
+            let timeout;
+
             pickupInput.addEventListener("input", function () {
 
-                if (this.value.length < 3) {
-                    pickupResults.innerHTML = "";
-                    return;
-                }
+                clearTimeout(timeout);
 
-                searchLocation(this.value, pickupResults, pickupInput);
+                timeout = setTimeout(() => {
+
+                    if (this.value.length < 3) {
+                        pickupResults.innerHTML = "";
+                        return;
+                    }
+
+                    searchLocation(this.value, pickupResults, pickupInput);
+
+                }, 400);
 
             });
-
-
-            // DESTINATION AUTOCOMPLETE
             destinationInput.addEventListener("input", function () {
 
                 if (this.value.length < 3) {
@@ -640,24 +595,21 @@
                 searchLocation(this.value, destinationResults, destinationInput);
 
             });
-            document.getElementById("mapSubmit").addEventListener("click", function () {
 
-                if (!direction) {
-                    alert("Choose To College or From College first");
-                    return;
+            document.addEventListener("click", function (e) {
+
+                if (!pickupInput.contains(e.target) && !pickupResults.contains(e.target)) {
+                    pickupResults.innerHTML = "";
                 }
 
-                if (userLat === null) {
-                    alert("Select your location on the map");
-                    return;
+                if (!destinationInput.contains(e.target) && !destinationResults.contains(e.target)) {
+                    destinationResults.innerHTML = "";
                 }
-
-                drawRoute();
 
             });
 
+            /* ---------------- ROUTE DRAWING ---------------- */
 
-            // ROUTE DRAWING
             function drawRoute() {
 
                 let startLat, startLng, endLat, endLng;
@@ -670,8 +622,7 @@
                     endLat = collegeLat;
                     endLng = collegeLng;
 
-                }
-                else {
+                } else {
 
                     startLat = collegeLat;
                     startLng = collegeLng;
@@ -694,10 +645,7 @@
                         }
 
                         routeLayer = L.geoJSON(route, {
-                            style: {
-                                color: "blue",
-                                weight: 5
-                            }
+                            style: { color: "blue", weight: 5 }
                         }).addTo(map);
 
                         map.fitBounds(routeLayer.getBounds());
@@ -705,13 +653,40 @@
                     });
 
             }
-            // TO COLLEGE BUTTON
-            // TO COLLEGE
+
+            document.getElementById("mapSubmit").addEventListener("click", function () {
+
+                if (!direction) {
+                    alert("Choose To College or From College first");
+                    return;
+                }
+
+                if (userLat === null) {
+                    alert("Select your location on the map");
+                    return;
+                }
+
+                drawRoute();
+
+            });
+
+            /* ---------------- DIRECTION BUTTONS ---------------- */
+            /* ---------------- DIRECTION BUTTONS ---------------- */
+
+            function resetButtons() {
+                toBtn.classList.remove("bg-white");
+                fromBtn.classList.remove("bg-white");
+
+                toBtn.classList.add("bg-white/40");
+                fromBtn.classList.add("bg-white/40");
+            }
+
             toBtn.addEventListener("click", function () {
 
-                direction = "to";
+                direction = "to";   // important
 
                 resetButtons();
+                this.classList.remove("bg-white/40");
                 this.classList.add("bg-white");
 
                 destinationInput.value = collegeName;
@@ -719,15 +694,14 @@
 
                 destinationInput.disabled = true;
                 pickupInput.disabled = false;
-
             });
 
-            // FROM COLLEGE
             fromBtn.addEventListener("click", function () {
 
-                direction = "from";
+                direction = "from";   // important
 
                 resetButtons();
+                this.classList.remove("bg-white/40");
                 this.classList.add("bg-white");
 
                 pickupInput.value = collegeName;
@@ -735,35 +709,8 @@
 
                 pickupInput.disabled = true;
                 destinationInput.disabled = false;
-
             });
-            // BUTTON RESET
-            function resetButtons() {
-
-                toBtn.classList.remove("bg-white");
-                fromBtn.classList.remove("bg-white");
-
-                toBtn.classList.add("bg-white/40");
-                fromBtn.classList.add("bg-white/40");
-
-            }
-
-
-            // CLOSE AUTOCOMPLETE
-            document.addEventListener("click", function (e) {
-
-                if (!pickupInput.contains(e.target)) {
-                    pickupResults.innerHTML = "";
-                }
-
-                if (!destinationInput.contains(e.target)) {
-                    destinationResults.innerHTML = "";
-                }
-
-            });
-
         });
-
     </script>
     <script>
 
@@ -782,19 +729,25 @@
             {% for trip, distance, score in rides %}
 
             L.marker([
-                {{ trip.latitude |default: "10.0469" }},
-            {{ trip.longitude |default: "76.3467" }}
+                {{ trip.latitude |default: "10.051443" }},
+            {{ trip.longitude |default: "76.329357" }}
     ])
             .addTo(map)
             .bindPopup("<b>{{ trip.usercredentials }}</b><br>Vehicle: {{ trip.vehicletype }}");
 
         {% endfor %}
 
-});
         document.addEventListener("DOMContentLoaded", function () {
 
             const ridesCount = {{ rides| length |default: "0"
         }};
+
+        if (ridesCount > 0) {
+            document.getElementById("search-results")
+                .scrollIntoView({ behavior: "smooth" });
+        }
+
+});
         const section3 = document.getElementById("search-results");
 
         if (ridesCount > 0) {
@@ -802,23 +755,7 @@
         }
 
 });
-        function resetButtons() {
-            toBtn.classList.remove("bg-white");
-            fromBtn.classList.remove("bg-white");
 
-            toBtn.classList.add("bg-white/40");
-            fromBtn.classList.add("bg-white/40");
-        }
-        document.getElementById("mapSubmit").addEventListener("click", function () {
-
-            if (!userLat || !direction) {
-                alert("Select location and direction first");
-                return;
-            }
-
-            drawRoute();
-
-        });
     </script>
     <script>
 
@@ -843,6 +780,7 @@
         }
 
     </script>
+
 </body>
 
 </html>
