@@ -70,7 +70,7 @@ class trip(models.Model):
     availableseats=models.IntegerField(null=False, blank=False)
     vehiclenumber=models.CharField(max_length=12,null=False, blank=False)       #KL 41 **** ****
     vehiclemodel=models.CharField(null=False, blank=False)                     #car or bike model name
-    status=models.CharField(default="ACTIVE")
+    status=models.CharField(default="EMPTY")
     
     def __str__(self):
         return self.usercredentials.email

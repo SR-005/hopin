@@ -102,7 +102,7 @@ def riderfunction(request):
 #---------------------------------------------------------COMMON FUNCTIONS---------------------------------------------------------
 #clean up expired rides
 def cleanup(request):
-    unengagedtrips=trip.objects.filter(status="ACTIVE")
+    unengagedtrips=trip.objects.filter(status="EMPTY")
     now=timezone.localtime()
 
     for trips in unengagedtrips:
@@ -267,6 +267,10 @@ def acceptride(request):
         currentrequest.save()
 
         currentride.availableseats=currentride.availableseats-1
+        
+        if currentride.status=="EMPTY":
+            currentride.status="ACTIVE"
+            currentride.save()
 
         riderequest.objects.filter(rider=rider).exclude(id=currentrequest.id).delete()
 
@@ -370,7 +374,7 @@ def riderdetails(request):
 
     #collecting active trip details- for route optimization
     availabletrips=[]
-    activetrips=trip.objects.filter(status="ACTIVE")
+    activetrips=trip.objects.filter(status__in=["ACTIVE","EMPTY"])
     for trips in activetrips:
         availabletrips.append(trips)
 
@@ -410,7 +414,17 @@ def cancelrequest(request):
         print(cancelride.availableseats)
         cancelride.availableseats=cancelride.availableseats+1       #increase trip seats if ride is cancelled after acceptance
         cancelride.save()
+
     cancelrequest.delete()
+
+    acceptedrequests=riderequest.objects.filter(trip=cancelride,status="ACCEPTED")
+    print("AR: ",acceptedrequests)
+
+    if acceptedrequests:
+        pass
+    else:
+        cancelride.status=="EMPTY"
+        cancelride.save()
     
     messages.success(request, "Your Ride Request has been Cancelled!")
     return redirect("testrider")
