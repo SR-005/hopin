@@ -403,12 +403,12 @@ def riderdetails(request):
     time=request.POST.get("ridetime")
 
     formatedtime=datetime.strptime(time, "%H:%M")
-    ucutofftime=(formatedtime-timedelta(minutes=20)).time()
-    lcutofftime=(formatedtime+timedelta(minutes=20)).time()
+    lcutofftime=(formatedtime-timedelta(minutes=20)).time()
+    ucutofftime=(formatedtime+timedelta(minutes=20)).time()
 
     request.session["riderlatitude"]=latitude
     request.session["riderlongitude"]=longitude
-    print(location,latitude,longitude,direction)     
+    print(direction,ucutofftime,lcutofftime,date)     
 
     #collecting active trip details- for route optimization
     availabletrips=[]
