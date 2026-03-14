@@ -18,32 +18,32 @@
 
     {% comment %} default message segment {% endcomment %}
     {% if messages %}
-    {% for message in messages %}
-    <script>
-        alert("{{ message|escapejs }}");
-    </script>
-    {% endfor %}
+        {% for message in messages %}
+        <script>
+            alert("{{ message|escapejs }}");
+        </script>
+        {% endfor %}
     {% endif %}
 
     {% comment %} accepted rides {% endcomment %}
     <h1>Accepted Rides</h1>
     {% if accepted %}
-    {% for request in accepted %}
-    <form method="POST" action="{% url 'testdriver' %}">
-        {% csrf_token %}
+        {% for request in accepted %}
+        <form method="POST" action="{% url 'testdriver' %}">
+            {% csrf_token %}
 
-        <p>{{ request.rider }}</p>
-        <input type="hidden" name="tripid" id="tripid" value="{{ request.trip.id }}">
-        {% if startride %}
-        <button type="submit" name="action" value="startride">Start Ride</button>
+            <p>{{ request.rider }}</p>
+            <input type="hidden" name="tripid" id="tripid" value="{{ request.trip.id }}">
+            {% if startride %}
+            <button type="submit" name="action" value="startride">Start Ride</button>
+            {% else %}
+            <a href="{% url 'testrider' %}" <button type="submit" name="action" value="startride" disabled>Start
+                Ride</button>
+            </a>
+            {% endif %}
+        </form>
+        {% endfor %}
         {% else %}
-        <a href="{% url 'testrider' %}" <button type="submit" name="action" value="startride" disabled>Start
-            Ride</button>
-        </a>
-        {% endif %}
-    </form>
-    {% endfor %}
-    {% else %}
     <p>No Accepted Rides</p>
     {% endif %}
 

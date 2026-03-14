@@ -361,12 +361,50 @@ def testdriverfunction(request):
 
 
 #------------------------------------------------------RIDER PAGE FUNCTIONS------------------------------------------------------
+
+def requesttimevalidation(request):
+    direction=request.POST.get("direction")
+    print("TIME: ",request.POST.get("ridetime"))
+
+    ridetime=datetime.strptime(request.POST.get("ridetime"), "%H:%M").time()
+    ridedate = datetime.strptime(request.POST.get("ridedate"), "%Y-%m-%d").date()
+
+    #date validation
+    today=timezone.localdate()
+    now=timezone.localtime().time()
+    if ridedate not in [today, today + timedelta(days=1)]:
+        messages.error(request, "Rides can only be Requested for Today or Tomorrow")
+        return redirect("testrider")
+    
+    if direction=="to":
+        if ridedate==today and now>time(8,0):
+            messages.error(request, "Cannot schedule today's 8:00 AM ride after it has passed")
+            return redirect("testrider")
+        
+    #time validation: FROM college (between 1:30PM and 8:00PM)
+    elif direction=="from":
+        if ridetime<time(13,30) or ridetime>time(20,00):
+            messages.error(request, "Rides can only be requested between 1:30PM and 8:00PM")
+            return redirect("testrider")
+        
+        if ridedate==today and ridetime<=now:
+            messages.error(request, "Cannot Request a ride in the past")
+            return redirect("testrider")
+    return 0
+
 #default ride function
 def riderdetails(request):
+    requesttimevalidation(request)
     location=request.POST.get("location")
     latitude=request.POST.get("latitude")
     longitude=request.POST.get("longitude")
     direction=request.POST.get("direction")
+    date=request.POST.get("ridedate")
+    time=request.POST.get("ridetime")
+
+    formatedtime=datetime.strptime(time, "%H:%M")
+    ucutofftime=(formatedtime-timedelta(minutes=20)).time()
+    lcutofftime=(formatedtime+timedelta(minutes=20)).time()
 
     request.session["riderlatitude"]=latitude
     request.session["riderlongitude"]=longitude
@@ -374,7 +412,11 @@ def riderdetails(request):
 
     #collecting active trip details- for route optimization
     availabletrips=[]
-    activetrips=trip.objects.filter(status__in=["ACTIVE","EMPTY"])
+    if direction=="to":
+        activetrips=trip.objects.filter(status__in=["ACTIVE","EMPTY"],prefereddirection=direction,ridedate=date)
+    else:
+        activetrips=trip.objects.filter(status__in=["ACTIVE","EMPTY"],prefereddirection=direction,ridedate=date,
+                                        ridetime__range=(lcutofftime, ucutofftime))
     for trips in activetrips:
         availabletrips.append(trips)
 

@@ -78,7 +78,13 @@
           </div>
         </div>
 
+        {% comment %} Date {% endcomment %}
+        <label>Date</label>
+        <input type="date" name="ridedate" required>
 
+        {% comment %} Time {% endcomment %}
+        <label>Time</label>
+        <input type="time" id="ridetime" name="ridetime" required>
 
         <button type="submit" name="action" value="riderdetails">Enter</button>
       </form>
@@ -86,7 +92,6 @@
 
     {% comment %} available rides on your route {% endcomment %}
     <h1>Available Rides</h1>
-
     {% if rides %}
       {% for trip, distance, score in rides %}
 
@@ -229,6 +234,43 @@
 
     <script>
     
+      {% comment %} date manager {% endcomment %}
+        const dateInput = document.querySelector("input[name='ridedate']");
+
+        const today = new Date();
+        const tomorrow = new Date();
+        tomorrow.setDate(today.getDate() + 1);
+
+        function formatDate(d) {
+            let month = (d.getMonth() + 1).toString().padStart(2, '0');
+            let day = d.getDate().toString().padStart(2, '0');
+            return `${d.getFullYear()}-${month}-${day}`;
+        }
+
+        dateInput.min = formatDate(today);
+        dateInput.max = formatDate(tomorrow);
+
+
+        {% comment %} time manager {% endcomment %}
+        const directionRadios = document.querySelectorAll("input[name='direction']");
+        const timeInput = document.getElementById("ridetime");
+
+        directionRadios.forEach(radio => {
+            radio.addEventListener("change", function () {
+
+                if (this.value === "to") {
+                    timeInput.value = "08:00";
+                    timeInput.readOnly = true;
+                }
+
+                else {
+                    timeInput.value = "13:30";
+                    timeInput.readOnly = false;
+                }
+
+            });
+        });
+
       {% comment %} initilaizing map {% endcomment %}
       const map = L.map('map').setView([10.8505, 76.2711], 8);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '&copy; OpenStreetMap contributors'}).addTo(map);
