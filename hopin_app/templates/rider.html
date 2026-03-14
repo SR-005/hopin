@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,8 +11,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&display=swap"rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
@@ -28,7 +28,7 @@
         </div>
         <nav class="w-full flex items-center px-6 lg:px-12 py-6 absolute top-0 left-0 z-50 -ml-4">
             <div class="flex items-center w-1/4">
-                <img src="logo1.png" class="h-14" alt="Hop In Logo">
+                <img src="{% static 'hopin_app/images/logo1.png' %}" class="h-14" alt="Hop In Logo">
             </div>
 
             <ul
@@ -212,7 +212,7 @@
 
 
             <!-- RIGHT SIDE (IMAGE) -->
-            <img src="rider.png" class="w-[538px] ml-[250px] mt-6 ">
+            <img src="{% static 'hopin_app/images/rider.png' %}" class="w-[538px] ml-[250px] mt-6 ">
 
         </section>
 
@@ -729,8 +729,8 @@
             {% for trip, distance, score in rides %}
 
             L.marker([
-                {{ trip.latitude |default: "10.051443" }},
-            {{ trip.longitude |default: "76.329357" }}
+                {{ "10.051443" }},
+            {{ "76.329357" }}
     ])
             .addTo(map)
             .bindPopup("<b>{{ trip.usercredentials }}</b><br>Vehicle: {{ trip.vehicletype }}");

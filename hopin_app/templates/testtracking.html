@@ -18,6 +18,11 @@
     <h1>Live Tracking</h1>
     <div id="map"></div>
 
+    <form method="POST" action="{% url 'testtracking' rideid %}">
+        {% csrf_token %}
+        <input type="hidden" name="tripid" id="tripid" value="{{ rideid }}">
+        <button type="submit" name="action" value="confirmride">Confirm</button>
+    </form>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>

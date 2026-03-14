@@ -7,9 +7,9 @@ from django.db.models import Q
 from django.http import JsonResponse
 
 import json
-from datetime import date, time, datetime, timedelta
+from datetime import date,time,datetime,timedelta
 from .models import userdetail, trip, riderequest
-from .ml.routeopt import finalscore, rideend
+from .ml.routeopt import finalscore,rideend
 
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -18,49 +18,44 @@ User = get_user_model()
 # Create your views here.
 
 
-# ------------------------------------------------------LANDING PAGE FUNCTIONS------------------------------------------------------
+#------------------------------------------------------LANDING PAGE FUNCTIONS------------------------------------------------------
 # Main Landing Page View
 def landingfunction(request):
-    user = None
-    username = None
-    firstname = None
+    user=None
+    username=None
+    firstname=None
     try:
         print("Current User Email: ", request.user.email)
-        if request.user.email != None:
-            user = request.user
-            status = "true"
-        username = User.objects.get(email=request.user.email)
-        username = str(username.first_name).upper()
-        username = username.split()
-        firstname = username[0]
+        if request.user.email!=None:
+            user=request.user
+            status="true"
+        username=User.objects.get(email=request.user.email)
+        username=str(username.first_name).upper()
+        username=username.split()
+        firstname=username[0]
     except:
         print("User is not Logged in or Logged Out")
-        status = "false"
+        status="false"
 
-    return render(request, "landing.html", {"status": status, "user": user, "firstname": firstname})
+    return render(request, "landing.html", {"status":status,"user":user,"firstname":firstname})
 
 # Main Logout Function
-
-
 def logoutfunction(request):
     logout(request)
     messages.success(request, "User Logged Out- Log back in to use the app!")
     return redirect("/")
 
 # Main Login Page View
-
-
 def loginfunction(request):
-    if request.method == "POST":
+    if request.method=="POST":
 
-        loginform = loginForm(request.POST)
+        loginform=loginForm(request.POST)
         if loginform.is_valid():
-            useremail = loginform.cleaned_data["email"]
-            userpassword = loginform.cleaned_data["password"]
+            useremail=loginform.cleaned_data["email"]
+            userpassword=loginform.cleaned_data["password"]
             print(useremail, userpassword)
 
-            user = authenticate(request, username=useremail,
-                                password=userpassword)
+            user=authenticate(request, username=useremail,password=userpassword)
             if user is not None:
                 login(request, user)
                 messages.success(request, "Login Successfull!!")
@@ -72,28 +67,24 @@ def loginfunction(request):
     return render(request, "login.html")
 
 # Main Sign Up Page View
-
-
 def signupfunction(request):
-    if request.method == "POST":
+    if request.method=="POST":
         # collect values from html form and validate it w.r.t signupForm
-        signupform = signupForm(request.POST)
+        signupform=signupForm(request.POST)
         if signupform.is_valid():
-            firstname = signupform.cleaned_data["first_name"]
-            lastname = signupform.cleaned_data["last_name"]
-            useremail = signupform.cleaned_data["email"]
-            userpassword = signupform.cleaned_data["password"]
+            firstname=signupform.cleaned_data["first_name"]
+            lastname=signupform.cleaned_data["last_name"]
+            useremail=signupform.cleaned_data["email"]
+            userpassword=signupform.cleaned_data["password"]
 
             # create_user is a Django Built in function to create a User to User Model
-            newuser = User.objects.create_user(
-                email=useremail, password=userpassword)
-            newuser.first_name = firstname
-            newuser.last_name = lastname
+            newuser=User.objects.create_user(email=useremail, password=userpassword)
+            newuser.first_name=firstname
+            newuser.last_name=lastname
             newuser.save()
             messages.success(request, "Account has been successfully created.")
 
-            user = authenticate(request, username=useremail,
-                                password=userpassword)
+            user=authenticate(request, username=useremail,password=userpassword)
             login(request, user)
             return redirect("landing")
 
@@ -108,15 +99,15 @@ def riderfunction(request):
     return render(request, "rider.html")
 
 
-# ---------------------------------------------------------COMMON FUNCTIONS---------------------------------------------------------
-# clean up expired rides
+#---------------------------------------------------------COMMON FUNCTIONS---------------------------------------------------------
+#clean up expired rides
 def cleanup(request):
-    unengagedtrips = trip.objects.filter(status="ACTIVE")
-    now = timezone.localtime()
+    unengagedtrips=trip.objects.filter(status="ACTIVE")
+    now=timezone.localtime()
 
     for trips in unengagedtrips:
-        ridedatetime = datetime.combine(trips.ridedate, trips.ridetime)
-        ridedatetime = timezone.make_aware(ridedatetime)
+        ridedatetime=datetime.combine(trips.ridedate, trips.ridetime)
+        ridedatetime=timezone.make_aware(ridedatetime)
 
         if ridedatetime < now:
             trips.delete()
@@ -124,12 +115,15 @@ def cleanup(request):
     return 0
 
 
-# ---------------------------------------------------------LOCATION FUNCTIONS---------------------------------------------------------
-# to set location to show rider where currently driver is
-def fetchtracking(request, rideid):
-    currentride = trip.objects.get(id=rideid)
-    print("Tracked Latitiude: ", currentride.currentlatitude)
-    print("Tracked Longitude: ", currentride.currentlongitude)
+
+
+
+#---------------------------------------------------------LOCATION FUNCTIONS---------------------------------------------------------
+#to set location to show rider where currently driver is
+def fetchtracking(request,rideid):
+    currentride=trip.objects.get(id=rideid)
+    print("Tracked Latitiude: ",currentride.currentlatitude)
+    print("Tracked Longitude: ",currentride.currentlongitude)
     return JsonResponse({
         "lat": currentride.currentlatitude,
         "lng": currentride.currentlongitude,
@@ -137,44 +131,52 @@ def fetchtracking(request, rideid):
         "status": currentride.status,
     })
 
-# to render tracking page
+def confirmride(request):
+    rideid=request.POST.get("tripid")
+    currentride=trip.objects.get(id=rideid)
+    currentrequest=riderequest.objects.get(trip=currentride,rider=request.user)
+    print("REQ: ",currentrequest)
+    currentrequest.status="CONFIRM"
+    currentrequest.save()
+    return redirect("testtracking",rideid=rideid)
 
+#to render tracking page
+def testtrackingfunction(request,rideid):
+    currentrideid=None
+    currentride=get_object_or_404(trip, id=rideid, status="ONGOING")
+    currentrideid=rideid
+    
+    currentrequest=riderequest.objects.get(trip=currentride,rider=request.user,status__in=["ACCEPTED", "CONFIRM"])
+    riderlatitude=currentrequest.pickuplatitude
+    riderlongitude=currentrequest.pickuplongitude
 
-def testtrackingfunction(request, rideid):
-    currentrideid = None
-    currentride = get_object_or_404(trip, id=rideid, status="ONGOING")
-    currentrideid = rideid
+    if request.method=="POST":
+        action=request.POST.get("action")
+        if action=="confirmride":
+            return confirmride(request)
 
-    currentrequest = riderequest.objects.get(
-        trip=currentride, rider=request.user, status="ACCEPTED")
-    riderlatitude = currentrequest.pickuplatitude
-    riderlongitude = currentrequest.pickuplongitude
+    return render(request, "testtracking.html",{"rideid":currentrideid,"riderlatitude":riderlatitude,"riderlongitude":riderlongitude})
 
-    return render(request, "testtracking.html", {"rideid": currentrideid, "riderlatitude": riderlatitude, "riderlongitude": riderlongitude})
+#live location fetching from driver
+def testlocationfunction(request,rideid):
+    ride=get_object_or_404(trip, id=rideid, status="ONGOING")
+    if request.method=="POST":
+        data=json.loads(request.body)
+        latitude=data["latitude"]
+        longitude=data["longitude"]
 
-# live location fetching from driver
+        print("Current Latitude: ",latitude)
+        print("Current Longitude: ",longitude)
 
-
-def testlocationfunction(request, rideid):
-    ride = get_object_or_404(trip, id=rideid, status="ONGOING")
-    if request.method == "POST":
-        data = json.loads(request.body)
-        latitude = data["latitude"]
-        longitude = data["longitude"]
-
-        print("Current Latitude: ", latitude)
-        print("Current Longitude: ", longitude)
-
-        currentride = trip.objects.get(
-            usercredentials=request.user, status="ONGOING")
-        currentride.currentlatitude = latitude
-        currentride.currentlongitude = longitude
-        currentride.lastlocationupdate = timezone.now()  # fetches current time
+        currentride=trip.objects.get(usercredentials=request.user, status="ONGOING")
+        currentride.currentlatitude=latitude
+        currentride.currentlongitude=longitude
+        currentride.lastlocationupdate=timezone.now()      #fetches current time
         currentride.save()
 
-        route = route = currentride.routegeometry
-        status = rideend(latitude, longitude, route)
-        if status == True:
+        route=route = currentride.routegeometry
+        status=rideend(latitude,longitude,route)
+        if status==True:
             '''currentride.status="COMPLETED"
             currentrequest=riderequest.objects.get(trip=currentride,status="ACCEPTED")
             currentrequest.status="COMPLETED"
@@ -182,72 +184,69 @@ def testlocationfunction(request, rideid):
             currentride.save()
             currentrequest.save()'''
             print("Ride Ended")
-    return render(request, "testlocation.html", {"rideid": rideid})
+    return render(request, "testlocation.html",{"rideid":rideid})
 
 
-# ------------------------------------------------------DRIVER PAGE FUNCTIONS------------------------------------------------------
-# Trip time validation
+
+
+
+#------------------------------------------------------DRIVER PAGE FUNCTIONS------------------------------------------------------
+#Trip time validation
 def tripdatetimevalidation(request):
-    direction = request.POST.get("prefereddirection")
-    print("TIME: ", request.POST.get("ridetime"))
+    direction=request.POST.get("prefereddirection")
+    print("TIME: ",request.POST.get("ridetime"))
 
-    ridetime = datetime.strptime(request.POST.get("ridetime"), "%H:%M").time()
-    ridedate = datetime.strptime(
-        request.POST.get("ridedate"), "%Y-%m-%d").date()
+    ridetime=datetime.strptime(request.POST.get("ridetime"), "%H:%M").time()
+    ridedate = datetime.strptime(request.POST.get("ridedate"), "%Y-%m-%d").date()
 
-    # date validation
-    today = timezone.localdate()
-    now = timezone.localtime().time()
+    #date validation
+    today=timezone.localdate()
+    now=timezone.localtime().time()
     if ridedate not in [today, today + timedelta(days=1)]:
-        messages.error(
-            request, "Rides can only be scheduled for Today or Tomorrow")
+        messages.error(request, "Rides can only be scheduled for Today or Tomorrow")
         return redirect("testdriver")
 
-    # time validation: TO college (before 8:00AM)
-    if direction == "to":
-        if ridetime < time(7, 00):
+    #time validation: TO college (before 8:00AM)
+    if direction=="to":
+        if ridetime<time(7,00):
             messages.error(request, "Rides can only be scheduled from 7:00AM")
             return redirect("testdriver")
-        elif ridetime > time(8, 00):
+        elif ridetime>time(8,00):
             messages.error(request, "Rides must arrive at college at 8:00 AM")
             return redirect("testdriver")
-
-        if ridedate == today and now > time(8, 0):
-            messages.error(
-                request, "Cannot schedule today's 8:00 AM ride after it has passed")
+        
+        if ridedate==today and now>time(8,0):
+            messages.error(request, "Cannot schedule today's 8:00 AM ride after it has passed")
             return redirect("testdriver")
-
-    # time validation: FROM college (between 1:30PM and 8:00PM)
-    elif direction == "from":
-        if ridetime < time(13, 30) or ridetime > time(20, 00):
-            messages.error(
-                request, "Rides must be scheduled between 1:30PM and 8:00PM")
+        
+    #time validation: FROM college (between 1:30PM and 8:00PM)
+    elif direction=="from":
+        if ridetime<time(13,30) or ridetime>time(20,00):
+            messages.error(request, "Rides must be scheduled between 1:30PM and 8:00PM")
             return redirect("testdriver")
-
-        if ridedate == today and ridetime <= now:
+        
+        if ridedate==today and ridetime<=now:
             messages.error(request, "Cannot schedule a ride in the past")
             return redirect("testdriver")
     return None
 
-# create new trip
-
-
+#create new trip
 def tripdetails(request):
-    if request.method == "POST":
-        createtripform = createtripForm(request.POST)
+    if request.method=="POST":
+        createtripform=createtripForm(request.POST)
         if createtripform.is_valid():
-            # ride time validation
-            datetimevalid = tripdatetimevalidation(request)
+            #ride time validation
+            datetimevalid=tripdatetimevalidation(request)
             if datetimevalid:
                 return datetimevalid
-
+            
             # commit=False: saves the form content but doesnot upload it into db yet
             newtrip = createtripform.save(commit=False)
-            newtrip.usercredentials = request.user
-
-            # make ride geometry into JSON format for db storage
-            routegeometry = json.loads(request.POST.get("routegeometry"))
-            newtrip.routegeometry = routegeometry
+            newtrip.usercredentials=request.user
+                
+            #make ride geometry into JSON format for db storage
+            routegeometry=json.loads(request.POST.get("routegeometry"))
+            newtrip.routegeometry=routegeometry
 
             newtrip.save()
             return redirect("testdriver")
@@ -256,23 +255,20 @@ def tripdetails(request):
             print(request.POST)
             return redirect("testdriver")
 
-# accept a ride request
-
-
+#accept a ride request
 def acceptride(request):
     print("ACCEPT")
-    currentrequest = riderequest.objects.get(id=request.POST.get("requestid"))
-    currentride = currentrequest.trip
-    rider = currentrequest.rider
-
-    if currentride.availableseats > 0:
-        currentrequest.status = "ACCEPTED"
+    currentrequest=riderequest.objects.get(id=request.POST.get("requestid"))
+    currentride=currentrequest.trip
+    rider=currentrequest.rider
+    
+    if currentride.availableseats>0:
+        currentrequest.status="ACCEPTED"
         currentrequest.save()
 
-        currentride.availableseats = currentride.availableseats-1
+        currentride.availableseats=currentride.availableseats-1
 
-        riderequest.objects.filter(rider=rider).exclude(
-            id=currentrequest.id).delete()
+        riderequest.objects.filter(rider=rider).exclude(id=currentrequest.id).delete()
 
         currentride.save()
         return redirect("testdriver")
@@ -280,30 +276,25 @@ def acceptride(request):
         messages.error(request, "Ride Max Capacity has already been filled!")
         return redirect("testdriver")
 
-# reject a ride request
-
-
+#reject a ride request
 def rejectride(request):
     print("REJECT")
-    currentrequest = riderequest.objects.get(id=request.POST.get("requestid"))
-    currentrequest.status = "REJECTED"
+    currentrequest=riderequest.objects.get(id=request.POST.get("requestid"))
+    currentrequest.status="REJECTED"
     currentrequest.save()
     return redirect("testdriver")
 
-# delete a posted ride
-
-
+#delete a posted ride
 def deleteride(request):
     print("DELETEING RIDE")
-    deleteride = trip.objects.get(id=request.POST.get("tripid"))
+    deleteride=trip.objects.get(id=request.POST.get("tripid"))
 
-    ridedatetime = datetime.combine(deleteride.ridedate, deleteride.ridetime)
-    ridedatetime = timezone.make_aware(ridedatetime)
-    timeremaining = ridedatetime-timezone.now()
+    ridedatetime=datetime.combine(deleteride.ridedate, deleteride.ridetime)
+    ridedatetime=timezone.make_aware(ridedatetime)
+    timeremaining=ridedatetime-timezone.now()
 
-    if timeremaining <= timedelta(minutes=20):
-        messages.error(
-            request, "Cannot delete ride within 20 minutes of start time.")
+    if timeremaining<=timedelta(minutes=20):
+        messages.error(request, "Cannot delete ride within 20 minutes of start time.")
         return redirect("testdriver")
 
     deleteride.delete()
@@ -312,26 +303,24 @@ def deleteride(request):
 
 
 def starttracking(request):
-    rideid = request.POST.get("tripid")
-    ride = trip.objects.get(id=rideid)
+    rideid=request.POST.get("tripid")
+    ride=trip.objects.get(id=rideid)
 
-    ride.status = "ONGOING"
+    ride.status="ONGOING"
     ride.save()
     return redirect("testlocation", rideid=rideid)
 
-# driver page routing function
-
-
+#driver page routing function
 def testdriverfunction(request):
-    cleanup(request)  # calling cleanup function to delete expired rides
-    requests = None
-    accepted = None
-    lasttrip = None
-    startride = True
+    cleanup(request)       #calling cleanup function to delete expired rides
+    requests=None
+    accepted=None
+    lasttrip=None
+    startride=True
 
-    # fetch trips of the current user
+    #fetch trips of the current user
     try:
-        lasttrip = trip.objects.get(usercredentials=request.user)
+        lasttrip=trip.objects.get(usercredentials=request.user)
         '''if lasttrip.status!="ONGOING":
             
             currenttime = timezone.localtime()
@@ -344,146 +333,144 @@ def testdriverfunction(request):
                 print("It's time to Start")
                 startride=True'''
 
-        requests = riderequest.objects.filter(trip=lasttrip, status="PENDING")
-        accepted = riderequest.objects.filter(trip=lasttrip, status="ACCEPTED")
+        requests=riderequest.objects.filter(trip=lasttrip,status="PENDING")
+        accepted=riderequest.objects.filter(trip=lasttrip,status="ACCEPTED")
     except Exception as e:
         print(e)
 
-    action = request.POST.get("action")
-    if action == "tripdetails":
+    action=request.POST.get("action")
+    if action=="tripdetails":
         return tripdetails(request)
-    elif action == "accept":
+    elif action=="accept":
         return acceptride(request)
-    elif action == "reject":
+    elif action=="reject":
         return rejectride(request)
-    elif action == "delete":
+    elif action=="delete":
         return deleteride(request)
-    elif action == "startride":
+    elif action=="startride":
         return starttracking(request)
 
-    return render(request, "testdriver.html", {"requests": requests, "accepted": accepted, "lasttrip": lasttrip, "startride": startride})
+    return render(request, "testdriver.html",{"requests":requests,"accepted":accepted,"lasttrip": lasttrip,"startride":startride})
 
 
-# ------------------------------------------------------RIDER PAGE FUNCTIONS------------------------------------------------------
-# default ride function
+
+
+
+#------------------------------------------------------RIDER PAGE FUNCTIONS------------------------------------------------------
+#default ride function
 def riderdetails(request):
-    location = request.POST.get("location")
-    latitude = request.POST.get("latitude")
-    longitude = request.POST.get("longitude")
-    direction = request.POST.get("direction")
+    location=request.POST.get("location")
+    latitude=request.POST.get("latitude")
+    longitude=request.POST.get("longitude")
+    direction=request.POST.get("direction")
 
-    request.session["riderlatitude"] = latitude
-    request.session["riderlongitude"] = longitude
-    print(location, latitude, longitude, direction)
+    request.session["riderlatitude"]=latitude
+    request.session["riderlongitude"]=longitude
+    print(location,latitude,longitude,direction)     
 
-    # collecting active trip details- for route optimization
-    availabletrips = []
-    activetrips = trip.objects.filter(status="ACTIVE")
+    #collecting active trip details- for route optimization
+    availabletrips=[]
+    activetrips=trip.objects.filter(status="ACTIVE")
     for trips in activetrips:
         availabletrips.append(trips)
 
-    print("Available Trip Routes: ", availabletrips)
-    latitude = float(latitude)
-    longitude = float(longitude)
+    print("Available Trip Routes: ",availabletrips)
+    latitude=float(latitude)
+    longitude=float(longitude)
 
-    rides = finalscore(latitude, longitude, availabletrips)
-    return rides, latitude, longitude
+    rides=finalscore(latitude,longitude,availabletrips)
+    return rides,latitude,longitude
 
-# request for a ride to driver
-
-
+#request for a ride to driver
 def requestride(request):
-    rideid = request.POST.get("rideid")
-    ride = get_object_or_404(trip, id=rideid)
+    rideid=request.POST.get("rideid")
+    ride=get_object_or_404(trip, id=rideid)
 
-    latitude = request.session.get("riderlatitude")
-    longitude = request.session.get("riderlongitude")
-    print(latitude, ",", longitude)
+    latitude=request.session.get("riderlatitude")
+    longitude=request.session.get("riderlongitude")
+    print(latitude,",",longitude)
 
-    riderequest.objects.create(
-        trip=ride, rider=request.user, pickuplatitude=latitude, pickuplongitude=longitude)
+    riderequest.objects.create(trip=ride,rider=request.user,pickuplatitude=latitude,pickuplongitude=longitude)
     return redirect("testrider")
 
-# cancel an active ride request
-
-
+#cancel an active ride request
 def cancelrequest(request):
     print(request.POST.get("requestid"))
-    cancelrequest = riderequest.objects.get(id=request.POST.get("requestid"))
-    cancelride = cancelrequest.trip
-
-    ridedatetime = datetime.combine(cancelride.ridedate, cancelride.ridetime)
-    ridedatetime = timezone.make_aware(ridedatetime)
-    timeremaining = ridedatetime-timezone.now()
-    if timeremaining <= timedelta(minutes=30):
-        messages.error(
-            request, "Cannot cancel a ride within 30 minutes of start time.")
+    cancelrequest=riderequest.objects.get(id=request.POST.get("requestid"))
+    cancelride=cancelrequest.trip
+    
+    ridedatetime=datetime.combine(cancelride.ridedate, cancelride.ridetime)
+    ridedatetime=timezone.make_aware(ridedatetime)
+    timeremaining=ridedatetime-timezone.now()
+    if timeremaining<=timedelta(minutes=30):
+        messages.error(request, "Cannot cancel a ride within 30 minutes of start time.")
         return redirect("testrider")
 
-    if cancelrequest.status == "ACCEPTED":
+    if cancelrequest.status=="ACCEPTED":
         print(cancelride.availableseats)
-        # increase trip seats if ride is cancelled after acceptance
-        cancelride.availableseats = cancelride.availableseats+1
+        cancelride.availableseats=cancelride.availableseats+1       #increase trip seats if ride is cancelled after acceptance
         cancelride.save()
     cancelrequest.delete()
-
+    
     messages.success(request, "Your Ride Request has been Cancelled!")
     return redirect("testrider")
 
 
 def seemore(request):
-    rideid = request.POST.get("tripid")
-    print("RideID: ", rideid)
-    ride = trip.objects.get(id=rideid)
+    rideid=request.POST.get("tripid")
+    print("RideID: ",rideid)
+    ride=trip.objects.get(id=rideid)
 
-    if ride.status != "ONGOING":
+    if ride.status!="ONGOING":
         messages.error(request, "Driver has not started the ride yet!")
         return redirect("testrider")
     else:
-        return redirect("testtracking", rideid=rideid)
+        return redirect("testtracking",rideid=rideid)
 
-# rider page routing function
-
-
+#rider page routing function
 def testriderfunction(request):
-    cleanup(request)  # calling cleanup function to delete expired rides
-    rides = None
-    requests = None
-    accepted = None
-    requestedrides = None
-    latitude = None
-    longitude = None
+    cleanup(request)       #calling cleanup function to delete expired rides
+    rides=None
+    requests=None
+    accepted=None
+    requestedrides=None
+    latitude=None
+    longitude=None
 
-    allrequest = riderequest.objects.filter(rider=request.user)
-    requests = riderequest.objects.filter(rider=request.user, status="PENDING")
-    accepted = riderequest.objects.filter(
-        rider=request.user, status="ACCEPTED")
-    pastrides = riderequest.objects.filter(
-        rider=request.user, status="COMPLETED")
+    allrequest=riderequest.objects.filter(rider=request.user)
+    requests=riderequest.objects.filter(rider=request.user, status="PENDING")
+    accepted=riderequest.objects.filter(rider=request.user, status="ACCEPTED")
+    pastrides=riderequest.objects.filter(rider=request.user, status="COMPLETED")
+    
+    if request.method=="POST":
+        action=request.POST.get("action")
 
-    if request.method == "POST":
-        action = request.POST.get("action")
+        if action=="riderdetails":
+            rides,latitude,longitude=riderdetails(request)
 
-        if action == "riderdetails":
-            rides, latitude, longitude = riderdetails(request)
-
-            # building a list of ongoing requests
-            requestedrides = []
-            ongoing = list(allrequest.values_list("id", flat=True))
+            #building a list of ongoing requests
+            requestedrides=[]
+            ongoing=list(allrequest.values_list("id", flat=True))
             for currentrequest in allrequest:
                 if currentrequest.id in ongoing:
-                    currenttrip = currentrequest.trip
+                    currenttrip=currentrequest.trip
                     requestedrides.append(currenttrip.id)
-            print("Active Requsted Trip ID: ", requestedrides)
+            print("Active Requsted Trip ID: ",requestedrides)
 
-        elif action == "requestride":
+        elif action=="requestride":
             return requestride(request)
-
-        elif action == "cancelrequest":
+        
+        elif action=="cancelrequest":
             return cancelrequest(request)
-
-        elif action == "seemore":
+    
+        elif action=="seemore":
             return seemore(request)
 
-    return render(request, "testrider.html", {"rides": rides, "requests": requests, "accepted": accepted, "requestedrides": requestedrides,
-                                              "pastrides": pastrides, "riderlatitude": latitude, "riderlongitude": longitude})
+    return render(request, "testrider.html",{"rides":rides,"requests":requests,"accepted":accepted,"requestedrides":requestedrides,
+                                             "pastrides":pastrides,"riderlatitude":latitude,"riderlongitude":longitude})
+
+
+
+
+
+
