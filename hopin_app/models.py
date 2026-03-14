@@ -73,7 +73,8 @@ class trip(models.Model):
     status=models.CharField(default="EMPTY")
     
     def __str__(self):
-        return self.usercredentials.email
+        return f"{self.usercredentials.email} : {self.status}"
+
 
 class riderequest(models.Model):
     id=models.AutoField(primary_key=True)

@@ -418,12 +418,10 @@ def cancelrequest(request):
     cancelrequest.delete()
 
     acceptedrequests=riderequest.objects.filter(trip=cancelride,status="ACCEPTED")
-    print("AR: ",acceptedrequests)
+    print("AR: ",len(acceptedrequests))
 
-    if acceptedrequests:
-        pass
-    else:
-        cancelride.status=="EMPTY"
+    if len(acceptedrequests)==0:
+        cancelride.status="EMPTY"
         cancelride.save()
     
     messages.success(request, "Your Ride Request has been Cancelled!")
