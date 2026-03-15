@@ -21,11 +21,13 @@
     <form method="POST" action="{% url 'testtracking' rideid %}">
         {% csrf_token %}
         <input type="hidden" name="tripid" id="tripid" value="{{ rideid }}">
-        <button type="submit" name="action" value="confirmride">Confirm</button>
+        <input type="hidden" name="requestid" id="requestid" value="{{ requestid }}">
+        <button type="submit" name="action" id="confirmbutton" value="confirmride" disabled>Confirm</button>
     </form>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        
         //csrf token for form submission
         function getCookie(name) {
             let cookieValue = null;
@@ -42,6 +44,29 @@
             return cookieValue;
         }
         const csrftoken = getCookie("csrftoken");
+
+        //ride request status check
+        function checkPickup() {
+            
+            fetch("/fetchstatus/{{ requestid }}/")
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.status)
+                if(data.status === "HALFCONFIRM") {
+
+                    document.getElementById("confirmbutton").disabled=false;
+
+                }
+                else
+                {
+                   document.getElementById("confirmbutton").disabled=true; 
+                }
+
+            });
+
+        }
+        setInterval(checkPickup, 3000);
+
 
 
         //set location on map

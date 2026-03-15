@@ -122,6 +122,7 @@ def cleanup(request):
 #to set location to show rider where currently driver is
 def fetchtracking(request,rideid):
     currentride=trip.objects.get(id=rideid)
+
     print("Tracked Latitiude: ",currentride.currentlatitude)
     print("Tracked Longitude: ",currentride.currentlongitude)
     return JsonResponse({
@@ -131,14 +132,20 @@ def fetchtracking(request,rideid):
         "status": currentride.status,
     })
 
+def fetchstatus(request,requestid):
+    currentrequest=riderequest.objects.get(id=requestid)
+    return JsonResponse({
+        "status": currentrequest.status
+    })
+
 def confirmride(request):
-    rideid=request.POST.get("tripid")
-    currentride=trip.objects.get(id=rideid)
-    currentrequest=riderequest.objects.get(trip=currentride,rider=request.user)
-    print("REQ: ",currentrequest)
-    currentrequest.status="CONFIRM"
+    requestid=request.POST.get("requestid")
+    requestid=request.POST.get("requestid")
+    currentrequest=riderequest.objects.get(id=requestid)
+    
+    currentrequest.status="FULLCONFIRM"
     currentrequest.save()
-    return redirect("testtracking",rideid=rideid)
+    return redirect("testtracking",rideid=request.POST.get("tripid"))
 
 #to render tracking page
 def testtrackingfunction(request,rideid):
@@ -146,7 +153,7 @@ def testtrackingfunction(request,rideid):
     currentride=get_object_or_404(trip, id=rideid, status="ONGOING")
     currentrideid=rideid
     
-    currentrequest=riderequest.objects.get(trip=currentride,rider=request.user,status__in=["ACCEPTED", "CONFIRM"])
+    currentrequest=riderequest.objects.get(trip=currentride,rider=request.user,status__in=["ACCEPTED", "HALFCONFIRM","FULLCONFIRM"])
     riderlatitude=currentrequest.pickuplatitude
     riderlongitude=currentrequest.pickuplongitude
 
@@ -155,35 +162,43 @@ def testtrackingfunction(request,rideid):
         if action=="confirmride":
             return confirmride(request)
 
-    return render(request, "testtracking.html",{"rideid":currentrideid,"riderlatitude":riderlatitude,"riderlongitude":riderlongitude})
+    return render(request, "testtracking.html",{"rideid":currentrideid,"requestid":currentrequest.id,"riderlatitude":riderlatitude,"riderlongitude":riderlongitude})
 
 #live location fetching from driver
 def testlocationfunction(request,rideid):
-    ride=get_object_or_404(trip, id=rideid, status="ONGOING")
+    ride=get_object_or_404(trip, id=rideid,status="ONGOING")
+    currentrequest=get_object_or_404(riderequest,trip=ride,status="ACCEPTED")
+    print("Current Req: ",currentrequest)
+
     if request.method=="POST":
-        data=json.loads(request.body)
-        latitude=data["latitude"]
-        longitude=data["longitude"]
+        action=request.POST.get("action")
+        if action=="pickup":
+            currentrequest.status="HALFCONFIRM"
+            currentrequest.save()
+        else:
+            data=json.loads(request.body)
+            latitude=data["latitude"]
+            longitude=data["longitude"]
 
-        print("Current Latitude: ",latitude)
-        print("Current Longitude: ",longitude)
+            print("Current Latitude: ",latitude)
+            print("Current Longitude: ",longitude)
 
-        currentride=trip.objects.get(usercredentials=request.user, status="ONGOING")
-        currentride.currentlatitude=latitude
-        currentride.currentlongitude=longitude
-        currentride.lastlocationupdate=timezone.now()      #fetches current time
-        currentride.save()
-
-        route=route = currentride.routegeometry
-        status=rideend(latitude,longitude,route)
-        if status==True:
-            '''currentride.status="COMPLETED"
-            currentrequest=riderequest.objects.get(trip=currentride,status="ACCEPTED")
-            currentrequest.status="COMPLETED"
-
+            currentride=trip.objects.get(usercredentials=request.user, status="ONGOING")
+            currentride.currentlatitude=latitude
+            currentride.currentlongitude=longitude
+            currentride.lastlocationupdate=timezone.now()      #fetches current time
             currentride.save()
-            currentrequest.save()'''
-            print("Ride Ended")
+
+            route=route = currentride.routegeometry
+            status=rideend(latitude,longitude,route)
+            if status==True:
+                '''currentride.status="COMPLETED"
+                currentrequest=riderequest.objects.get(trip=currentride,status="ACCEPTED")
+                currentrequest.status="COMPLETED"
+
+                currentride.save()
+                currentrequest.save()'''
+                print("Ride Ended")
     return render(request, "testlocation.html",{"rideid":rideid})
 
 
