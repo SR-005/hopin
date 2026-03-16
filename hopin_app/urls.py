@@ -7,7 +7,7 @@ urlpatterns = [
     path("testlocation/<int:rideid>/", views.testlocationfunction, name="testlocation"),   #test live location
     path("testtracking/<int:rideid>/", views.testtrackingfunction, name="testtracking"),   #test tracking
     path("fetchtracking/<int:rideid>/", views.fetchtracking, name="fetchtracking"),   #test tracking
-
+    path("fetchstatus/<int:requestid>/", views.fetchstatus, name="fetchstatus"),
 
     path("", views.landingfunction, name="landing"),
     path("login/", views.loginfunction, name="login"),

@@ -9,6 +9,12 @@
     <h1>Live Location</h1>
     <input type="hidden" name="rideid" id="rideid" value="{{ rideid }}">
 
+    <form method="POST" action="{% url 'testlocation' rideid %}">
+        {% csrf_token %}
+        <input type="hidden" name="tripid" id="tripid" value="{{ rideid }}">
+        <button type="submit" name="action" value="pickup">Pickup</button>
+    </form>
+
     <script>
         //csrf token for form submission
         function getCookie(name) {
