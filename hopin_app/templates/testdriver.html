@@ -119,17 +119,17 @@
     </div>
 
     <h1>Active Rides</h1>
-    {% if lasttrip %}
+    {% if activetrips %}
         <form method="POST" action="{% url 'testdriver' %}">
             {% csrf_token %}
 
-            <input type="hidden" name="tripid" id="tripid" value="{{ lasttrip.id }}">
-            <p>{{ lasttrip.preferedlocation }}</p>
-            <p>{{ lasttrip.prefereddirection }} College </p>
-            <p>Date: {{ lasttrip.ridedate }}</p>
-            <p>Time: {{ lasttrip.ridetime }}</p>
-            <p>Bike/Car: {{ lasttrip.vehicletype }}</p>
-            <p>Model: {{ lasttrip.vehiclename }}</p>
+            <input type="hidden" name="tripid" id="tripid" value="{{ activetrips.id }}">
+            <p>{{ activetrips.preferedlocation }}</p>
+            <p>{{ activetrips.prefereddirection }} College </p>
+            <p>Date: {{ activetrips.ridedate }}</p>
+            <p>Time: {{ activetrips.ridetime }}</p>
+            <p>Bike/Car: {{ activetrips.vehicletype }}</p>
+            <p>Model: {{ activetrips.vehiclename }}</p>
             <button type="submit" name="action" value="delete">Delete Ride</button>
         </form>
         {% else %}

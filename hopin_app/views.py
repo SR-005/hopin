@@ -9,7 +9,7 @@ from django.http import JsonResponse
 import json
 from datetime import date,time,datetime,timedelta
 from .models import userdetail, trip, riderequest
-from .ml.routeopt import finalscore,rideend
+from .ml.routeopt import finalscore,riderdropped
 
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -145,6 +145,10 @@ def confirmride(request):
     
     currentrequest.status="FULLCONFIRM"
     currentrequest.save()
+
+    currentrequest.trip.has_boarded=True
+    currentrequest.trip.save()
+
     return redirect("testtracking",rideid=request.POST.get("tripid"))
 
 #to render tracking page
@@ -164,53 +168,61 @@ def testtrackingfunction(request,rideid):
 
     return render(request, "testtracking.html",{"rideid":currentrideid,"requestid":currentrequest.id,"riderlatitude":riderlatitude,"riderlongitude":riderlongitude})
 
+def rideend(currentride):
+    if not currentride.has_boarded:
+        return
+    
+    pendingrides=riderequest.objects.filter(trip=currentride,status="FULLCONFIRM")
+    if not pendingrides.exists():
+        currentride.status="COMPLETED" 
+        currentride.save()
+
+        notboardedriders=riderequest.objects.filter(trip=currentride,status__in=["HALFCONFIRM","ACCEPTED"])
+        for riders in notboardedriders:
+            if riders.status=="HALFCONFIRM":
+                riders.status="DROPPED-NOT CONFIRMED"
+            else:
+                riders.status="NOTBOARDED"
+            riders.save()
+        print("Trip Ended")
+
 #live location fetching from driver
 def testlocationfunction(request,rideid):
-    ride=get_object_or_404(trip, id=rideid,status="ONGOING")
-    currentrequest=riderequest.objects.filter(trip=ride, status="ACCEPTED")
-    print("Current Req: ",currentrequest)
+    ride=get_object_or_404(trip, id=rideid)
+    if ride.status=="ONGOING":
+        currentrequest=riderequest.objects.filter(trip=ride, status="ACCEPTED")
+        print("Current Req: ",currentrequest)
 
-    if request.method=="POST":
-        action=request.POST.get("action")
-        if action=="pickup":
-            pickupid=request.POST.get("requestid")
-            pickuprider=get_object_or_404(riderequest, id=pickupid,status="ACCEPTED")
-            pickuprider.status="HALFCONFIRM"
-            pickuprider.save()
-        else:
-            data=json.loads(request.body)
-            latitude=data["latitude"]
-            longitude=data["longitude"]
+        if request.method=="POST":
+            action=request.POST.get("action")
+            if action=="pickup":
+                pickupid=request.POST.get("requestid")
+                pickuprider=get_object_or_404(riderequest, id=pickupid,status="ACCEPTED")
+                pickuprider.status="HALFCONFIRM"
+                pickuprider.save()
+            else:
+                data=json.loads(request.body)
+                latitude=data["latitude"]
+                longitude=data["longitude"]
 
-            print("Current Latitude: ",latitude)
-            print("Current Longitude: ",longitude)
+                print("Current Latitude: ",latitude)
+                print("Current Longitude: ",longitude)
 
-            currentride=trip.objects.get(usercredentials=request.user, status="ONGOING")
-            currentride.currentlatitude=latitude
-            currentride.currentlongitude=longitude
-            currentride.lastlocationupdate=timezone.now()      #fetches current time
-            currentride.save()
-
-            #ride end checking
-            riders=riderequest.objects.filter(trip=currentride,status__in=["FULLCONFIRM","HALFCONFIRM","ACCEPTED"])
-            route=route = currentride.routegeometry
-            status=rideend(latitude,longitude,riders)
-            print("Ride Status: ",status)
-            if status==True:
-                currentride.status="COMPLETED"
-                for currentrequest in riders:
-                    if currentrequest.status=="FULLCONFIRM":
-                        currentrequest.status="COMPLETED"
-                    elif currentrequest.status=="HALFCONFIRM":
-                        currentrequest.status="ENDED- HALF CONFIRMED"
-                    elif currentrequest.status=="ACCEPTED":
-                        currentrequest.status="ENDED- NO PICKUP"
-                    currentrequest.save()
-                    
+                currentride=trip.objects.get(usercredentials=request.user, status="ONGOING")
+                currentride.currentlatitude=latitude
+                currentride.currentlongitude=longitude
+                currentride.lastlocationupdate=timezone.now()      #fetches current time
                 currentride.save()
-                print("Ride Ended")
-    return render(request, "testlocation.html",{"rideid":rideid,"riders":currentrequest})
 
+                #ride end checking
+                riders=riderequest.objects.filter(trip=currentride,status__in=["FULLCONFIRM","HALFCONFIRM","ACCEPTED"])
+                riderdropped(latitude,longitude,riders)
+                rideend(currentride)
+    else:
+        messages.error(request, "This Ride has Successfully been completed")
+        return redirect("testdriver")
+
+    return render(request, "testlocation.html",{"rideid":rideid,"riders":currentrequest})
 
 
 
@@ -346,10 +358,13 @@ def testdriverfunction(request):
     accepted=None
     lasttrip=None
     startride=True
-
+    activetrips=None
     #fetch trips of the current user
     try:
-        lasttrip=trip.objects.get(usercredentials=request.user)
+        lasttrip=trip.objects.filter(usercredentials=request.user,status="COMPLETED").first()
+        activetrips=trip.objects.filter(usercredentials=request.user,status__in=["ACTIVE", "EMPTY"]).first()
+        print("ACTIVE: ",activetrips)
+        print("PAST: ",lasttrip)
         '''if lasttrip.status!="ONGOING":
             
             currenttime = timezone.localtime()
@@ -362,8 +377,8 @@ def testdriverfunction(request):
                 print("It's time to Start")
                 startride=True'''
 
-        requests=riderequest.objects.filter(trip=lasttrip,status="PENDING")
-        accepted=riderequest.objects.filter(trip=lasttrip,status="ACCEPTED")
+        requests=riderequest.objects.filter(trip=activetrips,status="PENDING")
+        accepted=riderequest.objects.filter(trip=activetrips,status="ACCEPTED")
     except Exception as e:
         print(e)
 
@@ -379,7 +394,8 @@ def testdriverfunction(request):
     elif action=="startride":
         return starttracking(request)
 
-    return render(request, "testdriver.html",{"requests":requests,"accepted":accepted,"lasttrip": lasttrip,"startride":startride})
+    return render(request, "testdriver.html",{"requests":requests,"accepted":accepted,"lasttrip": lasttrip,"startride":startride,
+                                              "activetrips":activetrips})
 
 
 

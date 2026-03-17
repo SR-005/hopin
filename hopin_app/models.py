@@ -71,6 +71,7 @@ class trip(models.Model):
     vehiclenumber=models.CharField(max_length=12,null=False, blank=False)       #KL 41 **** ****
     vehiclemodel=models.CharField(null=False, blank=False)                     #car or bike model name
     status=models.CharField(default="EMPTY")
+    has_boarded = models.BooleanField(default=False)
     
     def __str__(self):
         return f"{self.usercredentials.email} : {self.status}"

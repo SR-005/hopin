@@ -119,20 +119,13 @@ def finalscore(riderlatitude,riderlongitude,availabletrips):
 
     return ranked
 
-def rideend(currentlatitude,currentlongitude,route):
-    coordinates=route["coordinates"]
-    destination=coordinates[-1]
-    destinationlatitude=destination[1]
-    destinationlongitude=destination[0]
-
+def riderdropped(currentlatitude,currentlongitude,riders):
     completionradius=0.05
-    distance=haversine((currentlatitude,currentlongitude),
-                           (destinationlatitude,destinationlongitude),
-                           unit=Unit.KILOMETERS)
+    for ride in riders:
+        if ride.status=="FULLCONFIRM":
+            distance=haversine((currentlatitude,currentlongitude),(ride.pickuplatitude,ride.pickuplongitude), unit=Unit.KILOMETERS)
     
-    if distance<=completionradius:
-        print("Ride Ended")
-        status=True
-    else:
-        status=False
-    return status
+            if distance<=completionradius:
+                ride.status="DROPPED"
+                ride.save()
+                print(f"Ride ended for {ride}")
