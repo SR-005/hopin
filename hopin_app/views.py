@@ -384,6 +384,10 @@ def testdriverfunction(request):
 
     action=request.POST.get("action")
     if action=="tripdetails":
+        notallowed=trip.objects.filter(usercredentials=request.user,status__in=["EMPTY","ACTIVE","ONGOING"]).exists()
+        if notallowed:
+            messages.error(request, "Cannot Create Two Rides at Once!!")
+            return redirect("testdriver")
         return tripdetails(request)
     elif action=="accept":
         return acceptride(request)

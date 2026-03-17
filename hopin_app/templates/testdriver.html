@@ -88,7 +88,7 @@
 
             {% comment %} Time {% endcomment %}
             <label>Time</label>
-            <input type="time" name="ridetime" value="{{ lasttrip.ridetime|time:'H:i'|default:'' }}">
+            <input type="time" id="ridetime" name="ridetime" value="{{ lasttrip.ridetime|time:'H:i'|default:'' }}">
 
             {% comment %} vehicle type {% endcomment %}
             <div class="mb-2">
