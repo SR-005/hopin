@@ -130,7 +130,7 @@ def rideend(currentlatitude,currentlongitude,route):
                            (destinationlatitude,destinationlongitude),
                            unit=Unit.KILOMETERS)
     
-    if distance>=completionradius:
+    if distance<=completionradius:
         print("Ride Ended")
         status=True
     else:

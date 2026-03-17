@@ -167,14 +167,16 @@ def testtrackingfunction(request,rideid):
 #live location fetching from driver
 def testlocationfunction(request,rideid):
     ride=get_object_or_404(trip, id=rideid,status="ONGOING")
-    currentrequest=get_object_or_404(riderequest,trip=ride,status="ACCEPTED")
+    currentrequest=riderequest.objects.filter(trip=ride, status="ACCEPTED")
     print("Current Req: ",currentrequest)
 
     if request.method=="POST":
         action=request.POST.get("action")
         if action=="pickup":
-            currentrequest.status="HALFCONFIRM"
-            currentrequest.save()
+            pickupid=request.POST.get("requestid")
+            pickuprider=get_object_or_404(riderequest, id=pickupid,status="ACCEPTED")
+            pickuprider.status="HALFCONFIRM"
+            pickuprider.save()
         else:
             data=json.loads(request.body)
             latitude=data["latitude"]
@@ -189,17 +191,25 @@ def testlocationfunction(request,rideid):
             currentride.lastlocationupdate=timezone.now()      #fetches current time
             currentride.save()
 
+            #ride end checking
+            riders=riderequest.objects.filter(trip=currentride,status__in=["FULLCONFIRM","HALFCONFIRM","ACCEPTED"])
             route=route = currentride.routegeometry
-            status=rideend(latitude,longitude,route)
+            status=rideend(latitude,longitude,riders)
+            print("Ride Status: ",status)
             if status==True:
-                '''currentride.status="COMPLETED"
-                currentrequest=riderequest.objects.get(trip=currentride,status="ACCEPTED")
-                currentrequest.status="COMPLETED"
-
+                currentride.status="COMPLETED"
+                for currentrequest in riders:
+                    if currentrequest.status=="FULLCONFIRM":
+                        currentrequest.status="COMPLETED"
+                    elif currentrequest.status=="HALFCONFIRM":
+                        currentrequest.status="ENDED- HALF CONFIRMED"
+                    elif currentrequest.status=="ACCEPTED":
+                        currentrequest.status="ENDED- NO PICKUP"
+                    currentrequest.save()
+                    
                 currentride.save()
-                currentrequest.save()'''
                 print("Ride Ended")
-    return render(request, "testlocation.html",{"rideid":rideid})
+    return render(request, "testlocation.html",{"rideid":rideid,"riders":currentrequest})
 
 
 
@@ -282,7 +292,7 @@ def acceptride(request):
         currentrequest.save()
 
         currentride.availableseats=currentride.availableseats-1
-        
+        print(currentride.availableseats)
         if currentride.status=="EMPTY":
             currentride.status="ACTIVE"
             currentride.save()

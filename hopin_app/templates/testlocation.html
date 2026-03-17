@@ -9,11 +9,15 @@
     <h1>Live Location</h1>
     <input type="hidden" name="rideid" id="rideid" value="{{ rideid }}">
 
-    <form method="POST" action="{% url 'testlocation' rideid %}">
-        {% csrf_token %}
-        <input type="hidden" name="tripid" id="tripid" value="{{ rideid }}">
-        <button type="submit" name="action" value="pickup">Pickup</button>
-    </form>
+    {% for rider in riders %}
+        <form method="POST" action="{% url 'testlocation' rideid %}">
+            {% csrf_token %}
+            <p>{{ rider }}</p>
+            <input type="hidden" name="tripid" id="tripid" value="{{ rideid }}">
+            <input type="hidden" name="requestid" id="requestid" value="{{ rider.id }}">
+            <button type="submit" name="action" value="pickup">Pickup</button>
+        </form>
+    {% endfor %}
 
     <script>
         //csrf token for form submission
