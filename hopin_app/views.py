@@ -122,7 +122,12 @@ def cleanup(request):
 #to set location to show rider where currently driver is
 def fetchtracking(request,rideid):
     currentride=trip.objects.get(id=rideid)
-
+    requestid=request.GET.get("requestid")
+    currentrequest=riderequest.objects.get(id=requestid)
+    if currentrequest.status=="DROPPED" or currentride.status=="COMPLETED":
+        messages.error(request, "This Ride has been Ended")
+        return redirect("testrider")
+    
     print("Tracked Latitiude: ",currentride.currentlatitude)
     print("Tracked Longitude: ",currentride.currentlongitude)
     return JsonResponse({

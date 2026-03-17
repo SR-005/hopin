@@ -34,15 +34,15 @@
 
             <p>{{ request.rider }}</p>
             <input type="hidden" name="tripid" id="tripid" value="{{ request.trip.id }}">
-            {% if startride %}
-            <button type="submit" name="action" value="startride">Start Ride</button>
-            {% else %}
-            <a href="{% url 'testrider' %}" <button type="submit" name="action" value="startride" disabled>Start
-                Ride</button>
-            </a>
-            {% endif %}
-        </form>
+        
         {% endfor %}
+            {% if startride %}
+                <button type="submit" name="action" value="startride">Start Ride</button>
+            {% else %}
+                <a href="{% url 'testrider' %}" <button type="submit" name="action" value="startride" disabled>Start Ride</button>
+                </a>
+            {% endif %}
+            </form>
         {% else %}
     <p>No Accepted Rides</p>
     {% endif %}

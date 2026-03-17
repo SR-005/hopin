@@ -82,7 +82,7 @@
 
         function getDriverLocation(){
 
-            fetch("/fetchtracking/{{ rideid }}/")
+            fetch("/fetchtracking/{{ rideid }}/?requestid={{ requestid }}`")
             .then(res => res.json())
             .then(data => {
                 const lat = data.lat;
