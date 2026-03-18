@@ -11,7 +11,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
 
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&display=swap"rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
@@ -694,6 +695,12 @@
 
                 destinationInput.disabled = true;
                 pickupInput.disabled = false;
+                const timeInput = document.getElementById("rideTime");
+
+                timeInput.min = "";       // no lower limit
+                timeInput.max = "08:00";
+                timeInput.type = "time";
+                timeInput.value = "07:45";
             });
 
             fromBtn.addEventListener("click", function () {
@@ -709,6 +716,12 @@
 
                 pickupInput.disabled = true;
                 destinationInput.disabled = false;
+                const timeInput = document.getElementById("rideTime");
+
+                timeInput.min = "13:30"; // after college ends
+                timeInput.max = "";
+                timeInput.type = "time";
+                timeInput.value = "13:30";
             });
         });
     </script>
@@ -778,6 +791,21 @@
             });
 
         }
+        const dateInput = document.getElementById("rideDate");
+
+        // Get today
+        const today = new Date();
+        const tomorrow = new Date();
+        tomorrow.setDate(today.getDate() + 1);
+
+        // Format to YYYY-MM-DD
+        function formatDate(date) {
+            return date.toISOString().split("T")[0];
+        }
+
+        // Set min and max
+        dateInput.min = formatDate(today);
+        dateInput.max = formatDate(tomorrow);
 
     </script>
 
