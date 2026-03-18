@@ -89,4 +89,15 @@ class riderequest(models.Model):
         unique_together = ("trip", "rider")
 
     def __str__(self):
-        return f"{self.rider.email} → Ride {self.trip.usercredentials}"
+        return f"{self.rider.email} → Ride {self.trip.usercredentials} : {self.status}"
+    
+class payment(models.Model):
+    id=models.AutoField(primary_key=True)
+    requestdetails=models.ForeignKey(riderequest,on_delete=models.CASCADE)
+    amount=models.FloatField()
+    status=models.CharField(default="PENDING")
+    orderid=models.CharField(null=True,blank=True)
+    paymentid=models.CharField(null=True,blank=True)
+
+    def __str__(self):
+        return f"{self.requestdetails} : {self.status}"
