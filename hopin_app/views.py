@@ -8,7 +8,7 @@ from django.http import JsonResponse
 
 import json
 from datetime import date,time,datetime,timedelta
-from .models import userdetail, trip, riderequest
+from .models import userdetail, trip, riderequest,payment
 from .ml.routeopt import finalscore,riderdropped
 
 from django.contrib.auth import get_user_model
@@ -131,10 +131,8 @@ def fetchtracking(request,rideid):
     print("Tracked Latitiude: ",currentride.currentlatitude)
     print("Tracked Longitude: ",currentride.currentlongitude)
     return JsonResponse({
-        "lat": currentride.currentlatitude,
-        "lng": currentride.currentlongitude,
-        "route": json.dumps(currentride.routegeometry),
-        "status": currentride.status,
+        "lat": currentride.currentlatitude,"lng": currentride.currentlongitude,
+        "route": json.dumps(currentride.routegeometry),"status": currentride.status,
     })
 
 def fetchstatus(request,requestid):
@@ -185,10 +183,16 @@ def rideend(currentride):
         notboardedriders=riderequest.objects.filter(trip=currentride,status__in=["HALFCONFIRM","ACCEPTED"])
         for riders in notboardedriders:
             if riders.status=="HALFCONFIRM":
-                riders.status="DROPPED-NOT CONFIRMED"
+                riders.status="DROPPEDNOTCONFIRMED"
             else:
                 riders.status="NOTBOARDED"
             riders.save()
+
+        ridecompletedriders=riderequest.objects.filter(trip=currentride,status__in=["DROPPEDNOTCONFIRMED","DROPPED"])
+        for riders in ridecompletedriders:
+            payment.objects.create(requestdetails=riders,amount=10)
+            payment.save()
+            print(f"Payment Request Created for {riders}")
         print("Trip Ended")
 
 #live location fetching from driver
