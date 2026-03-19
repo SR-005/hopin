@@ -18,6 +18,14 @@ User = get_user_model()
 # Create your views here.
 
 
+def testpayfunction(request,paymentid):
+    currentpayment=payment.objects.get(id=paymentid)
+    if request.method=="POST":
+        print("You are now paying")
+    return render(request, "testpay.html",{"paymentdetails":currentpayment})
+
+
+
 #------------------------------------------------------LANDING PAGE FUNCTIONS------------------------------------------------------
 #checks if there are any pending payments
 def paymentchecker(request):
@@ -48,6 +56,12 @@ def landingfunction(request):
     except:
         print("User is not Logged in or Logged Out")
         status="false"
+
+    if request.method=="POST":
+        action=request.POST.get("action")
+        if action=="paypending":
+            paymentid=request.POST.get("paymentid")
+            return redirect("testpay",paymentid=paymentid)
 
     pendingpayment=paymentchecker(request)
     return render(request, "landing.html", {"status":status,"user":user,"firstname":firstname,"pending":pendingpayment})
