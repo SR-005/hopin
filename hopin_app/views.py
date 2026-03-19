@@ -19,11 +19,23 @@ User = get_user_model()
 
 
 #------------------------------------------------------LANDING PAGE FUNCTIONS------------------------------------------------------
+#checks if there are any pending payments
+def paymentchecker(request):
+    pendingpayments=payment.objects.filter(requestdetails__rider=request.user,status="PENDING")
+    if pendingpayments.exists():
+        pendingpayments=pendingpayments.first()
+        print(f"Payment Pending for: ",pendingpayments.requestdetails)
+        return pendingpayments
+    return None
+
+
+
 # Main Landing Page View
 def landingfunction(request):
     user=None
     username=None
     firstname=None
+    pendingpayment=None
     try:
         print("Current User Email: ", request.user.email)
         if request.user.email!=None:
@@ -37,7 +49,8 @@ def landingfunction(request):
         print("User is not Logged in or Logged Out")
         status="false"
 
-    return render(request, "landing.html", {"status":status,"user":user,"firstname":firstname})
+    pendingpayment=paymentchecker(request)
+    return render(request, "landing.html", {"status":status,"user":user,"firstname":firstname,"pending":pendingpayment})
 
 # Main Logout Function
 def logoutfunction(request):
