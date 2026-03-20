@@ -3,16 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <title>Live Tracking</title>
 </head>
 
 <body>
     <h1>Payment</h1>
-    <form method="POST">
+    <form method="POST" action="{% url 'testpay' paymentdetails.id %}">
     {% csrf_token %}
         <h3>{{ paymentdetails }}</h1>
-        <button type="submit">Pay</button>
+        <input type="hidden" name="requestid" value="{{ paymentdetails.requestdetails.id }}">   
+        <button type="submit" name="action" value="completepayment">Pay</button>
     </form>
+
+    {% if paymentdetails.status == "PENDING" %}
+        {% if orderid %}
+        <script>
+            var options = {
+                "key": "{{ RAZORID }}",
+                "amount": "{{ amount }}",
+                "currency": "INR",
+                "name": "Hop In",
+                "order_id": "{{ orderid }}",
+
+                "handler": function (response){
+                    fetch("/verifypayment/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": "{{ csrf_token }}"
+                        },
+                        body: JSON.stringify(response)
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.status === "success"){
+                            alert("Payment Successful");
+                            window.location.replace("{% url 'landing' %}");
+                        }
+                    });
+                }
+            };
+
+            var rzp = new Razorpay(options);
+            rzp.open();
+        </script>
+        {% endif %}
+    
+    {% endif %}
+    
 </body>
 </html>

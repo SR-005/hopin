@@ -6,7 +6,10 @@ from django.utils import timezone
 from django.db.models import Q
 from django.http import JsonResponse
 
+import razorpay
 import json
+import os
+from dotenv import load_dotenv
 from datetime import date,time,datetime,timedelta
 from .models import userdetail, trip, riderequest,payment
 from .ml.routeopt import finalscore,riderdropped
@@ -15,14 +18,62 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
+load_dotenv()
+RAZORID=os.getenv("RAZORPAYKEY")
+RAZORSECRET=os.getenv("RAZORPAYSECRET")
+razorpayclient=razorpay.Client(auth=(RAZORID,RAZORSECRET))
+
 # Create your views here.
 
 
+def verifypayment(request):
+    if request.method=="POST":
+        data=json.loads(request.body)
+        try:
+            razorpayclient.utility.verify_payment_signature({
+                'razorpay_order_id':data['razorpay_order_id'],
+                'razorpay_payment_id':data['razorpay_payment_id'],
+                'razorpay_signature':data['razorpay_signature']
+            })
+
+            currentpayment=payment.objects.get(orderid=data['razorpay_order_id'])
+            currentpayment.paymentid=data['razorpay_payment_id']
+            currentpayment.status="PAID"
+            currentpayment.save()
+            return JsonResponse({"status": "success"})
+        except:
+            return JsonResponse({"status": "failed"})
+
+def createpayment(request):
+    requestid=request.POST.get("requestid")
+    currentrequest=riderequest.objects.get(id=requestid)
+
+    print("RAZORID",RAZORID)
+    print("RAZORSECRET",RAZORSECRET)
+    razorpayclient=razorpay.Client(auth=(RAZORID,RAZORSECRET))
+    amount=1000  #amount should be in paise: 10 rupees=1000 paise
+    currentorder=razorpayclient.order.create({
+        "amount":amount,
+        "currency":"INR",
+        "payment_capture": 1
+    })
+    print("Payment Created Successfully")
+    return currentorder["id"],amount
+
+
 def testpayfunction(request,paymentid):
+    currentorderid=None
+    currentamount=None
+
     currentpayment=payment.objects.get(id=paymentid)
     if request.method=="POST":
-        print("You are now paying")
-    return render(request, "testpay.html",{"paymentdetails":currentpayment})
+        action=request.POST.get("action")
+        if action=="completepayment":
+            currentorderid,currentamount=createpayment(request)
+            currentpayment.orderid=currentorderid
+            currentpayment.save()
+    return render(request, "testpay.html",{"paymentdetails":currentpayment,"orderid":currentorderid,"amount":currentamount,
+                                           "RAZORID":RAZORID})
 
 
 
