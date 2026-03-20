@@ -147,7 +147,7 @@ AUTH_USER_MODEL = "hopin_app.User"
 
 LOGIN_URL = '/login/'
 
-LOGIN_REDIRECT_URL = '/landing/'
+LOGIN_REDIRECT_URL = '/'
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
