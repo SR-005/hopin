@@ -40,13 +40,31 @@
     </br>
 
     {% comment %} past rides {% endcomment %}
-    <h1>Past Rides</h1>
+    <h1>History</h1>
     {% if pastrides %}
           {% for rides in pastrides %}
             <p>{{ rides.trip.usercredentials }}</p>
           {% endfor %}
       {% else %}
         <p>No Previous Rides</p>
+    {% endif %}
+
+    <h1>Past Rides: Active</h1>
+    {% if preferredtrips %}
+          {% for trip in preferredtrips %}
+            <form method="POST" action="{% url 'testrider' %}">
+            {% csrf_token %}
+            <p>{{ trip.usercredentials }}</p>
+            <input type="hidden" name="tripid" id="tripid" value="{{ trip.id }}">
+            {% if trip.id in requestedrides %}
+              <button type="submit" disabled>Re-Book</button>
+            {% else %}
+              <button type="submit" name="action" value="bookagain">Re-Book</button>
+            {% endif %}
+          </form>
+          {% endfor %}
+      {% else %}
+        <p>No Previous Rides are Active</p>
     {% endif %}
 
     {% comment %} create new trip {% endcomment %}

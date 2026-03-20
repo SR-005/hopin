@@ -494,6 +494,18 @@ def testdriverfunction(request):
 
 #------------------------------------------------------RIDER PAGE FUNCTIONS------------------------------------------------------
 
+def rebookable(pastrides):
+    preferredtrips=[]
+    driveremails=list(pastrides.values_list('trip__usercredentials__email', flat=True).distinct())
+    print("Drivers: ",driveremails)
+
+    for driveremail in driveremails:
+        driverobject=User.objects.get(email=driveremail)
+        activeagain=trip.objects.filter(usercredentials=driverobject,status__in=["EMPTY","ACTIVE"])
+        if activeagain.exists():
+            preferredtrips.append(activeagain.first())
+    return preferredtrips
+
 def requesttimevalidation(request):
     direction=request.POST.get("direction")
     print("TIME: ",request.POST.get("ridetime"))
@@ -571,6 +583,22 @@ def requestride(request):
     riderequest.objects.create(trip=ride,rider=request.user,pickuplatitude=latitude,pickuplongitude=longitude)
     return redirect("testrider")
 
+#request for a ride previously booked driver
+def requestrideagain(request,pastrides):
+    tripid=request.POST.get("tripid")
+    print("Book Again ID: ",tripid)
+    currenttrip=trip.objects.get(id=tripid)
+    listpastrides=list(pastrides)
+
+    for pastride in listpastrides:
+        if pastride.trip.usercredentials.email==currenttrip.usercredentials.email: 
+            ridelatitude=pastride.pickuplatitude
+            riderlongitude=pastride.pickuplongitude
+            print("Prev LAT: ",ridelatitude)
+            print("Prev LONG: ",riderlongitude)
+    riderequest.objects.create(trip=currenttrip,rider=request.user,pickuplatitude=ridelatitude,pickuplongitude=riderlongitude)
+    return redirect("testrider")
+
 #cancel an active ride request
 def cancelrequest(request):
     print(request.POST.get("requestid"))
@@ -601,7 +629,19 @@ def cancelrequest(request):
     messages.success(request, "Your Ride Request has been Cancelled!")
     return redirect("testrider")
 
+#fetch all currently ongoing ride requests
+def ongoingrequest(allrequest):
+    #building a list of ongoing requests
+    requestedrides=[]
+    ongoing=list(allrequest.values_list("id", flat=True))
+    for currentrequest in allrequest:
+        if currentrequest.id in ongoing:
+            currenttrip=currentrequest.trip
+            requestedrides.append(currenttrip.id)
+    print("Active Requsted Trip ID: ",requestedrides)
+    return requestedrides
 
+#redirect to location tracking page if ride has started
 def seemore(request):
     rideid=request.POST.get("tripid")
     print("RideID: ",rideid)
@@ -622,36 +662,25 @@ def testriderfunction(request):
     requestedrides=None
     latitude=None
     longitude=None
-    preferredtrips=[]
+    preferredtrips=None
 
     allrequest=riderequest.objects.filter(rider=request.user)
     requests=riderequest.objects.filter(rider=request.user, status="PENDING")
     accepted=riderequest.objects.filter(rider=request.user, status="ACCEPTED")
     pastrides=riderequest.objects.filter(rider=request.user, status="DROPPED",paymentdetails__status="PAID")
-    driveremails=list(pastrides.values_list('trip__usercredentials__email', flat=True).distinct())
-    print("Drivers: ",driveremails)
-
-    for driveremail in driveremails:
-        driverobject=User.objects.get(email=driveremail)
-        activeagain=trip.objects.filter(usercredentials=driverobject,status__in=["EMPTY","ACTIVE"])
-        if activeagain.exists():
-            preferredtrips.append(activeagain.first())
-
+    
+    preferredtrips=rebookable(pastrides)
+    requestedrides=ongoingrequest(allrequest)
     print("Prefered Trips: ",preferredtrips)
     if request.method=="POST":
         action=request.POST.get("action")
 
         if action=="riderdetails":
             rides,latitude,longitude=riderdetails(request)
+            
 
-            #building a list of ongoing requests
-            requestedrides=[]
-            ongoing=list(allrequest.values_list("id", flat=True))
-            for currentrequest in allrequest:
-                if currentrequest.id in ongoing:
-                    currenttrip=currentrequest.trip
-                    requestedrides.append(currenttrip.id)
-            print("Active Requsted Trip ID: ",requestedrides)
+        if action=="bookagain":
+            requestrideagain(request,pastrides)
 
         elif action=="requestride":
             return requestride(request)
@@ -663,7 +692,7 @@ def testriderfunction(request):
             return seemore(request)
 
     return render(request, "testrider.html",{"rides":rides,"requests":requests,"accepted":accepted,"requestedrides":requestedrides,
-                                             "pastrides":pastrides,"riderlatitude":latitude,"riderlongitude":longitude})
+                                             "pastrides":pastrides,"preferredtrips":preferredtrips,"riderlatitude":latitude,"riderlongitude":longitude})
 
 
 
