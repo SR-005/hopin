@@ -1,6 +1,7 @@
 from .forms import signupForm, loginForm, createtripForm
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q
@@ -100,10 +101,12 @@ def landingfunction(request):
         if request.user.email!=None:
             user=request.user
             status="true"
-        username=User.objects.get(email=request.user.email)
-        username=str(username.first_name).upper()
-        username=username.split()
-        firstname=username[0]
+            username=User.objects.get(email=request.user.email)
+            username=str(username.first_name).upper()
+            username=username.split()
+            firstname=username[0]
+
+            pendingpayment=paymentchecker(request)
     except:
         print("User is not Logged in or Logged Out")
         status="false"
@@ -113,8 +116,9 @@ def landingfunction(request):
         if action=="paypending":
             paymentid=request.POST.get("paymentid")
             return redirect("testpay",paymentid=paymentid)
+    
 
-    pendingpayment=paymentchecker(request)
+    
     return render(request, "landing.html", {"status":status,"user":user,"firstname":firstname,"pending":pendingpayment})
 
 # Main Logout Function
@@ -439,6 +443,7 @@ def starttracking(request):
     return redirect("testlocation", rideid=rideid)
 
 #driver page routing function
+@login_required
 def testdriverfunction(request):
     cleanup(request)       #calling cleanup function to delete expired rides
     requests=None
@@ -494,6 +499,7 @@ def testdriverfunction(request):
 
 #------------------------------------------------------RIDER PAGE FUNCTIONS------------------------------------------------------
 
+#selectes rides from past that are active again
 def rebookable(pastrides):
     preferredtrips=[]
     driveremails=list(pastrides.values_list('trip__usercredentials__email', flat=True).distinct())
@@ -654,6 +660,7 @@ def seemore(request):
         return redirect("testtracking",rideid=rideid)
 
 #rider page routing function
+@login_required
 def testriderfunction(request):
     cleanup(request)       #calling cleanup function to delete expired rides
     rides=None
@@ -668,7 +675,7 @@ def testriderfunction(request):
     requests=riderequest.objects.filter(rider=request.user, status="PENDING")
     accepted=riderequest.objects.filter(rider=request.user, status="ACCEPTED")
     pastrides=riderequest.objects.filter(rider=request.user, status="DROPPED",paymentdetails__status="PAID")
-    
+
     preferredtrips=rebookable(pastrides)
     requestedrides=ongoingrequest(allrequest)
     print("Prefered Trips: ",preferredtrips)
