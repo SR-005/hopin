@@ -25,6 +25,7 @@ razorpayclient=razorpay.Client(auth=(RAZORID,RAZORSECRET))
 
 # Create your views here.
 
+#------------------------------------------------------PAYMENT PAGE FUNCTIONS------------------------------------------------------
 
 def verifypayment(request):
     if request.method=="POST":
@@ -60,7 +61,6 @@ def createpayment(request):
     print("Payment Created Successfully")
     return currentorder["id"],amount
 
-
 def testpayfunction(request,paymentid):
     currentorderid=None
     currentamount=None
@@ -77,6 +77,8 @@ def testpayfunction(request,paymentid):
 
 
 
+
+
 #------------------------------------------------------LANDING PAGE FUNCTIONS------------------------------------------------------
 #checks if there are any pending payments
 def paymentchecker(request):
@@ -86,8 +88,6 @@ def paymentchecker(request):
         print(f"Payment Pending for: ",pendingpayments.requestdetails)
         return pendingpayments
     return None
-
-
 
 # Main Landing Page View
 def landingfunction(request):
@@ -622,12 +622,22 @@ def testriderfunction(request):
     requestedrides=None
     latitude=None
     longitude=None
+    preferredtrips=[]
 
     allrequest=riderequest.objects.filter(rider=request.user)
     requests=riderequest.objects.filter(rider=request.user, status="PENDING")
     accepted=riderequest.objects.filter(rider=request.user, status="ACCEPTED")
-    pastrides=riderequest.objects.filter(rider=request.user, status="COMPLETED")
-    
+    pastrides=riderequest.objects.filter(rider=request.user, status="DROPPED",paymentdetails__status="PAID")
+    driveremails=list(pastrides.values_list('trip__usercredentials__email', flat=True).distinct())
+    print("Drivers: ",driveremails)
+
+    for driveremail in driveremails:
+        driverobject=User.objects.get(email=driveremail)
+        activeagain=trip.objects.filter(usercredentials=driverobject,status__in=["EMPTY","ACTIVE"])
+        if activeagain.exists():
+            preferredtrips.append(activeagain.first())
+
+    print("Prefered Trips: ",preferredtrips)
     if request.method=="POST":
         action=request.POST.get("action")
 

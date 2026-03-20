@@ -93,7 +93,7 @@ class riderequest(models.Model):
     
 class payment(models.Model):
     id=models.AutoField(primary_key=True)
-    requestdetails=models.OneToOneField(riderequest,on_delete=models.CASCADE)
+    requestdetails=models.OneToOneField(riderequest,on_delete=models.CASCADE, related_name="paymentdetails")
     amount=models.FloatField()
     status=models.CharField(default="PENDING")
     orderid=models.CharField(null=True,blank=True)
