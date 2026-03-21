@@ -18,11 +18,11 @@
 <body class="min-h-screen overflow-x-hidden relative bg-[#191265]">
     {# default message display snippet- as web popup #}
     {% if messages %}
-    {% for message in messages %}
-    <script>
-        alert("{{ message|escapejs }}");
-    </script>
-    {% endfor %}
+        {% for message in messages %}
+        <script>
+            alert("{{ message|escapejs }}");
+        </script>
+        {% endfor %}
     {% endif %}
 
     <section id="home" class="relative w-full">

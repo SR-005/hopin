@@ -9,11 +9,12 @@ from django.http import JsonResponse
 from django.core.mail import send_mail
 
 import random
+
 import razorpay
 import json
 import os
 from dotenv import load_dotenv
-from datetime import date,time,datetime,timedelta
+from datetime import date,time,datetime,timedelta,time
 from .models import userdetail, trip, riderequest,payment
 from .ml.routeopt import routeoptimization,riderdropped
 
@@ -118,24 +119,57 @@ def testpayfunction(request,paymentid):
 def otpgenerator():
     return str(random.randint(100000, 999999))
 
-def sendotp(request):
-    if request.method=="POST":
-        user=request.user
-        email=user.email
-        phonenumber=request.POST.get("phone")
 
-        otp=otpgenerator()
-        request.session['otp']=otp
-        request.session['otptime']=time.time()
-        request.session['phonenumber']=phonenumber
+#send otp to user email
+def sendotptomail(request):
+    user=request.user
+    email=user.email
+    phonenumber=request.POST.get("phone")
 
-        send_mail(subject="HopIn OTP Verification",message=f"Your OTP is {otp}",
-            from_email="your_email@gmail.com",recipient_list=[email],)
+    otp=otpgenerator()
+    request.session['otp']=otp
+    request.session['otptime']=timezone.now().timestamp()
+    request.session['phonenumber']=phonenumber
+    request.session['otpsent'] = True
+
+    send_mail(subject="HopIn OTP Verification",message=f"Your OTP is {otp}",
+        from_email="your_email@gmail.com",recipient_list=[email],)
+    messages.success(request, "OTP has been send to your Email.")
+    return redirect("verify")
 
 
 def verifyotp(request):
+    userotp=request.POST.get("otp")
+    if timezone.now().timestamp()-request.session.get('otptime',0)>300:
+        request.session['otpsent'] = False
+        messages.error(request, "OTP has Expired. Resend and Try Again")
+        return redirect("verify")
+    
+    if userotp==request.session.get('otp'):
+        userprofile=userdetail.objects.get(usercredentials=request.user)
+        userprofile.phonenumber=request.session.get('phonenumber')
+        userprofile.verificationpending=True
+        userprofile.save()
+
+        request.session['otpsent'] = False
+        messages.success(request, "OTP has been Successfully Verified.")
+    return redirect("landing")
+
+def verifyfunction(request):
+    otpsent=False
     if request.method=="POST":
-        return 0
+        action=request.POST.get("action")
+        if action=="sendotp":
+            return sendotptomail(request)
+        elif action=="verifyotp":
+            return verifyotp(request)
+
+    return render(request, "verify.html",{"otpsent": request.session.get('otpsent')})
+
+
+
+
+
 
 #checks if there are any pending payments
 def paymentchecker(request):
@@ -152,9 +186,14 @@ def landingfunction(request):
     username=None
     firstname=None
     pendingpayment=None
+
     try:
         print("Current User Email: ", request.user.email)
         if request.user.email!=None:
+
+            userprofile=userdetail.objects.get(usercredentials=request.user)
+            if userprofile.verificationpending==False:
+                return redirect("verify")
             user=request.user
             status="true"
             username=User.objects.get(email=request.user.email)
@@ -232,9 +271,6 @@ def signupfunction(request):
                 messages.error(request, errors[1][0])
     return render(request, "signup.html")
 
-
-def completeauthfunction(request):
-    return render(request, "completeauth.html")
 
 def riderfunction(request):
     return render(request, "rider.html")

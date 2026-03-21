@@ -31,9 +31,9 @@
     {# default message display snippet- as web popup #}
     {% if messages %}
         {% for message in messages %}
-            <script>
+        <script>
             alert("{{ message|escapejs }}");
-            </script>
+        </script>
         {% endfor %}
     {% endif %}
 
@@ -41,32 +41,31 @@
     <!-- Modal Box -->
     <div id="modal" class="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/20">
         <div class="bg-white rounded-2xl p-6 w-[90%] max-w-md shadow-lg relative">
+
             <h2 class="text-2xl font-bold mb-4">Verify Your Account</h2>
 
-            <!-- PHONE -->
-            <div id="phone-section">
-                <input id="phone" type="text" placeholder="Phone Number"
-                    class="w-full border p-2 mb-4 rounded">
+            <!-- PHONE FORM -->
+            {% if not otpsent %}
+            <form method="POST" action="{% url 'verify' %}">
+                {% csrf_token %}
+                <input name="phone" type="text" placeholder="Phone Number" class="w-full border p-2 mb-4 rounded">
+                <button type="submit" name="action" value="sendotp" class="w-full bg-[#191265] text-white py-2 rounded-lg">Send OTP</button>
+            </form>
+            {% endif %}
 
-                <button onclick="sendOTP()"
-                    class="w-full bg-[#191265] text-white py-2 rounded-lg">
-                    Send OTP
-                </button>
-            </div>
+            <!-- OTP FORM -->
+            {% if otpsent %}
+            <form method="POST" action="{% url 'verify' %}">
+                {% csrf_token %}
+                <input name="otp" type="text" placeholder="Enter OTP" class="w-full border p-2 mb-4 rounded">
+                <button type="submit" name="action" value="verifyotp" class="w-full bg-green-600 text-white py-2 rounded-lg">Verify OTP</button>
+            </form>
+            {% endif %}
 
-            <!-- OTP -->
-            <div id="otp-section" class="hidden">
-                <input id="otp" type="text" placeholder="Enter OTP"
-                    class="w-full border p-2 mb-4 rounded">
+            <a href="{% url 'logout' %}" class="block px-4 py-2 hover:bg-red-100 text-red-600">
+                <button type="submit" name="action" value="cancelverify" class="w-full mt-2 bg-red-500 text-white py-2 rounded-lg">Cancel</button>
+            </a>
 
-                <button onclick="verifyOTP()"
-                    class="w-full bg-green-600 text-white py-2 rounded-lg">
-                    Verify OTP
-                </button>
-            </div>
-
-            <button onclick="closeModal()"
-                class="absolute top-2 right-3 text-gray-500 text-xl">×</button>
         </div>
     </div>
 

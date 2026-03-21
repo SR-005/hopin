@@ -11,7 +11,7 @@ urlpatterns = [
     path("", views.landingfunction, name="landing"),
     path("login/", views.loginfunction, name="login"),
     path("signup/", views.signupfunction, name="signup"),
-    path("otp/", views.completeauthfunction, name="completeauth"),
+    path("verify/", views.verifyfunction, name="verify"),
     path("logout/", views.logoutfunction, name="logout"),
     path("rider/", views.riderfunction, name="rider"),
     
