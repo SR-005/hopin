@@ -311,7 +311,7 @@ def fetchtracking(request,rideid):
     print("Tracked Latitiude: ",currentride.currentlatitude)
     print("Tracked Longitude: ",currentride.currentlongitude)
     print("ETA: ",eta)
-    
+
     return JsonResponse({
         "lat": currentride.currentlatitude,"lng": currentride.currentlongitude,
         "route": json.dumps(currentride.routegeometry),"status": currentride.status,
@@ -555,6 +555,7 @@ def deleteride(request):
 
 def starttracking(request):
     rideid=request.POST.get("tripid")
+    print("RIDE ID:", rideid)
     ride=trip.objects.get(id=rideid)
 
     ride.status="ONGOING"
@@ -590,6 +591,8 @@ def testdriverfunction(request):
 
         requests=riderequest.objects.filter(trip=activetrips,status="PENDING")
         accepted=riderequest.objects.filter(trip=activetrips,status="ACCEPTED")
+        ongoing=trip.objects.filter(usercredentials=request.user,status="ONGOING").first()
+        print("ONGOING: ",ongoing)
     except Exception as e:
         print(e)
 
@@ -610,7 +613,7 @@ def testdriverfunction(request):
         return starttracking(request)
 
     return render(request, "testdriver.html",{"requests":requests,"accepted":accepted,"lasttrip": lasttrip,"startride":startride,
-                                              "activetrips":activetrips})
+                                              "activetrips":activetrips,"ongoing":ongoing})
 
 
 

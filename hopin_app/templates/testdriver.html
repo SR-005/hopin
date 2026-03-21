@@ -26,6 +26,18 @@
     {% endif %}
 
     {% comment %} accepted rides {% endcomment %}
+    <h1>Active Rides</h1>
+    {% if ongoing %}
+        <form method="POST" action="{% url 'testdriver' %}">
+            {% csrf_token %}
+            <p>{{ ongoing.usercredentials }}</p>
+            <input type="hidden" name="tripid" id="tripid" value="{{ ongoing.id }}">
+            <button type="submit" name="action" value="startride">Start Ride</button>
+            </form>
+        {% else %}
+    <p>No Active Rides</p>
+    {% endif %}
+
     <h1>Accepted Rides</h1>
     {% if accepted %}
         {% for request in accepted %}
