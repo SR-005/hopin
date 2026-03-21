@@ -16,7 +16,7 @@ import os
 from dotenv import load_dotenv
 from datetime import date,time,datetime,timedelta,time
 from .models import userdetail, trip, riderequest,payment
-from .ml.routeopt import routeoptimization,riderdropped
+from .ml.routeopt import routeoptimization,riderdropped,speedcalculation
 
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -167,10 +167,6 @@ def verifyfunction(request):
     return render(request, "verify.html",{"otpsent": request.session.get('otpsent')})
 
 
-
-
-
-
 #checks if there are any pending payments
 def paymentchecker(request):
     pendingpayments=payment.objects.filter(requestdetails__rider=request.user,status="PENDING")
@@ -307,11 +303,18 @@ def fetchtracking(request,rideid):
             "message": "This Ride has been Ended"
         })
     
+    driverlocation=(currentride.currentlatitude,currentride.currentlongitude)
+    riderlocation=(currentrequest.pickuplatitude,currentrequest.pickuplongitude)
+    eta=speedcalculation(driverlocation,riderlocation)
+
     print("Tracked Latitiude: ",currentride.currentlatitude)
     print("Tracked Longitude: ",currentride.currentlongitude)
+    print("ETA: ",eta)
+    
     return JsonResponse({
         "lat": currentride.currentlatitude,"lng": currentride.currentlongitude,
         "route": json.dumps(currentride.routegeometry),"status": currentride.status,
+        "eta": round(eta)
     })
 
 def fetchstatus(request,requestid):

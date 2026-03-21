@@ -119,6 +119,12 @@ def routeoptimization(riderlatitude,riderlongitude,availabletrips):
 
     return ranked
 
+def speedcalculation(driverlocation,riderlocation):
+    distance=haversine(driverlocation,riderlocation,unit=Unit.KILOMETERS)
+    averagespeed=25
+    eta=(distance/averagespeed)*60
+    return eta
+
 def riderdropped(currentlatitude,currentlongitude,riders):
     completionradius=0.05
     for ride in riders:

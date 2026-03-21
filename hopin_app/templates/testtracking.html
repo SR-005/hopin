@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <title>Live Tracking</title>
-
+    <h3 id="etaText">Calculating ETA...</h3>
     <style>
         #map{
             height: 500px;
@@ -79,14 +79,26 @@
         let routeCoords = [];
         let remainingRouteLine = null;
         let travelledRouteLine = null;
-
+        let lastETA = null;
+        
         function getDriverLocation(){
 
             fetch("/fetchtracking/{{ rideid }}/?requestid={{ requestid }}")
             .then(res => res.json())
             .then(data => {
                 console.log(data);
-                
+
+                if(data.eta !== undefined){
+                    if(lastETA === null){
+                        lastETA = data.eta;
+                    } else {
+                        lastETA = 0.7 * lastETA + 0.3 * data.eta;
+                    }
+
+                    document.getElementById("etaText").innerText =
+                        `Driver arrives in ${Math.round(lastETA)} min`;
+                }
+
                 if(data.status === "COMPLETED"){
                     clearInterval(trackingInterval);
                     alert(data.message);
