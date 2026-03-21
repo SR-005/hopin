@@ -13,7 +13,11 @@
     {% csrf_token %}
         <h3>{{ paymentdetails }}</h1>
         <input type="hidden" name="requestid" value="{{ paymentdetails.requestdetails.id }}">   
+    {% if paymentdetails.requestdetails.rating %}
         <button type="submit" name="action" value="completepayment">Pay</button>
+    {% else %}
+        <button type="submit" disabled title="Please rate before paying">Pay</button>
+    {% endif %}
     </form>
 
     <form method="POST" action="{% url 'testpay' paymentdetails.id %}">

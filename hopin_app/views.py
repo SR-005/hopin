@@ -43,7 +43,7 @@ def averagerating(currentrequest):
     driverdetails.save()
 
 
-def ratetheride(request,currentpayment):
+def ratetheride(request,currentpayment,paymentid):
     currentrequest=currentpayment.requestdetails
     currentrating=request.POST.get("rating")
     print("Rating: ",currentrating)
@@ -51,7 +51,7 @@ def ratetheride(request,currentpayment):
     currentrequest.rating=currentrating
     currentrequest.save()
     averagerating(currentrequest)
-    
+    return redirect("testpay",paymentid=paymentid)
 
 def verifypayment(request):
     if request.method=="POST":
@@ -100,7 +100,7 @@ def testpayfunction(request,paymentid):
             currentpayment.save()
 
         elif action=="rateride":
-            return ratetheride(request,currentpayment)
+            return ratetheride(request,currentpayment,paymentid)
 
 
             
