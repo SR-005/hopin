@@ -1,139 +1,140 @@
-from .forms import signupForm, loginForm, createtripForm
-from django.contrib.auth import authenticate, login, logout
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.utils import timezone
-from django.db.models import Q
-from django.http import JsonResponse
-from django.core.mail import send_mail
-
-import random
-
-import razorpay
-import json
-import os
-from dotenv import load_dotenv
-from datetime import date,time,datetime,timedelta,time
-from .models import userdetail, trip, riderequest,payment
-from .ml.routeopt import routeoptimization,riderdropped,speedcalculation
-
+from datetime import date, time, datetime, timedelta, time
+from .ml.routeopt import routeoptimization, riderdropped, speedcalculation
+from .models import userdetail, trip, riderequest, payment
 from django.contrib.auth import get_user_model
+from dotenv import load_dotenv
+import os
+import json
+import razorpay
+import random
+from django.core.mail import send_mail
+from django.http import JsonResponse
+from django.db.models import Q
+from django.utils import timezone
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login, logout
+from .forms import signupForm, loginForm, createtripForm
+EMAIL = os.getenv("MAIL_USER")
+
+
 User = get_user_model()
 
 
 load_dotenv()
-RAZORID=os.getenv("RAZORPAYKEY")
-RAZORSECRET=os.getenv("RAZORPAYSECRET")
-razorpayclient=razorpay.Client(auth=(RAZORID,RAZORSECRET))
+RAZORID = os.getenv("RAZORPAYKEY")
+RAZORSECRET = os.getenv("RAZORPAYSECRET")
+razorpayclient = razorpay.Client(auth=(RAZORID, RAZORSECRET))
 
 # Create your views here.
 
-#------------------------------------------------------PAYMENT PAGE FUNCTIONS------------------------------------------------------
+# ------------------------------------------------------PAYMENT PAGE FUNCTIONS------------------------------------------------------
+
 
 def averagerating(currentrequest):
-    driver=currentrequest.trip.usercredentials
-    driverdetails=userdetail.objects.get(usercredentials=driver)
-    completedrides=riderequest.objects.filter(trip__usercredentials=driver,status="DROPPED",rating__isnull=False)
+    driver = currentrequest.trip.usercredentials
+    driverdetails = userdetail.objects.get(usercredentials=driver)
+    completedrides = riderequest.objects.filter(
+        trip__usercredentials=driver, status="DROPPED", rating__isnull=False)
 
-    allratings=[]
+    allratings = []
     for rides in completedrides:
         allratings.append(rides.rating)
-    
-    avgrating=sum(allratings)/len(allratings)
-    print("AVG :",avgrating)
-    driverdetails.averagerating=avgrating
+
+    avgrating = sum(allratings)/len(allratings)
+    print("AVG :", avgrating)
+    driverdetails.averagerating = avgrating
     driverdetails.save()
 
 
-def ratetheride(request,currentpayment,paymentid):
-    currentrequest=currentpayment.requestdetails
-    currentrating=request.POST.get("rating")
-    print("Rating: ",currentrating)
+def ratetheride(request, currentpayment, paymentid):
+    currentrequest = currentpayment.requestdetails
+    currentrating = request.POST.get("rating")
+    print("Rating: ", currentrating)
 
-    currentrequest.rating=currentrating
+    currentrequest.rating = currentrating
     currentrequest.save()
     averagerating(currentrequest)
-    return redirect("testpay",paymentid=paymentid)
+    return redirect("testpay", paymentid=paymentid)
+
 
 def verifypayment(request):
-    if request.method=="POST":
-        data=json.loads(request.body)
+    if request.method == "POST":
+        data = json.loads(request.body)
         try:
             razorpayclient.utility.verify_payment_signature({
-                'razorpay_order_id':data['razorpay_order_id'],
-                'razorpay_payment_id':data['razorpay_payment_id'],
-                'razorpay_signature':data['razorpay_signature']
+                'razorpay_order_id': data['razorpay_order_id'],
+                'razorpay_payment_id': data['razorpay_payment_id'],
+                'razorpay_signature': data['razorpay_signature']
             })
 
-            currentpayment=payment.objects.get(orderid=data['razorpay_order_id'])
-            currentpayment.paymentid=data['razorpay_payment_id']
-            currentpayment.status="PAID"
+            currentpayment = payment.objects.get(
+                orderid=data['razorpay_order_id'])
+            currentpayment.paymentid = data['razorpay_payment_id']
+            currentpayment.status = "PAID"
             currentpayment.save()
             return JsonResponse({"status": "success"})
         except:
             return JsonResponse({"status": "failed"})
 
-def createpayment(request):
-    requestid=request.POST.get("requestid")
-    currentrequest=riderequest.objects.get(id=requestid)
 
-    print("RAZORID",RAZORID)
-    print("RAZORSECRET",RAZORSECRET)
-    razorpayclient=razorpay.Client(auth=(RAZORID,RAZORSECRET))
-    amount=1000  #amount should be in paise: 10 rupees=1000 paise
-    currentorder=razorpayclient.order.create({
-        "amount":amount,
-        "currency":"INR",
+def createpayment(request):
+    requestid = request.POST.get("requestid")
+    currentrequest = riderequest.objects.get(id=requestid)
+
+    print("RAZORID", RAZORID)
+    print("RAZORSECRET", RAZORSECRET)
+    razorpayclient = razorpay.Client(auth=(RAZORID, RAZORSECRET))
+    amount = 1000  # amount should be in paise: 10 rupees=1000 paise
+    currentorder = razorpayclient.order.create({
+        "amount": amount,
+        "currency": "INR",
         "payment_capture": 1
     })
     print("Payment Created Successfully")
-    return currentorder["id"],amount
+    return currentorder["id"], amount
 
-def testpayfunction(request,paymentid):
-    currentorderid=None
-    currentamount=None
 
-    currentpayment=payment.objects.get(id=paymentid)
-    if request.method=="POST":
-        action=request.POST.get("action")
-        if action=="completepayment":
-            currentorderid,currentamount=createpayment(request)
-            currentpayment.orderid=currentorderid
+def testpayfunction(request, paymentid):
+    currentorderid = None
+    currentamount = None
+
+    currentpayment = payment.objects.get(id=paymentid)
+    if request.method == "POST":
+        action = request.POST.get("action")
+        if action == "completepayment":
+            currentorderid, currentamount = createpayment(request)
+            currentpayment.orderid = currentorderid
             currentpayment.save()
 
-        elif action=="rateride":
-            return ratetheride(request,currentpayment,paymentid)
+        elif action == "rateride":
+            return ratetheride(request, currentpayment, paymentid)
+
+    return render(request, "testpay.html", {"paymentdetails": currentpayment, "orderid": currentorderid, "amount": currentamount,
+                                           "RAZORID": RAZORID})
 
 
-            
-    return render(request, "testpay.html",{"paymentdetails":currentpayment,"orderid":currentorderid,"amount":currentamount,
-                                           "RAZORID":RAZORID})
-
-
-
-
-
-#------------------------------------------------------LANDING PAGE FUNCTIONS------------------------------------------------------
+# ------------------------------------------------------LANDING PAGE FUNCTIONS------------------------------------------------------
 
 def otpgenerator():
     return str(random.randint(100000, 999999))
 
 
-#send otp to user email
+# send otp to user email
 def sendotptomail(request):
-    user=request.user
-    email=user.email
-    phonenumber=request.POST.get("phone")
+    user = request.user
+    email = user.email
+    phonenumber = request.POST.get("phone")
 
-    otp=otpgenerator()
-    request.session['otp']=otp
-    request.session['otptime']=timezone.now().timestamp()
-    request.session['phonenumber']=phonenumber
+    otp = otpgenerator()
+    request.session['otp'] = otp
+    request.session['otptime'] = timezone.now().timestamp()
+    request.session['phonenumber'] = phonenumber
     request.session['otpsent'] = True
 
     send_mail(subject="HopIn OTP Verification",message=f"Your OTP is {otp}",
-        from_email="your_email@gmail.com",recipient_list=[email],)
+        from_email=EMAIL,recipient_list=[email],)
     messages.success(request, "OTP has been send to your Email.")
     return redirect("verify")
 
