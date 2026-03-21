@@ -14,7 +14,7 @@ urlpatterns = [
     path("logout/", views.logoutfunction, name="logout"),
     path("rider/", views.riderfunction, name="rider"),
     
-
+    path("updatelocation/<int:rideid>/", views.updatelocation, name="update_location"),
     path("fetchtracking/<int:rideid>/", views.fetchtracking, name="fetchtracking"),   #test tracking
     path("fetchstatus/<int:requestid>/", views.fetchstatus, name="fetchstatus"),    #fetch status of ride: completed or not
     path("verifypayment/", views.verifypayment, name="verifypayment"),

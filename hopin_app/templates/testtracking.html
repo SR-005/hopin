@@ -85,16 +85,17 @@
             fetch("/fetchtracking/{{ rideid }}/?requestid={{ requestid }}")
             .then(res => res.json())
             .then(data => {
-                const lat = data.lat;
-                const lng = data.lng;
                 console.log(data);
                 
                 if(data.status === "COMPLETED"){
                     clearInterval(trackingInterval);
-                    window.location.href = "/testrider";
+                    alert(data.message);
+                    window.location.href = "/";
                     return;
                 }
 
+                const lat = data.lat;
+                const lng = data.lng;
                 driverMarker.setLatLng([lat, lng]);
 
                 if(routeCoords.length === 0 && data.route){

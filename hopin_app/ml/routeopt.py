@@ -95,7 +95,7 @@ def haversinefunction(riderlatitude,riderlongitude,routegeometry):
     spatialscore=1/(1+minimumdistance)
     return minimumdistance,spatialscore
 
-def finalscore(riderlatitude,riderlongitude,availabletrips):
+def routeoptimization(riderlatitude,riderlongitude,availabletrips):
 
     finallist=[]
     print("riderlatitude",riderlatitude)

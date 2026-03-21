@@ -44,7 +44,7 @@
             {
                 enableHighAccuracy: true,
                 maximumAge: 0,
-                timeout: 5000
+                timeout: 3000
             }
         );
 
@@ -52,10 +52,9 @@
             
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
-
             const rideid = "{{ rideid }}";
 
-            fetch(`/testlocation/${rideid}/`, {
+            fetch(`/updatelocation/${rideid}/`, {
                 method: "POST",
                 headers:{
                     "Content-Type":"application/json",
@@ -65,14 +64,19 @@
                     latitude: lat,
                     longitude: lng
                 })
-            });
-        }
+            })
+            .then(res => res.json())
+                .then(data => {
+                    console.log("Driver:", data);
 
-        setInterval(function(){
+                    if (data.status === "COMPLETED") {
+                        alert("Ride Completed!");
+                        window.location.href = "/";
+                    }
+                })
+                .catch(err => console.error(err));
+            }
 
-            navigator.geolocation.getCurrentPosition(sendLocation);
-
-        }, 5000);
     </script>
 </body>
 </html>

@@ -13,7 +13,7 @@ import os
 from dotenv import load_dotenv
 from datetime import date,time,datetime,timedelta
 from .models import userdetail, trip, riderequest,payment
-from .ml.routeopt import finalscore,riderdropped
+from .ml.routeopt import routeoptimization,riderdropped
 
 from django.contrib.auth import get_user_model
 User = get_user_model()
@@ -73,6 +73,17 @@ def testpayfunction(request,paymentid):
             currentorderid,currentamount=createpayment(request)
             currentpayment.orderid=currentorderid
             currentpayment.save()
+
+        elif action=="rateride":
+            currentrequest=currentpayment.requestdetails
+            currentrating=request.POST.get("rating")
+            print("Rating: ",currentrating)
+
+            currentrequest.rating=currentrating
+            currentrequest.save()
+
+
+            
     return render(request, "testpay.html",{"paymentdetails":currentpayment,"orderid":currentorderid,"amount":currentamount,
                                            "RAZORID":RAZORID})
 
@@ -207,8 +218,10 @@ def fetchtracking(request,rideid):
     requestid=request.GET.get("requestid")
     currentrequest=riderequest.objects.get(id=requestid)
     if currentrequest.status=="DROPPED" or currentride.status=="COMPLETED":
-        messages.error(request, "This Ride has been Ended")
-        return redirect("testrider")
+        return JsonResponse({
+            "status": "COMPLETED",
+            "message": "This Ride has been Ended"
+        })
     
     print("Tracked Latitiude: ",currentride.currentlatitude)
     print("Tracked Longitude: ",currentride.currentlongitude)
@@ -277,41 +290,59 @@ def rideend(currentride):
             print(f"Payment Request Created for {riders}")
         print("Trip Ended")
 
+#fetch location from driver
+def updatelocation(request,rideid):
+    try:
+        print("Entered Function")
+        currentride=trip.objects.get(id=rideid, usercredentials=request.user)
+        if currentride.status=="COMPLETED":
+            return JsonResponse({
+                "status":"COMPLETED",
+                "message":"Ride ended"
+            })
+        
+        data=json.loads(request.body)
+        latitude=data["latitude"]
+        longitude=data["longitude"]
+
+        print("Current Latitiude: ",latitude)
+        print("Current Longitude: ",longitude)
+
+        currentride.currentlatitude=latitude
+        currentride.currentlongitude=longitude
+        currentride.lastlocationupdate=timezone.now()
+        currentride.save()
+
+        riders=riderequest.objects.filter(trip=currentride,status__in=["FULLCONFIRM", "HALFCONFIRM", "ACCEPTED"])
+        riderdropped(latitude,longitude,riders)
+        rideend(currentride)
+        return JsonResponse({"status": currentride.status})
+
+    except Exception as e:
+        return JsonResponse({
+            "status": "ERROR",
+            "message": str(e)
+        })
+
 #live location fetching from driver
 def testlocationfunction(request,rideid):
+    currentrequest=None
+
     ride=get_object_or_404(trip, id=rideid)
-    if ride.status=="ONGOING":
-        currentrequest=riderequest.objects.filter(trip=ride, status="ACCEPTED")
-        print("Current Req: ",currentrequest)
+    print("Ride Status for Driver: ",ride.status)
 
-        if request.method=="POST":
-            action=request.POST.get("action")
-            if action=="pickup":
-                pickupid=request.POST.get("requestid")
-                pickuprider=get_object_or_404(riderequest, id=pickupid,status="ACCEPTED")
-                pickuprider.status="HALFCONFIRM"
-                pickuprider.save()
-            else:
-                data=json.loads(request.body)
-                latitude=data["latitude"]
-                longitude=data["longitude"]
-
-                print("Current Latitude: ",latitude)
-                print("Current Longitude: ",longitude)
-
-                currentride=trip.objects.get(usercredentials=request.user, status="ONGOING")
-                currentride.currentlatitude=latitude
-                currentride.currentlongitude=longitude
-                currentride.lastlocationupdate=timezone.now()      #fetches current time
-                currentride.save()
-
-                #ride end checking
-                riders=riderequest.objects.filter(trip=currentride,status__in=["FULLCONFIRM","HALFCONFIRM","ACCEPTED"])
-                riderdropped(latitude,longitude,riders)
-                rideend(currentride)
-    else:
+    if ride.status != "ONGOING":
         messages.error(request, "This Ride has Successfully been completed")
         return redirect("testdriver")
+    
+    currentrequest=riderequest.objects.filter(trip=ride, status="ACCEPTED")
+    print("Current Req: ",currentrequest)
+
+    if request.method=="POST":
+        pickupid = request.POST.get("requestid")
+        pickuprider=get_object_or_404(riderequest, id=pickupid, status="ACCEPTED")
+        pickuprider.status="HALFCONFIRM"
+        pickuprider.save()
 
     return render(request, "testlocation.html",{"rideid":rideid,"riders":currentrequest})
 
@@ -400,7 +431,7 @@ def acceptride(request):
             currentride.status="ACTIVE"
             currentride.save()
 
-        riderequest.objects.filter(rider=rider).exclude(id=currentrequest.id).delete()
+        riderequest.objects.filter(rider=rider,status="PENDING").exclude(id=currentrequest.id).delete()
 
         currentride.save()
         return redirect("testdriver")
@@ -563,10 +594,10 @@ def riderdetails(request):
     #collecting active trip details- for route optimization
     availabletrips=[]
     if direction=="to":
-        activetrips=trip.objects.filter(status__in=["ACTIVE","EMPTY"],prefereddirection=direction,ridedate=date)
+        activetrips=trip.objects.filter(prefereddirection=direction,ridedate=date,status__in=["ACTIVE","EMPTY"],)
     else:
-        activetrips=trip.objects.filter(status__in=["ACTIVE","EMPTY"],prefereddirection=direction,ridedate=date,
-                                        ridetime__range=(lcutofftime, ucutofftime))
+        activetrips=trip.objects.filter(prefereddirection=direction,ridedate=date,ridetime__range=(lcutofftime, ucutofftime),
+                                        status__in=["ACTIVE","EMPTY"])
     for trips in activetrips:
         availabletrips.append(trips)
 
@@ -574,7 +605,7 @@ def riderdetails(request):
     latitude=float(latitude)
     longitude=float(longitude)
 
-    rides=finalscore(latitude,longitude,availabletrips)
+    rides=routeoptimization(latitude,longitude,availabletrips)
     return rides,latitude,longitude
 
 #request for a ride to driver
@@ -594,15 +625,11 @@ def requestrideagain(request,pastrides):
     tripid=request.POST.get("tripid")
     print("Book Again ID: ",tripid)
     currenttrip=trip.objects.get(id=tripid)
-    listpastrides=list(pastrides)
+    
+    pastride=pastrides.filter(trip__usercredentials=currenttrip.usercredentials).first()
 
-    for pastride in listpastrides:
-        if pastride.trip.usercredentials.email==currenttrip.usercredentials.email: 
-            ridelatitude=pastride.pickuplatitude
-            riderlongitude=pastride.pickuplongitude
-            print("Prev LAT: ",ridelatitude)
-            print("Prev LONG: ",riderlongitude)
-    riderequest.objects.create(trip=currenttrip,rider=request.user,pickuplatitude=ridelatitude,pickuplongitude=riderlongitude)
+    riderequest.objects.create(trip=currenttrip,rider=request.user,
+                               pickuplatitude=pastride.pickuplatitude,pickuplongitude=pastride.pickuplongitude)
     return redirect("testrider")
 
 #cancel an active ride request
@@ -687,7 +714,7 @@ def testriderfunction(request):
             
 
         if action=="bookagain":
-            requestrideagain(request,pastrides)
+            return requestrideagain(request,pastrides)
 
         elif action=="requestride":
             return requestride(request)
