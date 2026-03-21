@@ -48,6 +48,7 @@ class User(AbstractUser):
 class userdetail(models.Model):
     id=models.AutoField(primary_key=True)
     usercredentials=models.OneToOneField(User, on_delete=models.CASCADE, related_name="userdetails")
+    averagerating=models.FloatField(null=True, blank=True)
     paymentpending = models.BooleanField(default="False")
     
     def __str__(self):

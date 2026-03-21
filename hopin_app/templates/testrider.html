@@ -117,7 +117,7 @@
         {% csrf_token %}
 
         <p>{{ trip.usercredentials }}</p>
-
+        <p>{{ trip.usercredentials.userdetails.averagerating }}</p>
         <div id="map{{ trip.id }}" style="height:200px;width:25%;margin-bottom:10px;"></div>
 
         <script>

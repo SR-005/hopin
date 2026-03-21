@@ -28,6 +28,31 @@ razorpayclient=razorpay.Client(auth=(RAZORID,RAZORSECRET))
 
 #------------------------------------------------------PAYMENT PAGE FUNCTIONS------------------------------------------------------
 
+def averagerating(currentrequest):
+    driver=currentrequest.trip.usercredentials
+    driverdetails=userdetail.objects.get(usercredentials=driver)
+    completedrides=riderequest.objects.filter(trip__usercredentials=driver,status="DROPPED",rating__isnull=False)
+
+    allratings=[]
+    for rides in completedrides:
+        allratings.append(rides.rating)
+    
+    avgrating=sum(allratings)/len(allratings)
+    print("AVG :",avgrating)
+    driverdetails.averagerating=avgrating
+    driverdetails.save()
+
+
+def ratetheride(request,currentpayment):
+    currentrequest=currentpayment.requestdetails
+    currentrating=request.POST.get("rating")
+    print("Rating: ",currentrating)
+
+    currentrequest.rating=currentrating
+    currentrequest.save()
+    averagerating(currentrequest)
+    
+
 def verifypayment(request):
     if request.method=="POST":
         data=json.loads(request.body)
@@ -75,12 +100,7 @@ def testpayfunction(request,paymentid):
             currentpayment.save()
 
         elif action=="rateride":
-            currentrequest=currentpayment.requestdetails
-            currentrating=request.POST.get("rating")
-            print("Rating: ",currentrating)
-
-            currentrequest.rating=currentrating
-            currentrequest.save()
+            return ratetheride(request,currentpayment)
 
 
             
