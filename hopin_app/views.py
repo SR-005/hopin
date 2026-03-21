@@ -6,7 +6,9 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q
 from django.http import JsonResponse
+from django.core.mail import send_mail
 
+import random
 import razorpay
 import json
 import os
@@ -112,6 +114,29 @@ def testpayfunction(request,paymentid):
 
 
 #------------------------------------------------------LANDING PAGE FUNCTIONS------------------------------------------------------
+
+def otpgenerator():
+    return str(random.randint(100000, 999999))
+
+def sendotp(request):
+    if request.method=="POST":
+        user=request.user
+        email=user.email
+        phonenumber=request.POST.get("phone")
+
+        otp=otpgenerator()
+        request.session['otp']=otp
+        request.session['otptime']=time.time()
+        request.session['phonenumber']=phonenumber
+
+        send_mail(subject="HopIn OTP Verification",message=f"Your OTP is {otp}",
+            from_email="your_email@gmail.com",recipient_list=[email],)
+
+
+def verifyotp(request):
+    if request.method=="POST":
+        return 0
+
 #checks if there are any pending payments
 def paymentchecker(request):
     pendingpayments=payment.objects.filter(requestdetails__rider=request.user,status="PENDING")
@@ -207,6 +232,9 @@ def signupfunction(request):
                 messages.error(request, errors[1][0])
     return render(request, "signup.html")
 
+
+def completeauthfunction(request):
+    return render(request, "completeauth.html")
 
 def riderfunction(request):
     return render(request, "rider.html")

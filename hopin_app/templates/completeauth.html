@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification</title>
+    <link rel="stylesheet" href="{% static 'hopin_app/css/signup.css' %}">
+
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+</head>
+
+{% load static %}
+
+<body style="
+    background: url('{% static 'hopin_app/images/otpbg.png' %}') no-repeat center center;
+    background-size: contain;
+    background-color: black;
+    height: 100vh;
+">
+
+    {# default message display snippet- as web popup #}
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+            alert("{{ message|escapejs }}");
+            </script>
+        {% endfor %}
+    {% endif %}
+
+
+    <!-- Modal Box -->
+    <div id="modal" class="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/20">
+        <div class="bg-white rounded-2xl p-6 w-[90%] max-w-md shadow-lg relative">
+            <h2 class="text-2xl font-bold mb-4">Verify Your Account</h2>
+
+            <!-- PHONE -->
+            <div id="phone-section">
+                <input id="phone" type="text" placeholder="Phone Number"
+                    class="w-full border p-2 mb-4 rounded">
+
+                <button onclick="sendOTP()"
+                    class="w-full bg-[#191265] text-white py-2 rounded-lg">
+                    Send OTP
+                </button>
+            </div>
+
+            <!-- OTP -->
+            <div id="otp-section" class="hidden">
+                <input id="otp" type="text" placeholder="Enter OTP"
+                    class="w-full border p-2 mb-4 rounded">
+
+                <button onclick="verifyOTP()"
+                    class="w-full bg-green-600 text-white py-2 rounded-lg">
+                    Verify OTP
+                </button>
+            </div>
+
+            <button onclick="closeModal()"
+                class="absolute top-2 right-3 text-gray-500 text-xl">×</button>
+        </div>
+    </div>
+
+<script>
+    // Modal is already visible by default (no hidden class)
+
+    function closeModal() {
+        document.getElementById("signupModal").style.display = "none";
+    }
+</script>
+</body>
