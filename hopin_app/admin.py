@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import userdetail,trip,riderequest
+from .models import userdetail,trip,riderequest,payment
 
 # Register your models here.
 
@@ -37,3 +37,4 @@ class UserAdmin(BaseUserAdmin):
 admin.site.register(userdetail)
 admin.site.register(trip)
 admin.site.register(riderequest)
+admin.site.register(payment)

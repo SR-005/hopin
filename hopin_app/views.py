@@ -1,43 +1,125 @@
 from .forms import signupForm, loginForm, createtripForm
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q
 from django.http import JsonResponse
 
+import razorpay
 import json
+import os
+from dotenv import load_dotenv
 from datetime import date,time,datetime,timedelta
-from .models import userdetail, trip, riderequest
+from .models import userdetail, trip, riderequest,payment
 from .ml.routeopt import finalscore,riderdropped
 
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
+load_dotenv()
+RAZORID=os.getenv("RAZORPAYKEY")
+RAZORSECRET=os.getenv("RAZORPAYSECRET")
+razorpayclient=razorpay.Client(auth=(RAZORID,RAZORSECRET))
+
 # Create your views here.
+
+#------------------------------------------------------PAYMENT PAGE FUNCTIONS------------------------------------------------------
+
+def verifypayment(request):
+    if request.method=="POST":
+        data=json.loads(request.body)
+        try:
+            razorpayclient.utility.verify_payment_signature({
+                'razorpay_order_id':data['razorpay_order_id'],
+                'razorpay_payment_id':data['razorpay_payment_id'],
+                'razorpay_signature':data['razorpay_signature']
+            })
+
+            currentpayment=payment.objects.get(orderid=data['razorpay_order_id'])
+            currentpayment.paymentid=data['razorpay_payment_id']
+            currentpayment.status="PAID"
+            currentpayment.save()
+            return JsonResponse({"status": "success"})
+        except:
+            return JsonResponse({"status": "failed"})
+
+def createpayment(request):
+    requestid=request.POST.get("requestid")
+    currentrequest=riderequest.objects.get(id=requestid)
+
+    print("RAZORID",RAZORID)
+    print("RAZORSECRET",RAZORSECRET)
+    razorpayclient=razorpay.Client(auth=(RAZORID,RAZORSECRET))
+    amount=1000  #amount should be in paise: 10 rupees=1000 paise
+    currentorder=razorpayclient.order.create({
+        "amount":amount,
+        "currency":"INR",
+        "payment_capture": 1
+    })
+    print("Payment Created Successfully")
+    return currentorder["id"],amount
+
+def testpayfunction(request,paymentid):
+    currentorderid=None
+    currentamount=None
+
+    currentpayment=payment.objects.get(id=paymentid)
+    if request.method=="POST":
+        action=request.POST.get("action")
+        if action=="completepayment":
+            currentorderid,currentamount=createpayment(request)
+            currentpayment.orderid=currentorderid
+            currentpayment.save()
+    return render(request, "testpay.html",{"paymentdetails":currentpayment,"orderid":currentorderid,"amount":currentamount,
+                                           "RAZORID":RAZORID})
+
+
+
 
 
 #------------------------------------------------------LANDING PAGE FUNCTIONS------------------------------------------------------
+#checks if there are any pending payments
+def paymentchecker(request):
+    pendingpayments=payment.objects.filter(requestdetails__rider=request.user,status="PENDING")
+    if pendingpayments.exists():
+        pendingpayments=pendingpayments.first()
+        print(f"Payment Pending for: ",pendingpayments.requestdetails)
+        return pendingpayments
+    return None
+
 # Main Landing Page View
 def landingfunction(request):
     user=None
     username=None
     firstname=None
+    pendingpayment=None
     try:
         print("Current User Email: ", request.user.email)
         if request.user.email!=None:
             user=request.user
             status="true"
-        username=User.objects.get(email=request.user.email)
-        username=str(username.first_name).upper()
-        username=username.split()
-        firstname=username[0]
+            username=User.objects.get(email=request.user.email)
+            username=str(username.first_name).upper()
+            username=username.split()
+            firstname=username[0]
+
+            pendingpayment=paymentchecker(request)
     except:
         print("User is not Logged in or Logged Out")
         status="false"
 
-    return render(request, "landing.html", {"status":status,"user":user,"firstname":firstname})
+    if request.method=="POST":
+        action=request.POST.get("action")
+        if action=="paypending":
+            paymentid=request.POST.get("paymentid")
+            return redirect("testpay",paymentid=paymentid)
+    
+
+    
+    return render(request, "landing.html", {"status":status,"user":user,"firstname":firstname,"pending":pendingpayment})
 
 # Main Logout Function
 def logoutfunction(request):
@@ -131,10 +213,8 @@ def fetchtracking(request,rideid):
     print("Tracked Latitiude: ",currentride.currentlatitude)
     print("Tracked Longitude: ",currentride.currentlongitude)
     return JsonResponse({
-        "lat": currentride.currentlatitude,
-        "lng": currentride.currentlongitude,
-        "route": json.dumps(currentride.routegeometry),
-        "status": currentride.status,
+        "lat": currentride.currentlatitude,"lng": currentride.currentlongitude,
+        "route": json.dumps(currentride.routegeometry),"status": currentride.status,
     })
 
 def fetchstatus(request,requestid):
@@ -185,10 +265,16 @@ def rideend(currentride):
         notboardedriders=riderequest.objects.filter(trip=currentride,status__in=["HALFCONFIRM","ACCEPTED"])
         for riders in notboardedriders:
             if riders.status=="HALFCONFIRM":
-                riders.status="DROPPED-NOT CONFIRMED"
+                riders.status="DROPPEDNOTCONFIRMED"
             else:
                 riders.status="NOTBOARDED"
             riders.save()
+
+        ridecompletedriders=riderequest.objects.filter(trip=currentride,status__in=["DROPPEDNOTCONFIRMED","DROPPED"])
+        for riders in ridecompletedriders:
+            payment.objects.create(requestdetails=riders,amount=10)
+            payment.save()
+            print(f"Payment Request Created for {riders}")
         print("Trip Ended")
 
 #live location fetching from driver
@@ -357,6 +443,7 @@ def starttracking(request):
     return redirect("testlocation", rideid=rideid)
 
 #driver page routing function
+@login_required
 def testdriverfunction(request):
     cleanup(request)       #calling cleanup function to delete expired rides
     requests=None
@@ -411,6 +498,19 @@ def testdriverfunction(request):
 
 
 #------------------------------------------------------RIDER PAGE FUNCTIONS------------------------------------------------------
+
+#selectes rides from past that are active again
+def rebookable(pastrides):
+    preferredtrips=[]
+    driveremails=list(pastrides.values_list('trip__usercredentials__email', flat=True).distinct())
+    print("Drivers: ",driveremails)
+
+    for driveremail in driveremails:
+        driverobject=User.objects.get(email=driveremail)
+        activeagain=trip.objects.filter(usercredentials=driverobject,status__in=["EMPTY","ACTIVE"])
+        if activeagain.exists():
+            preferredtrips.append(activeagain.first())
+    return preferredtrips
 
 def requesttimevalidation(request):
     direction=request.POST.get("direction")
@@ -489,6 +589,22 @@ def requestride(request):
     riderequest.objects.create(trip=ride,rider=request.user,pickuplatitude=latitude,pickuplongitude=longitude)
     return redirect("testrider")
 
+#request for a ride previously booked driver
+def requestrideagain(request,pastrides):
+    tripid=request.POST.get("tripid")
+    print("Book Again ID: ",tripid)
+    currenttrip=trip.objects.get(id=tripid)
+    listpastrides=list(pastrides)
+
+    for pastride in listpastrides:
+        if pastride.trip.usercredentials.email==currenttrip.usercredentials.email: 
+            ridelatitude=pastride.pickuplatitude
+            riderlongitude=pastride.pickuplongitude
+            print("Prev LAT: ",ridelatitude)
+            print("Prev LONG: ",riderlongitude)
+    riderequest.objects.create(trip=currenttrip,rider=request.user,pickuplatitude=ridelatitude,pickuplongitude=riderlongitude)
+    return redirect("testrider")
+
 #cancel an active ride request
 def cancelrequest(request):
     print(request.POST.get("requestid"))
@@ -519,7 +635,19 @@ def cancelrequest(request):
     messages.success(request, "Your Ride Request has been Cancelled!")
     return redirect("testrider")
 
+#fetch all currently ongoing ride requests
+def ongoingrequest(allrequest):
+    #building a list of ongoing requests
+    requestedrides=[]
+    ongoing=list(allrequest.values_list("id", flat=True))
+    for currentrequest in allrequest:
+        if currentrequest.id in ongoing:
+            currenttrip=currentrequest.trip
+            requestedrides.append(currenttrip.id)
+    print("Active Requsted Trip ID: ",requestedrides)
+    return requestedrides
 
+#redirect to location tracking page if ride has started
 def seemore(request):
     rideid=request.POST.get("tripid")
     print("RideID: ",rideid)
@@ -532,6 +660,7 @@ def seemore(request):
         return redirect("testtracking",rideid=rideid)
 
 #rider page routing function
+@login_required
 def testriderfunction(request):
     cleanup(request)       #calling cleanup function to delete expired rides
     rides=None
@@ -540,26 +669,25 @@ def testriderfunction(request):
     requestedrides=None
     latitude=None
     longitude=None
+    preferredtrips=None
 
     allrequest=riderequest.objects.filter(rider=request.user)
     requests=riderequest.objects.filter(rider=request.user, status="PENDING")
     accepted=riderequest.objects.filter(rider=request.user, status="ACCEPTED")
-    pastrides=riderequest.objects.filter(rider=request.user, status="COMPLETED")
-    
+    pastrides=riderequest.objects.filter(rider=request.user, status="DROPPED",paymentdetails__status="PAID")
+
+    preferredtrips=rebookable(pastrides)
+    requestedrides=ongoingrequest(allrequest)
+    print("Prefered Trips: ",preferredtrips)
     if request.method=="POST":
         action=request.POST.get("action")
 
         if action=="riderdetails":
             rides,latitude,longitude=riderdetails(request)
+            
 
-            #building a list of ongoing requests
-            requestedrides=[]
-            ongoing=list(allrequest.values_list("id", flat=True))
-            for currentrequest in allrequest:
-                if currentrequest.id in ongoing:
-                    currenttrip=currentrequest.trip
-                    requestedrides.append(currenttrip.id)
-            print("Active Requsted Trip ID: ",requestedrides)
+        if action=="bookagain":
+            requestrideagain(request,pastrides)
 
         elif action=="requestride":
             return requestride(request)
@@ -571,7 +699,7 @@ def testriderfunction(request):
             return seemore(request)
 
     return render(request, "testrider.html",{"rides":rides,"requests":requests,"accepted":accepted,"requestedrides":requestedrides,
-                                             "pastrides":pastrides,"riderlatitude":latitude,"riderlongitude":longitude})
+                                             "pastrides":pastrides,"preferredtrips":preferredtrips,"riderlatitude":latitude,"riderlongitude":longitude})
 
 
 
