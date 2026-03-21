@@ -7,11 +7,11 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
+    dependencies=[
         ('hopin_app', '0007_alter_trip_routegeometry'),
     ]
 
-    operations = [
+    operations=[
         migrations.CreateModel(
             name='riderequest',
             fields=[

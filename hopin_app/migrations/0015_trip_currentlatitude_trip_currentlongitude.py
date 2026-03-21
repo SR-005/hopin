@@ -5,11 +5,11 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
+    dependencies=[
         ('hopin_app', '0014_alter_trip_usercredentials'),
     ]
 
-    operations = [
+    operations=[
         migrations.AddField(
             model_name='trip',
             name='currentlatitude',

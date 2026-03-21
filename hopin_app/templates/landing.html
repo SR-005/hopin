@@ -114,11 +114,11 @@
         document.addEventListener("DOMContentLoaded", () => {
 
             // 1. INJECT AUTH BUTTONS/USERNAME FIRST
-            const isLoggedIn = {{ status|lower }};
-            const authContainer = document.getElementById('auth-container');
+            const isLoggedIn={{ status|lower }};
+            const authContainer=document.getElementById('auth-container');
 
             if (isLoggedIn) {
-                authContainer.innerHTML = `
+                authContainer.innerHTML=`
                   <div class="flex items-center gap-2 sm:gap-4">
 
                     <!-- Added ID "username-display" and smooth transition-colors -->
@@ -168,7 +168,7 @@
                 </div>
                 `;
             } else {
-                authContainer.innerHTML = `
+                authContainer.innerHTML=`
                     <a id="login-btn" href="{% url 'login' %}" class="font-['Playfair_Display'] font-extrabold text-[10px] sm:text-[14px] lg:text-[18px] hover:opacity-75 transition-colors duration-300 pr-1 sm:pr-4">Login</a>
 
                     <a id="signup-btn" href="{% url 'signup' %}" 
@@ -179,20 +179,20 @@
             }
 
             // 2. SCROLLSPY LOGIC
-            const sections = document.querySelectorAll("section[id]");
-            const navLinks = document.querySelectorAll(".nav-item");
+            const sections=document.querySelectorAll("section[id]");
+            const navLinks=document.querySelectorAll(".nav-item");
 
             function updateActiveLink() {
-                let currentSection = "home"; // Default fallback
+                let currentSection="home"; // Default fallback
 
-                const scrollTrigger = window.scrollY + 100;
+                const scrollTrigger=window.scrollY + 100;
 
                 sections.forEach(section => {
-                    let sectionTop = section.offsetTop;
-                    let sectionBottom = sectionTop + section.offsetHeight;
+                    let sectionTop=section.offsetTop;
+                    let sectionBottom=sectionTop + section.offsetHeight;
 
                     if (scrollTrigger >= sectionTop && scrollTrigger <= sectionBottom) {
-                        currentSection = section.id;
+                        currentSection=section.id;
                     }
                 });
 
@@ -206,11 +206,11 @@
                     }
                 });
 
-                const loginBtn = document.getElementById("login-btn");
-                const signupBtn = document.getElementById("signup-btn");
-                const usernameDisplay = document.getElementById("username-display");
+                const loginBtn=document.getElementById("login-btn");
+                const signupBtn=document.getElementById("signup-btn");
+                const usernameDisplay=document.getElementById("username-display");
 
-                const isMobile = window.innerWidth < 1024;
+                const isMobile=window.innerWidth < 1024;
 
                 // Toggle logic for Login & Sign Up buttons
                 if (loginBtn && signupBtn) {
@@ -218,13 +218,13 @@
                     "px-3 py-1 sm:px-5 sm:py-2 lg:px-8 lg:py-2.5 rounded-[14px] font-['Playfair_Display'] font-extrabold tracking-wide transition-all duration-300 shadow-sm text-[10px] sm:text-[14px] lg:text-[18px] border";
 
                     if (currentSection === "home" && !isMobile) {
-                        loginBtn.style.color = "#191265";
+                        loginBtn.style.color="#191265";
                         signupBtn.classList.add(
                             "bg-[#191265]","text-white","border-[#191265]",
                             "hover:bg-white","hover:text-[#191265]","hover:border-[#191265]"
                         );
                     } else {
-                        loginBtn.style.color = "#EAE9DF";
+                        loginBtn.style.color="#EAE9DF";
                         signupBtn.classList.add(
                             "bg-white","text-[#191265]","border-white",
                             "hover:bg-[#191265]","hover:text-white","hover:border-white"
@@ -235,9 +235,9 @@
                 // Toggle logic for Logged In Username
                 if (usernameDisplay) {
                     if (currentSection === "home" && !isMobile) {
-                        usernameDisplay.style.color = "#191265";
+                        usernameDisplay.style.color="#191265";
                     } else {
-                        usernameDisplay.style.color = "#EAE9DF";
+                        usernameDisplay.style.color="#EAE9DF";
                     }
                 }
             }
@@ -251,15 +251,15 @@
                 link.addEventListener("click", function(e) {
                     e.preventDefault();
 
-                    const targetId = this.getAttribute("href").substring(1);
-                    const targetSection = document.getElementById(targetId);
+                    const targetId=this.getAttribute("href").substring(1);
+                    const targetSection=document.getElementById(targetId);
 
-                    let offset = 0;   
+                    let offset=0;   
                     if (targetId === "about") {
-                        offset = 250;
+                        offset=250;
                     }
 
-                    const position = targetSection.offsetTop + offset;
+                    const position=targetSection.offsetTop + offset;
 
                     window.scrollTo({
                         top: position,

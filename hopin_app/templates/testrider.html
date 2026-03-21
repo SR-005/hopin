@@ -123,26 +123,26 @@
         <script>
           document.addEventListener("DOMContentLoaded", function(){
 
-            const route = {{ trip.routegeometry|safe }};
+            const route={{ trip.routegeometry|safe }};
 
-            const riderLat = {{ riderlatitude }};
-            const riderLng = {{ riderlongitude }};
+            const riderLat={{ riderlatitude }};
+            const riderLng={{ riderlongitude }};
 
-            const first = route.coordinates[0];
-            const startLat = first[1];
-            const startLng = first[0];
+            const first=route.coordinates[0];
+            const startLat=first[1];
+            const startLng=first[0];
 
-            const map = L.map('map{{ trip.id }}').setView([startLat, startLng], 13);
+            const map=L.map('map{{ trip.id }}').setView([startLat, startLng], 13);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19
             }).addTo(map);
 
             // Convert GeoJSON coords
-            const latlngs = route.coordinates.map(coord => [coord[1], coord[0]]);
+            const latlngs=route.coordinates.map(coord => [coord[1], coord[0]]);
 
             // Draw route
-            const polyline = L.polyline(latlngs, {
+            const polyline=L.polyline(latlngs, {
                 color: 'blue',
                 weight: 4
             }).addTo(map);
@@ -153,7 +153,7 @@
               .bindPopup("Ride Start");
 
             // Destination marker
-            const last = latlngs[latlngs.length - 1];
+            const last=latlngs[latlngs.length - 1];
             L.marker(last)
               .addTo(map)
               .bindPopup("Destination");
@@ -197,12 +197,12 @@
         <script>
           document.addEventListener("DOMContentLoaded", function(){
 
-            const pickupLat = {{ request.pickuplatitude }};
-            const pickupLng = {{ request.pickuplongitude }};
+            const pickupLat={{ request.pickuplatitude }};
+            const pickupLng={{ request.pickuplongitude }};
 
-            const route = {{ request.trip.routegeometry|safe }};
+            const route={{ request.trip.routegeometry|safe }};
 
-            const map = L.map('map{{ request.id }}').setView([pickupLat, pickupLng], 13);
+            const map=L.map('map{{ request.id }}').setView([pickupLat, pickupLng], 13);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19
@@ -213,24 +213,24 @@
               .bindPopup("Pickup Location");
 
             // convert GeoJSON coords to leaflet format
-            const latlngs = route.coordinates.map(coord => [coord[1], coord[0]]);
+            const latlngs=route.coordinates.map(coord => [coord[1], coord[0]]);
 
-            const polyline = L.polyline(latlngs, {
+            const polyline=L.polyline(latlngs, {
                 color: 'blue',
                 weight: 4
             }).addTo(map);
 
             // START coordinate
-            const start = route.coordinates[0];
-            const startLatLng = [start[1], start[0]];
+            const start=route.coordinates[0];
+            const startLatLng=[start[1], start[0]];
 
             L.marker(startLatLng)
               .addTo(map)
               .bindPopup("Ride Start");
 
             // END coordinate
-            const end = route.coordinates[route.coordinates.length - 1];
-            const endLatLng = [end[1], end[0]];
+            const end=route.coordinates[route.coordinates.length - 1];
+            const endLatLng=[end[1], end[0]];
 
             L.marker(endLatLng)
               .addTo(map)
@@ -253,108 +253,108 @@
     <script>
     
       {% comment %} date manager {% endcomment %}
-        const dateInput = document.querySelector("input[name='ridedate']");
+        const dateInput=document.querySelector("input[name='ridedate']");
 
-        const today = new Date();
-        const tomorrow = new Date();
+        const today=new Date();
+        const tomorrow=new Date();
         tomorrow.setDate(today.getDate() + 1);
 
         function formatDate(d) {
-            let month = (d.getMonth() + 1).toString().padStart(2, '0');
-            let day = d.getDate().toString().padStart(2, '0');
+            let month=(d.getMonth() + 1).toString().padStart(2, '0');
+            let day=d.getDate().toString().padStart(2, '0');
             return `${d.getFullYear()}-${month}-${day}`;
         }
 
-        dateInput.min = formatDate(today);
-        dateInput.max = formatDate(tomorrow);
+        dateInput.min=formatDate(today);
+        dateInput.max=formatDate(tomorrow);
 
 
         {% comment %} time manager {% endcomment %}
-        const directionRadios = document.querySelectorAll("input[name='direction']");
-        const timeInput = document.getElementById("ridetime");
+        const directionRadios=document.querySelectorAll("input[name='direction']");
+        const timeInput=document.getElementById("ridetime");
 
         directionRadios.forEach(radio => {
             radio.addEventListener("change", function () {
 
                 if (this.value === "to") {
-                    timeInput.value = "08:00";
-                    timeInput.readOnly = true;
+                    timeInput.value="08:00";
+                    timeInput.readOnly=true;
                 }
 
                 else {
-                    timeInput.value = "13:30";
-                    timeInput.readOnly = false;
+                    timeInput.value="13:30";
+                    timeInput.readOnly=false;
                 }
 
             });
         });
 
       {% comment %} initilaizing map {% endcomment %}
-      const map = L.map('map').setView([10.8505, 76.2711], 8);
+      const map=L.map('map').setView([10.8505, 76.2711], 8);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '&copy; OpenStreetMap contributors'}).addTo(map);
 
-      let marker = L.marker([10.8505, 76.2711], { draggable: true }).addTo(map);
+      let marker=L.marker([10.8505, 76.2711], { draggable: true }).addTo(map);
 
       {% comment %} map button actions {% endcomment %}
       marker.on('dragend', function () {
-          const position = marker.getLatLng();
-          document.getElementById('lat').value = position.lat;
-          document.getElementById('lng').value = position.lng;
+          const position=marker.getLatLng();
+          document.getElementById('lat').value=position.lat;
+          document.getElementById('lng').value=position.lng;
       });
 
       map.on('click', function(e) {
         
-          const lat = e.latlng.lat;
-          const lng = e.latlng.lng;
+          const lat=e.latlng.lat;
+          const lng=e.latlng.lng;
 
           marker.setLatLng([lat, lng]);
 
-          document.getElementById('lat').value = lat;
-          document.getElementById('lng').value = lng;
+          document.getElementById('lat').value=lat;
+          document.getElementById('lng').value=lng;
       });
 
 
       {% comment %} location suggession {% endcomment %}
-      const input = document.getElementById("location-input");
-      const resultsBox = document.getElementById("autocomplete-results");
+      const input=document.getElementById("location-input");
+      const resultsBox=document.getElementById("autocomplete-results");
 
       let debounceTimer;
 
       input.addEventListener("input", function () {
-          const query = input.value.trim();
+          const query=input.value.trim();
           clearTimeout(debounceTimer);
 
           if (query.length < 3) {
-              resultsBox.innerHTML = "";
+              resultsBox.innerHTML="";
               return;
           }
 
-          debounceTimer = setTimeout(() => {
+          debounceTimer=setTimeout(() => {
               fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5&accept-language=en`)
                   .then(response => response.json())
                   .then(data => {
 
-                      resultsBox.innerHTML = "";
+                      resultsBox.innerHTML="";
 
                       data.forEach(place => {
-                          const item = document.createElement("a");
-                          item.className = "list-group-item list-group-item-action";
-                          item.textContent = place.display_name;
+                          const item=document.createElement("a");
+                          item.className="list-group-item list-group-item-action";
+                          item.textContent=place.display_name;
 
                           item.addEventListener("click", () => {
 
-                              input.value = place.display_name;
+                              input.value=place.display_name;
 
-                              const lat = parseFloat(place.lat);
-                              const lon = parseFloat(place.lon);
+                              const lat=parseFloat(place.lat);
+                              const lon=parseFloat(place.lon);
 
-                              document.getElementById("lat").value = lat;
-                              document.getElementById("lng").value = lon;
+                              document.getElementById("lat").value=lat;
+                              document.getElementById("lng").value=lon;
 
                               map.setView([lat, lon], 16);
                               marker.setLatLng([lat, lon]);
 
-                              resultsBox.innerHTML = "";
+                              resultsBox.innerHTML="";
                           });
 
                           resultsBox.appendChild(item);
@@ -365,7 +365,7 @@
 
       document.addEventListener("click", function (e) {
           if (!input.contains(e.target)) {
-              resultsBox.innerHTML = "";
+              resultsBox.innerHTML="";
           }
       });
 

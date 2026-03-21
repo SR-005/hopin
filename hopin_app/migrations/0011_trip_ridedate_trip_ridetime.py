@@ -5,11 +5,11 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
+    dependencies=[
         ('hopin_app', '0010_alter_trip_availableseats'),
     ]
 
-    operations = [
+    operations=[
         migrations.AddField(
             model_name='trip',
             name='ridedate',

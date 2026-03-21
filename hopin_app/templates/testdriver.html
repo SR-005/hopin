@@ -163,26 +163,26 @@
         <script>
         document.addEventListener("DOMContentLoaded", function(){
 
-            const route = {{ request.trip.routegeometry|safe }};
+            const route={{ request.trip.routegeometry|safe }};
 
-            const riderLat = {{ request.pickuplatitude }};
-            const riderLng = {{ request.pickuplongitude }};
+            const riderLat={{ request.pickuplatitude }};
+            const riderLng={{ request.pickuplongitude }};
 
-            const first = route.coordinates[0];
-            const startLat = first[1];
-            const startLng = first[0];
+            const first=route.coordinates[0];
+            const startLat=first[1];
+            const startLng=first[0];
 
-            const map = L.map('map{{ request.id }}').setView([startLat, startLng], 13);
+            const map=L.map('map{{ request.id }}').setView([startLat, startLng], 13);
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19
             }).addTo(map);
 
             // Convert GeoJSON coords
-            const latlngs = route.coordinates.map(coord => [coord[1], coord[0]]);
+            const latlngs=route.coordinates.map(coord => [coord[1], coord[0]]);
 
             // Draw route
-            const polyline = L.polyline(latlngs, {
+            const polyline=L.polyline(latlngs, {
                 color: 'blue',
                 weight: 4
             }).addTo(map);
@@ -193,7 +193,7 @@
                 .bindPopup("Ride Start");
 
             // Destination marker
-            const last = latlngs[latlngs.length - 1];
+            const last=latlngs[latlngs.length - 1];
             L.marker(last)
                 .addTo(map)
                 .bindPopup("Destination");
@@ -222,64 +222,64 @@
 
     <script>
         {% comment %} date manager {% endcomment %}
-        const dateInput = document.querySelector("input[name='ridedate']");
+        const dateInput=document.querySelector("input[name='ridedate']");
 
-        const today = new Date();
-        const tomorrow = new Date();
+        const today=new Date();
+        const tomorrow=new Date();
         tomorrow.setDate(today.getDate() + 1);
 
         function formatDate(d) {
-            let month = (d.getMonth() + 1).toString().padStart(2, '0');
-            let day = d.getDate().toString().padStart(2, '0');
+            let month=(d.getMonth() + 1).toString().padStart(2, '0');
+            let day=d.getDate().toString().padStart(2, '0');
             return `${d.getFullYear()}-${month}-${day}`;
         }
 
-        dateInput.min = formatDate(today);
-        dateInput.max = formatDate(tomorrow);
+        dateInput.min=formatDate(today);
+        dateInput.max=formatDate(tomorrow);
 
 
         {% comment %} time manager {% endcomment %}
-        const directionRadios = document.querySelectorAll("input[name='prefereddirection']");
-        const timeInput = document.getElementById("ridetime");
+        const directionRadios=document.querySelectorAll("input[name='prefereddirection']");
+        const timeInput=document.getElementById("ridetime");
 
         directionRadios.forEach(radio => {
             radio.addEventListener("change", function () {
 
                 if (this.value === "to") {
-                    timeInput.value = "07:45";
+                    timeInput.value="07:45";
                 }
 
                 else {
-                    timeInput.value = "13:30";
+                    timeInput.value="13:30";
                 }
 
             });
         });
 
 
-        const collegeLat = 10.0469;
-        const collegeLng = 76.3467;
+        const collegeLat=10.0469;
+        const collegeLng=76.3467;
 
         
         {% comment %} initilaizing map {% endcomment %}
-        const map = L.map('map').setView([10.8505, 76.2711], 8);
+        const map=L.map('map').setView([10.8505, 76.2711], 8);
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
 
         {% comment %} aisat default location {% endcomment %}
-        const collegeMarker = L.marker([collegeLat, collegeLng])
+        const collegeMarker=L.marker([collegeLat, collegeLng])
             .addTo(map)
             .bindPopup("AISAT Engineering College")
             .openPopup();
 
-        let marker = L.marker([10.8505, 76.2711], { draggable: true }).addTo(map);
+        let marker=L.marker([10.8505, 76.2711], { draggable: true }).addTo(map);
 
-        const savedLat = "{{ lasttrip.latitude|default:'' }}";
-        const savedLng = "{{ lasttrip.longitude|default:'' }}";
+        const savedLat="{{ lasttrip.latitude|default:'' }}";
+        const savedLng="{{ lasttrip.longitude|default:'' }}";
 
         if(savedLat && savedLng){
-            const lat = parseFloat(savedLat);
-            const lng = parseFloat(savedLng);
+            const lat=parseFloat(savedLat);
+            const lng=parseFloat(savedLng);
 
             map.setView([lat, lng], 13);
             marker.setLatLng([lat, lng]);
@@ -288,25 +288,25 @@
         }
         {% comment %} drawing route on the map {% endcomment %}
         function drawRoute(userLat, userLng) {
-            const direction = document.querySelector(
+            const direction=document.querySelector(
                 'input[name="prefereddirection"]:checked'
             ).value;
 
             let startLat, startLng, endLat, endLng;
 
             if (direction === "to") {
-                startLat = userLat;
-                startLng = userLng;
-                endLat = collegeLat;
-                endLng = collegeLng;
+                startLat=userLat;
+                startLng=userLng;
+                endLat=collegeLat;
+                endLng=collegeLng;
             } else {
-                startLat = collegeLat;
-                startLng = collegeLng;
-                endLat = userLat;
-                endLng = userLng;
+                startLat=collegeLat;
+                startLng=collegeLng;
+                endLat=userLat;
+                endLng=userLng;
             }
 
-            const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson&alternatives=true`;
+            const url=`https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson&alternatives=true`;
 
             fetch(url)
                 .then(response => response.json())
@@ -318,11 +318,11 @@
                         window.routeLayers.forEach(obj => map.removeLayer(obj.layer));
                     }
 
-                    window.routeLayers = [];
+                    window.routeLayers=[];
 
                     data.routes.forEach((routeObj, index) => {
 
-                        const layer = L.geoJSON(routeObj.geometry, {
+                        const layer=L.geoJSON(routeObj.geometry, {
                             style: {
                                 color: index === 0 ? "blue" : "gray",
                                 weight: 6,
@@ -330,7 +330,7 @@
                             }
                         }).addTo(map);
 
-                        const routeData = {
+                        const routeData={
                             layer: layer,
                             geometry: routeObj.geometry
                         };
@@ -360,10 +360,10 @@
 
         {% comment %} map button actions {% endcomment %}
         marker.on('dragend', function () {
-            const position = marker.getLatLng();
+            const position=marker.getLatLng();
 
-            document.getElementById('lat').value = position.lat;
-            document.getElementById('lng').value = position.lng;
+            document.getElementById('lat').value=position.lat;
+            document.getElementById('lng').value=position.lng;
 
             drawRoute(position.lat, position.lng);
         });
@@ -371,67 +371,67 @@
         {% comment %} click only works when SHIFT is pressed!! {% endcomment %}
         map.on('click', function (e) {
 
-            const lat = e.latlng.lat;
-            const lng = e.latlng.lng;
+            const lat=e.latlng.lat;
+            const lng=e.latlng.lng;
 
             marker.setLatLng([lat, lng]);
 
-            document.getElementById('lat').value = lat;
-            document.getElementById('lng').value = lng;
+            document.getElementById('lat').value=lat;
+            document.getElementById('lng').value=lng;
 
             drawRoute(lat, lng);
         });
 
         document.querySelectorAll('input[name="prefereddirection"]').forEach(radio => {
             radio.addEventListener("change", function () {
-                const position = marker.getLatLng();
+                const position=marker.getLatLng();
                 drawRoute(position.lat, position.lng);
             });
         });
 
         {% comment %} location suggession {% endcomment %}
-        const input = document.getElementById("location-input");
-        const resultsBox = document.getElementById("autocomplete-results");
+        const input=document.getElementById("location-input");
+        const resultsBox=document.getElementById("autocomplete-results");
 
         let debounceTimer;
 
         input.addEventListener("input", function () {
-            const query = input.value.trim();
+            const query=input.value.trim();
             clearTimeout(debounceTimer);
 
             if (query.length < 3) {
-                resultsBox.innerHTML = "";
+                resultsBox.innerHTML="";
                 return;
             }
 
-            debounceTimer = setTimeout(() => {
+            debounceTimer=setTimeout(() => {
                 fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5&accept-language=en`)
                     .then(response => response.json())
                     .then(data => {
 
-                        resultsBox.innerHTML = "";
+                        resultsBox.innerHTML="";
 
                         data.forEach(place => {
-                            const item = document.createElement("a");
-                            item.className = "list-group-item list-group-item-action";
-                            item.textContent = place.display_name;
+                            const item=document.createElement("a");
+                            item.className="list-group-item list-group-item-action";
+                            item.textContent=place.display_name;
 
                             item.addEventListener("click", () => {
 
-                                input.value = place.display_name;
+                                input.value=place.display_name;
 
-                                const lat = parseFloat(place.lat);
-                                const lon = parseFloat(place.lon);
+                                const lat=parseFloat(place.lat);
+                                const lon=parseFloat(place.lon);
 
-                                document.getElementById("lat").value = lat;
-                                document.getElementById("lng").value = lon;
+                                document.getElementById("lat").value=lat;
+                                document.getElementById("lng").value=lon;
 
                                 map.setView([lat, lon], 16);
                                 marker.setLatLng([lat, lon]);
 
                                 drawRoute(lat, lon);
 
-                                resultsBox.innerHTML = "";
+                                resultsBox.innerHTML="";
                             });
 
                             resultsBox.appendChild(item);
@@ -442,7 +442,7 @@
 
         document.addEventListener("click", function (e) {
             if (!input.contains(e.target)) {
-                resultsBox.innerHTML = "";
+                resultsBox.innerHTML="";
             }
         });
 

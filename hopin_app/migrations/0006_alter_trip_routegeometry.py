@@ -5,11 +5,11 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
+    dependencies=[
         ('hopin_app', '0005_alter_trip_routegeometry'),
     ]
 
-    operations = [
+    operations=[
         migrations.AlterField(
             model_name='trip',
             name='routegeometry',

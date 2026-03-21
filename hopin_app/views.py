@@ -16,16 +16,16 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from .forms import signupForm, loginForm, createtripForm
-EMAIL = os.getenv("MAIL_USER")
+EMAIL=os.getenv("MAIL_USER")
 
 
-User = get_user_model()
+User=get_user_model()
 
 
 load_dotenv()
-RAZORID = os.getenv("RAZORPAYKEY")
-RAZORSECRET = os.getenv("RAZORPAYSECRET")
-razorpayclient = razorpay.Client(auth=(RAZORID, RAZORSECRET))
+RAZORID=os.getenv("RAZORPAYKEY")
+RAZORSECRET=os.getenv("RAZORPAYSECRET")
+razorpayclient=razorpay.Client(auth=(RAZORID, RAZORSECRET))
 
 # Create your views here.
 
@@ -33,27 +33,27 @@ razorpayclient = razorpay.Client(auth=(RAZORID, RAZORSECRET))
 
 
 def averagerating(currentrequest):
-    driver = currentrequest.trip.usercredentials
-    driverdetails = userdetail.objects.get(usercredentials=driver)
-    completedrides = riderequest.objects.filter(
+    driver=currentrequest.trip.usercredentials
+    driverdetails=userdetail.objects.get(usercredentials=driver)
+    completedrides=riderequest.objects.filter(
         trip__usercredentials=driver, status="DROPPED", rating__isnull=False)
 
-    allratings = []
+    allratings=[]
     for rides in completedrides:
         allratings.append(rides.rating)
 
-    avgrating = sum(allratings)/len(allratings)
+    avgrating=sum(allratings)/len(allratings)
     print("AVG :", avgrating)
-    driverdetails.averagerating = avgrating
+    driverdetails.averagerating=avgrating
     driverdetails.save()
 
 
 def ratetheride(request, currentpayment, paymentid):
-    currentrequest = currentpayment.requestdetails
-    currentrating = request.POST.get("rating")
+    currentrequest=currentpayment.requestdetails
+    currentrating=request.POST.get("rating")
     print("Rating: ", currentrating)
 
-    currentrequest.rating = currentrating
+    currentrequest.rating=currentrating
     currentrequest.save()
     averagerating(currentrequest)
     return redirect("testpay", paymentid=paymentid)
@@ -61,7 +61,7 @@ def ratetheride(request, currentpayment, paymentid):
 
 def verifypayment(request):
     if request.method == "POST":
-        data = json.loads(request.body)
+        data=json.loads(request.body)
         try:
             razorpayclient.utility.verify_payment_signature({
                 'razorpay_order_id': data['razorpay_order_id'],
@@ -69,10 +69,10 @@ def verifypayment(request):
                 'razorpay_signature': data['razorpay_signature']
             })
 
-            currentpayment = payment.objects.get(
+            currentpayment=payment.objects.get(
                 orderid=data['razorpay_order_id'])
-            currentpayment.paymentid = data['razorpay_payment_id']
-            currentpayment.status = "PAID"
+            currentpayment.paymentid=data['razorpay_payment_id']
+            currentpayment.status="PAID"
             currentpayment.save()
             return JsonResponse({"status": "success"})
         except:
@@ -80,14 +80,14 @@ def verifypayment(request):
 
 
 def createpayment(request):
-    requestid = request.POST.get("requestid")
-    currentrequest = riderequest.objects.get(id=requestid)
+    requestid=request.POST.get("requestid")
+    currentrequest=riderequest.objects.get(id=requestid)
 
     print("RAZORID", RAZORID)
     print("RAZORSECRET", RAZORSECRET)
-    razorpayclient = razorpay.Client(auth=(RAZORID, RAZORSECRET))
-    amount = 1000  # amount should be in paise: 10 rupees=1000 paise
-    currentorder = razorpayclient.order.create({
+    razorpayclient=razorpay.Client(auth=(RAZORID, RAZORSECRET))
+    amount=1000  # amount should be in paise: 10 rupees=1000 paise
+    currentorder=razorpayclient.order.create({
         "amount": amount,
         "currency": "INR",
         "payment_capture": 1
@@ -97,15 +97,15 @@ def createpayment(request):
 
 
 def testpayfunction(request, paymentid):
-    currentorderid = None
-    currentamount = None
+    currentorderid=None
+    currentamount=None
 
-    currentpayment = payment.objects.get(id=paymentid)
+    currentpayment=payment.objects.get(id=paymentid)
     if request.method == "POST":
-        action = request.POST.get("action")
+        action=request.POST.get("action")
         if action == "completepayment":
-            currentorderid, currentamount = createpayment(request)
-            currentpayment.orderid = currentorderid
+            currentorderid, currentamount=createpayment(request)
+            currentpayment.orderid=currentorderid
             currentpayment.save()
 
         elif action == "rateride":
@@ -123,15 +123,15 @@ def otpgenerator():
 
 # send otp to user email
 def sendotptomail(request):
-    user = request.user
-    email = user.email
-    phonenumber = request.POST.get("phone")
+    user=request.user
+    email=user.email
+    phonenumber=request.POST.get("phone")
 
-    otp = otpgenerator()
-    request.session['otp'] = otp
-    request.session['otptime'] = timezone.now().timestamp()
-    request.session['phonenumber'] = phonenumber
-    request.session['otpsent'] = True
+    otp=otpgenerator()
+    request.session['otp']=otp
+    request.session['otptime']=timezone.now().timestamp()
+    request.session['phonenumber']=phonenumber
+    request.session['otpsent']=True
 
     send_mail(subject="HopIn OTP Verification",message=f"Your OTP is {otp}",
         from_email=EMAIL,recipient_list=[email],)
@@ -142,7 +142,7 @@ def sendotptomail(request):
 def verifyotp(request):
     userotp=request.POST.get("otp")
     if timezone.now().timestamp()-request.session.get('otptime',0)>300:
-        request.session['otpsent'] = False
+        request.session['otpsent']=False
         messages.error(request, "OTP has Expired. Resend and Try Again")
         return redirect("verify")
     
@@ -152,7 +152,7 @@ def verifyotp(request):
         userprofile.verificationpending=True
         userprofile.save()
 
-        request.session['otpsent'] = False
+        request.session['otpsent']=False
         messages.success(request, "OTP has been Successfully Verified.")
     return redirect("landing")
 
@@ -385,8 +385,8 @@ def updatelocation(request,rideid):
         currentride=trip.objects.get(id=rideid, usercredentials=request.user)
         if currentride.status=="COMPLETED":
             return JsonResponse({
-                "status":"COMPLETED",
-                "message":"Ride ended"
+                "status": "COMPLETED",
+                "message": "Ride ended"
             })
         
         data=json.loads(request.body)
@@ -427,7 +427,7 @@ def testlocationfunction(request,rideid):
     print("Current Req: ",currentrequest)
 
     if request.method=="POST":
-        pickupid = request.POST.get("requestid")
+        pickupid=request.POST.get("requestid")
         pickuprider=get_object_or_404(riderequest, id=pickupid, status="ACCEPTED")
         pickuprider.status="HALFCONFIRM"
         pickuprider.save()
@@ -444,7 +444,7 @@ def tripdatetimevalidation(request):
     print("TIME: ",request.POST.get("ridetime"))
 
     ridetime=datetime.strptime(request.POST.get("ridetime"), "%H:%M").time()
-    ridedate = datetime.strptime(request.POST.get("ridedate"), "%Y-%m-%d").date()
+    ridedate=datetime.strptime(request.POST.get("ridedate"), "%Y-%m-%d").date()
 
     #date validation
     today=timezone.localdate()
@@ -488,7 +488,7 @@ def tripdetails(request):
                 return datetimevalid
             
             # commit=False: saves the form content but doesnot upload it into db yet
-            newtrip = createtripform.save(commit=False)
+            newtrip=createtripform.save(commit=False)
             newtrip.usercredentials=request.user
                 
             #make ride geometry into JSON format for db storage
@@ -579,10 +579,10 @@ def testdriverfunction(request):
         print("PAST: ",lasttrip)
         '''if lasttrip.status!="ONGOING":
             
-            currenttime = timezone.localtime()
-            ridetime = datetime.combine(lasttrip.ridedate, lasttrip.ridetime)
-            ridetime = timezone.make_aware(ridetime)
-            starttime = ridetime - timedelta(minutes=30)
+            currenttime=timezone.localtime()
+            ridetime=datetime.combine(lasttrip.ridedate, lasttrip.ridetime)
+            ridetime=timezone.make_aware(ridetime)
+            starttime=ridetime - timedelta(minutes=30)
             print("C: ",currenttime)
             print("S: ",starttime)
             if currenttime>=starttime:
@@ -639,7 +639,7 @@ def requesttimevalidation(request):
     print("TIME: ",request.POST.get("ridetime"))
 
     ridetime=datetime.strptime(request.POST.get("ridetime"), "%H:%M").time()
-    ridedate = datetime.strptime(request.POST.get("ridedate"), "%Y-%m-%d").date()
+    ridedate=datetime.strptime(request.POST.get("ridedate"), "%Y-%m-%d").date()
 
     #date validation
     today=timezone.localdate()

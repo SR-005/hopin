@@ -5,11 +5,11 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
+    dependencies=[
         ('hopin_app', '0016_trip_lastlocationupdate'),
     ]
 
-    operations = [
+    operations=[
         migrations.AddField(
             model_name='riderequest',
             name='pickuplatitude',

@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 
-urlpatterns = [
+urlpatterns=[
     path("testcreatetrip/", views.testdriverfunction, name="testdriver"),   #test driver
     path("testrider/", views.testriderfunction, name="testrider"),   #test rider
     path("testlocation/<int:rideid>/", views.testlocationfunction, name="testlocation"),   #test live location

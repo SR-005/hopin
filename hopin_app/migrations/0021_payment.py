@@ -6,11 +6,11 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
+    dependencies=[
         ('hopin_app', '0020_alter_trip_usercredentials'),
     ]
 
-    operations = [
+    operations=[
         migrations.CreateModel(
             name='payment',
             fields=[

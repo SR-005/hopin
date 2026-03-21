@@ -142,7 +142,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        window.TRACKING_VARS = {
+        window.TRACKING_VARS={
             requestId: "{{ requestid|default_if_none:'' }}",
             rideId: "{{ rideid|default_if_none:'' }}",
             // The || ensures that if Django passes an empty string, it defaults to the college coordinates safely

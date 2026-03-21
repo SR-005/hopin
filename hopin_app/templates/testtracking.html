@@ -15,6 +15,15 @@
 </head>
 <body>
 
+    {# default message display snippet- as web popup #}
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+            alert("{{ message|escapejs }}");
+            </script>
+        {% endfor %}
+    {% endif %}
+
     <h1>Live Tracking</h1>
     <div id="map"></div>
 
@@ -30,20 +39,20 @@
         
         //csrf token for form submission
         function getCookie(name) {
-            let cookieValue = null;
+            let cookieValue=null;
             if (document.cookie && document.cookie !== "") {
-                const cookies = document.cookie.split(";");
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
+                const cookies=document.cookie.split(";");
+                for (let i=0; i < cookies.length; i++) {
+                    const cookie=cookies[i].trim();
                     if (cookie.substring(0, name.length + 1) === (name + "=")) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        cookieValue=decodeURIComponent(cookie.substring(name.length + 1));
                         break;
                     }
                 }
             }
             return cookieValue;
         }
-        const csrftoken = getCookie("csrftoken");
+        const csrftoken=getCookie("csrftoken");
 
         //ride request status check
         function checkPickup() {
@@ -70,16 +79,16 @@
 
 
         //set location on map
-        const map = L.map("map").setView([10.0469, 76.3467], 15);
+        const map=L.map("map").setView([10.0469, 76.3467], 15);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {attribution: "&copy; OpenStreetMap contributors"}).addTo(map);
 
-        const driverMarker = L.marker([10.0469, 76.3467]).addTo(map).bindPopup("Driver");
-        const riderMarker = L.marker([{{ riderlatitude }}, {{ riderlongitude }}]).addTo(map).bindPopup("Rider");
-        let routeLine = null;
-        let routeCoords = [];
-        let remainingRouteLine = null;
-        let travelledRouteLine = null;
-        let lastETA = null;
+        const driverMarker=L.marker([10.0469, 76.3467]).addTo(map).bindPopup("Driver");
+        const riderMarker=L.marker([{{ riderlatitude }}, {{ riderlongitude }}]).addTo(map).bindPopup("Rider");
+        let routeLine=null;
+        let routeCoords=[];
+        let remainingRouteLine=null;
+        let travelledRouteLine=null;
+        let lastETA=null;
         
         function getDriverLocation(){
 
@@ -90,9 +99,9 @@
 
                 if(data.eta !== undefined){
                     if(lastETA === null){
-                        lastETA = data.eta;
+                        lastETA=data.eta;
                     } else {
-                        lastETA = 0.7 * lastETA + 0.3 * data.eta;
+                        lastETA=0.7 * lastETA + 0.3 * data.eta;
                     }
 
                     document.getElementById("etaText").innerText =
@@ -102,67 +111,67 @@
                 if(data.status === "COMPLETED"){
                     clearInterval(trackingInterval);
                     alert(data.message);
-                    window.location.href = "/";
+                    window.location.href="/";
                     return;
                 }
 
-                const lat = data.lat;
-                const lng = data.lng;
+                const lat=data.lat;
+                const lng=data.lng;
                 driverMarker.setLatLng([lat, lng]);
 
                 if(routeCoords.length === 0 && data.route){
 
-                    const routeGeoJSON = JSON.parse(data.route);
-                    routeCoords = routeGeoJSON.coordinates.map(coord => [coord[1], coord[0]]);
+                    const routeGeoJSON=JSON.parse(data.route);
+                    routeCoords=routeGeoJSON.coordinates.map(coord => [coord[1], coord[0]]);
 
-                    remainingRouteLine = L.polyline(routeCoords, {
+                    remainingRouteLine=L.polyline(routeCoords, {
                         color: "blue",
                         weight: 5
                     }).addTo(map);
 
                     map.fitBounds(remainingRouteLine.getBounds());
 
-                    const coords = routeGeoJSON.coordinates;
-                    const start = coords[0];
-                    const end = coords[coords.length - 1];
+                    const coords=routeGeoJSON.coordinates;
+                    const start=coords[0];
+                    const end=coords[coords.length - 1];
 
-                    const startLatLng = [start[1], start[0]];
-                    const endLatLng = [end[1], end[0]];
+                    const startLatLng=[start[1], start[0]];
+                    const endLatLng=[end[1], end[0]];
 
-                    const startMarker = L.marker(startLatLng)
+                    const startMarker=L.marker(startLatLng)
                         .addTo(map)
                         .bindPopup("Start");
 
-                    const endMarker = L.marker(endLatLng)
+                    const endMarker=L.marker(endLatLng)
                         .addTo(map)
                         .bindPopup("Destination");
             };
 
 
-        const driverPos = [lat, lng];
+        const driverPos=[lat, lng];
 
         // find closest point on route
-        let closestIndex = 0;
-        let minDist = Infinity;
+        let closestIndex=0;
+        let minDist=Infinity;
 
         routeCoords.forEach((point, i) => {
-            const dist = map.distance(driverPos, point);
+            const dist=map.distance(driverPos, point);
             if(dist < minDist){
-                minDist = dist;
-                closestIndex = i;
+                minDist=dist;
+                closestIndex=i;
             }
         });
 
         // split route
-        const travelled = routeCoords.slice(0, closestIndex);
-        const remaining = routeCoords.slice(closestIndex);
+        const travelled=routeCoords.slice(0, closestIndex);
+        const remaining=routeCoords.slice(closestIndex);
 
         // update remaining route (blue)
         if(remainingRouteLine){
             map.removeLayer(remainingRouteLine);
         }
 
-        remainingRouteLine = L.polyline(remaining, {
+        remainingRouteLine=L.polyline(remaining, {
             color: "blue",
             weight: 5
         }).addTo(map);
@@ -171,7 +180,7 @@
 
 
 
-        const trackingInterval = setInterval(getDriverLocation, 3000);
+        const trackingInterval=setInterval(getDriverLocation, 3000);
     </script>
 </body>
 </html>

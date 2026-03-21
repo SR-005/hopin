@@ -5,14 +5,14 @@ from django.db import models
 #creating admin model
 from django.contrib.auth.models import BaseUserManager
 class UserManager(BaseUserManager):
-    use_in_migrations = True
+    use_in_migrations=True
 
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("Email must be set")
 
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+        email=self.normalize_email(email)
+        user=self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -34,12 +34,12 @@ class UserManager(BaseUserManager):
 from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
     username=None
-    email = models.EmailField(unique=True)
+    email=models.EmailField(unique=True)
 
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []        # no username required
+    USERNAME_FIELD="email"
+    REQUIRED_FIELDS=[]        # no username required
 
-    objects = UserManager() 
+    objects=UserManager() 
 
     def __str__(self):
         return self.email
@@ -50,7 +50,7 @@ class userdetail(models.Model):
     usercredentials=models.OneToOneField(User, on_delete=models.CASCADE, related_name="userdetails")
     phonenumber=models.CharField(max_length=15,null=True, blank=True)
     averagerating=models.FloatField(null=True, blank=True)
-    verificationpending = models.BooleanField(default="False")
+    verificationpending=models.BooleanField(default="False")
     
     def __str__(self):
         return self.usercredentials.email
@@ -73,7 +73,7 @@ class trip(models.Model):
     vehiclenumber=models.CharField(max_length=12,null=False, blank=False)       #KL 41 **** ****
     vehiclemodel=models.CharField(null=False, blank=False)                     #car or bike model name
     status=models.CharField(default="EMPTY")
-    has_boarded = models.BooleanField(default=False)
+    has_boarded=models.BooleanField(default=False)
     
     def __str__(self):
         return f"{self.usercredentials.email} : {self.status}"
@@ -89,7 +89,7 @@ class riderequest(models.Model):
     status=models.CharField(default="PENDING")
 
     class Meta:
-        unique_together = ("trip", "rider")
+        unique_together=("trip", "rider")
 
     def __str__(self):
         return f"{self.rider.email} → Ride {self.trip.usercredentials} : {self.status}"

@@ -6,11 +6,11 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
+    dependencies=[
         ('hopin_app', '0003_trip_latitude_trip_longitude'),
     ]
 
-    operations = [
+    operations=[
         migrations.RemoveField(
             model_name='trip',
             name='route',

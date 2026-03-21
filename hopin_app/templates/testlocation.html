@@ -6,6 +6,16 @@
     <title>Live Location</title>
 </head>
 <body>
+
+    {# default message display snippet- as web popup #}
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+            alert("{{ message|escapejs }}");
+            </script>
+        {% endfor %}
+    {% endif %}
+
     <h1>Live Location</h1>
     <input type="hidden" name="rideid" id="rideid" value="{{ rideid }}">
 
@@ -22,20 +32,20 @@
     <script>
         //csrf token for form submission
         function getCookie(name) {
-            let cookieValue = null;
+            let cookieValue=null;
             if (document.cookie && document.cookie !== "") {
-                const cookies = document.cookie.split(";");
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
+                const cookies=document.cookie.split(";");
+                for (let i=0; i < cookies.length; i++) {
+                    const cookie=cookies[i].trim();
                     if (cookie.substring(0, name.length + 1) === (name + "=")) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        cookieValue=decodeURIComponent(cookie.substring(name.length + 1));
                         break;
                     }
                 }
             }
             return cookieValue;
         }
-        const csrftoken = getCookie("csrftoken");
+        const csrftoken=getCookie("csrftoken");
 
         //send location
         navigator.geolocation.watchPosition(
@@ -50,9 +60,9 @@
 
         function sendLocation(position){
             
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            const rideid = "{{ rideid }}";
+            const lat=position.coords.latitude;
+            const lng=position.coords.longitude;
+            const rideid="{{ rideid }}";
 
             fetch(`/updatelocation/${rideid}/`, {
                 method: "POST",
@@ -71,7 +81,7 @@
 
                     if (data.status === "COMPLETED") {
                         alert("Ride Completed!");
-                        window.location.href = "/";
+                        window.location.href="/";
                     }
                 })
                 .catch(err => console.error(err));

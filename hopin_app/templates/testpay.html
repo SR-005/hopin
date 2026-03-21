@@ -32,7 +32,7 @@
     {% if paymentdetails.status == "PENDING" %}
         {% if orderid %}
         <script>
-            var options = {
+            var options={
                 "key": "{{ RAZORID }}",
                 "amount": "{{ amount }}",
                 "currency": "INR",
@@ -58,7 +58,7 @@
                 }
             };
 
-            var rzp = new Razorpay(options);
+            var rzp=new Razorpay(options);
             rzp.open();
         </script>
         {% endif %}

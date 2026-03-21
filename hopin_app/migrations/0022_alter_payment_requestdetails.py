@@ -6,11 +6,11 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
+    dependencies=[
         ('hopin_app', '0021_payment'),
     ]
 
-    operations = [
+    operations=[
         migrations.AlterField(
             model_name='payment',
             name='requestdetails',

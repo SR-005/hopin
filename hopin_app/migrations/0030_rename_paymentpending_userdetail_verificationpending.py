@@ -5,11 +5,11 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
+    dependencies=[
         ('hopin_app', '0029_alter_userdetail_phonenumber'),
     ]
 
-    operations = [
+    operations=[
         migrations.RenameField(
             model_name='userdetail',
             old_name='paymentpending',
