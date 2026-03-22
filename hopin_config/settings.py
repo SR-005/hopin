@@ -176,13 +176,12 @@ STATIC_ROOT=os.path.join(BASE_DIR, "staticfiles")
 DEFAULT_AUTO_FIELD='django.db.models.BigAutoField'
 
 
-EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST="smtp.gmail.com"
+
+EMAIL_HOST="smtp-relay.brevo.com"
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
-EMAIL_HOST_USER=os.getenv("MAIL_USER")
-EMAIL_HOST_PASSWORD=os.getenv("MAIL_PASS")
-DEFAULT_FROM_EMAIL=EMAIL_HOST_USER
+EMAIL_HOST_USER=os.getenv("BREVO_USER")
+EMAIL_HOST_PASSWORD=os.getenv("BREVO_PASS")
+DEFAULT_FROM_EMAIL="sreeramvg100@gmail.com"
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 EMAIL_TIMEOUT = 5

@@ -1,17 +1,15 @@
 from ..models import userdetail,payment
 from django.contrib.auth import get_user_model
-from dotenv import load_dotenv
 import os
 import random
 from django.core.mail import send_mail
-from django.db.models import Q
+from django.conf import settings
 from django.utils import timezone
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from ..forms import signupForm, loginForm
 User=get_user_model()
-
 
 
 
@@ -33,13 +31,12 @@ def sendotptomail(request):
     request.session['otpsent']=True
 
     try:
-        '''send_mail(subject="HopIn OTP Verification",message=f"Your OTP is {otp}",from_email=os.environ.get("MAIL_USER"),
-                  recipient_list=[email],fail_silently=False)'''
+        send_mail(subject="HopIn OTP Verification",message=f"Your OTP is {otp}",from_email=settings.DEFAULT_FROM_EMAIL,
+                  recipient_list=[email])
         messages.success(request, f"OTP has been send to your Email: {otp}")
     except Exception as e:
         print("EMAIL ERROR:", e)
-        messages.success(request, "SMTP is currently facing some issues. Try again after sometime!!")
-
+        messages.success(request, F"SMTP is currently facing some issues. Try again after sometime!!  {e}")
 
     return redirect("verify")
 
@@ -59,6 +56,11 @@ def verifyotp(request):
 
         request.session['otpsent']=False
         messages.success(request, "OTP has been Successfully Verified.")
+    else:
+        messages.error(request, "Incorrect OTP. Try Again")
+        request.session['otpsent']=False
+        return redirect("verify")
+    
     return redirect("landing")
 
 def verifyfunction(request):
