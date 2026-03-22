@@ -84,6 +84,7 @@ class riderequest(models.Model):
     id=models.AutoField(primary_key=True)
     trip=models.ForeignKey(trip, on_delete=models.CASCADE, related_name="tripdetails")
     rider=models.ForeignKey(User, on_delete=models.CASCADE, related_name="riderdetails")
+    pickuplocation=models.CharField(max_length=100)
     pickuplatitude=models.FloatField(null=True, blank=True)
     pickuplongitude=models.FloatField(null=True, blank=True)
     rating=models.IntegerField(null=True, blank=True)

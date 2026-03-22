@@ -691,6 +691,7 @@ def riderdetails(request):
     lcutofftime=(formatedtime-timedelta(minutes=20)).time()
     ucutofftime=(formatedtime+timedelta(minutes=20)).time()
 
+    request.session["riderlocation"]=location
     request.session["riderlatitude"]=latitude
     request.session["riderlongitude"]=longitude
     print(direction,ucutofftime,lcutofftime,date)     
@@ -717,11 +718,12 @@ def requestride(request):
     rideid=request.POST.get("rideid")
     ride=get_object_or_404(trip, id=rideid)
 
+    location=request.session.get("riderlocation")
     latitude=request.session.get("riderlatitude")
     longitude=request.session.get("riderlongitude")
     print(latitude,",",longitude)
 
-    riderequest.objects.create(trip=ride,rider=request.user,pickuplatitude=latitude,pickuplongitude=longitude)
+    riderequest.objects.create(trip=ride,rider=request.user,pickuplocation=location,pickuplatitude=latitude,pickuplongitude=longitude)
     return redirect("testrider")
 
 #request for a ride previously booked driver
