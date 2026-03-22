@@ -423,7 +423,7 @@ def testlocationfunction(request,rideid):
         messages.error(request, "This Ride has Successfully been completed")
         return redirect("testdriver")
     
-    currentrequest=riderequest.objects.filter(trip=ride, status="ACCEPTED")
+    currentrequest=riderequest.objects.filter(trip=ride, status__in=["ACCEPTED","HALFCONFIRM","FULLCONFIRM"])
     print("Current Req: ",currentrequest)
 
     if request.method=="POST":

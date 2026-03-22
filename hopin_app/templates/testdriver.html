@@ -32,7 +32,7 @@
             {% csrf_token %}
             <p>{{ ongoing.usercredentials }}</p>
             <input type="hidden" name="tripid" id="tripid" value="{{ ongoing.id }}">
-            <button type="submit" name="action" value="startride">Start Ride</button>
+            <button type="submit" name="action" value="startride">Resume Ride</button>
             </form>
         {% else %}
     <p>No Active Rides</p>
@@ -48,6 +48,61 @@
             <input type="hidden" name="tripid" id="tripid" value="{{ request.trip.id }}">
         
         {% endfor %}
+
+        {% comment %} map for all riders {% endcomment %}
+        <div id="common-map" style="height:200px;width:25%;margin-bottom:10px;"></div>
+        <script>
+            const riders = [];
+
+            {% for request in accepted %}
+                riders.push({
+                    lat: {{ request.pickuplatitude }},
+                    lng: {{ request.pickuplongitude }},
+                    name: "{{ request.rider.email }}"
+                });
+            {% endfor %}
+
+            // Route (same for all since same trip)
+            const route = {{ accepted.0.trip.routegeometry|safe }};
+            const tripId = {{ accepted.0.trip.id }};
+
+
+            document.addEventListener("DOMContentLoaded", function () {
+
+                if (!route || riders.length === 0) return;
+
+                const first = route.coordinates[0];
+                const map = L.map('common-map').setView([first[1], first[0]], 13);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19
+                }).addTo(map);
+                const latlngs = route.coordinates.map(coord => [coord[1], coord[0]]);
+
+                const polyline = L.polyline(latlngs, {
+                    color: 'blue',
+                    weight: 5
+                }).addTo(map);
+
+                riders.forEach(r => {
+                    L.marker([r.lat, r.lng])
+                        .addTo(map)
+                        .bindPopup("Rider: " + r.name);
+                });
+
+                L.marker(latlngs[0]).addTo(map).bindPopup("Start");
+                L.marker(latlngs[latlngs.length - 1]).addTo(map).bindPopup("Destination");
+
+                map.fitBounds(polyline.getBounds());
+
+                // 🚗 Driver marker (initial dummy)
+                const driverMarker = L.marker(latlngs[0])
+                    .addTo(map)
+                    .bindPopup("Driver");
+
+            });
+        </script>
+
             {% if startride %}
                 <button type="submit" name="action" value="startride">Start Ride</button>
             {% else %}
@@ -55,6 +110,7 @@
                 </a>
             {% endif %}
             </form>
+
         {% else %}
     <p>No Accepted Rides</p>
     {% endif %}

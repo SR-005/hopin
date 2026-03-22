@@ -135,7 +135,7 @@ def speedcalculation(driverlocation, riderlocation):
 
 
 def riderdropped(currentlatitude, currentlongitude, riders):
-    completionradius=3
+    completionradius=5
     for ride in riders:
         if ride.status == "FULLCONFIRM":
             distance=haversine((currentlatitude, currentlongitude),

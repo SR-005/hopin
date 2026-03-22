@@ -22,7 +22,7 @@
 
     <form method="POST" action="{% url 'testpay' paymentdetails.id %}">
     {% csrf_token %}
-        <label>Available Seats: </label>
+        <label>Rate the Ride: </label>
         <input type="number" name="rating">
         <input type="hidden" name="requestid" value="{{ paymentdetails.requestdetails.id }}">   
         <button type="submit" name="action" value="rateride">Rate</button>
