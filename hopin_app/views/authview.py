@@ -2,6 +2,7 @@ from ..models import userdetail,payment
 from django.contrib.auth import get_user_model
 import os
 import random
+import threading
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
@@ -17,6 +18,11 @@ User=get_user_model()
 def otpgenerator():
     return str(random.randint(100000, 999999))
 
+def send_email_async(subject, message, from_email, recipient_list):
+    try:
+        send_mail(subject, message, from_email, recipient_list)
+    except Exception as e:
+        print("EMAIL ERROR:", e)
 
 # send otp to user email
 def sendotptomail(request):
@@ -30,13 +36,10 @@ def sendotptomail(request):
     request.session['phonenumber']=phonenumber
     request.session['otpsent']=True
 
-    try:
-        send_mail(subject="HopIn OTP Verification",message=f"Your OTP is {otp}",from_email=settings.DEFAULT_FROM_EMAIL,
-                  recipient_list=[email])
-        messages.success(request, f"OTP has been send to your Email: {otp}")
-    except Exception as e:
-        print("EMAIL ERROR:", e)
-        messages.success(request, F"SMTP is currently facing some issues. Try again after sometime!!  {e}")
+    threading.Thread(target=send_email_async, args=("HopIn OTP Verification",f"Your OTP is {otp}",settings.DEFAULT_FROM_EMAIL,
+                        [email]),daemon=True).start()   
+    messages.success(request, "OTP has been send to your Email")
+
 
     return redirect("verify")
 
