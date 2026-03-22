@@ -506,6 +506,9 @@ def tripdetails(request):
             routegeometry=json.loads(request.POST.get("routegeometry"))
             newtrip.routegeometry=routegeometry
 
+            helmetavailable=request.POST.get("helmet")
+            newtrip.helmet=helmetavailable
+
             newtrip.save()
             return redirect("testdriver")
         else:

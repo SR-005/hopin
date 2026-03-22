@@ -160,8 +160,25 @@
 
             {% comment %} vehicle type {% endcomment %}
             <div class="mb-2">
-                <label>Vehicle Type: </label>
-                <input type="text" name="vehicletype" value="{{ lasttrip.vehicletype }}">
+                <label>Vehicle Type:</label><br>
+
+                <input type="radio" name="vehicletype" value="car"
+                    {% if lasttrip.vehicletype == "car" %}checked{% endif %}
+                    onchange="toggleHelmetField()"> Car
+
+                <input type="radio" name="vehicletype" value="bike"
+                    {% if lasttrip.vehicletype == "bike" %}checked{% endif %}
+                    onchange="toggleHelmetField()"> Bike
+            </div>
+
+            <div id="helmetField" class="mb-2" style="display: none;">
+                <label>Helmet Available:</label><br>
+
+                <input type="radio" name="helmet" value="yes"
+                    {% if lasttrip.helmet == "yes" %}checked{% endif %}> Yes
+
+                <input type="radio" name="helmet" value="no"
+                    {% if lasttrip.helmet == "no" %}checked{% endif %}> No
             </div>
 
             {% comment %} available seats {% endcomment %}
@@ -197,7 +214,10 @@
             <p>Date: {{ activetrips.ridedate }}</p>
             <p>Time: {{ activetrips.ridetime }}</p>
             <p>Bike/Car: {{ activetrips.vehicletype }}</p>
-            <p>Model: {{ activetrips.vehiclename }}</p>
+            {% if activetrips.vehicletype == "bike" %}
+                <p>Helmet Available: {{ activetrips.helmet }}</p>
+            {% endif %}
+            <p>Model: {{ activetrips.vehiclemodel }}</p>
             <button type="submit" name="action" value="delete">Delete Ride</button>
         </form>
         {% else %}
@@ -277,6 +297,21 @@
     {% endif %}
 
     <script>
+
+        {% comment %} Helmet Field {% endcomment %}
+        function toggleHelmetField() {
+            const vehicleType = document.querySelector('input[name="vehicletype"]:checked');
+            const helmetField = document.getElementById("helmetField");
+
+            if (vehicleType && vehicleType.value === "bike") {
+                helmetField.style.display = "block";
+            } else {
+                helmetField.style.display = "none";
+            }
+        }
+
+        window.onload = toggleHelmetField;
+
         {% comment %} date manager {% endcomment %}
         const dateInput=document.querySelector("input[name='ridedate']");
 

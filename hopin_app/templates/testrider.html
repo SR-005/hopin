@@ -28,6 +28,11 @@
                 {% csrf_token %}
 
                 <p>{{ request.rider }}</p>
+                <p>{{ request.trip.usercredentials.userdetails.averagerating }}</p>
+                <p>{{ request.trip.vehicletype }}</p>
+                {% if request.trip.vehicletype == "bike" %}
+                    <p>Helmet Available: {{ request.trip.helmet }}</p>
+                {% endif %}
                 <input type="hidden" name="requestid" id="requestid" value="{{ request.id }}">
                 <input type="hidden" name="tripid" id="tripid" value="{{ request.trip.id }}">
                 <button type="submit" name="action" value="seemore">See more</button>
@@ -118,6 +123,10 @@
 
         <p>{{ trip.usercredentials }}</p>
         <p>{{ trip.usercredentials.userdetails.averagerating }}</p>
+        <p>{{ trip.vehicletype }}</p>
+        {% if trip.vehicletype == "bike" %}
+            <p>Helmet Available: {{ trip.helmet }}</p>
+        {% endif %}
         <div id="map{{ trip.id }}" style="height:200px;width:25%;margin-bottom:10px;"></div>
 
         <script>
