@@ -1,6 +1,6 @@
 from ..models import userdetail,payment
 from django.contrib.auth import get_user_model
-import os
+import time
 import random
 import threading
 from django.core.mail import send_mail
@@ -39,6 +39,7 @@ def sendotptomail(request):
 
     threading.Thread(target=send_email_async, args=(request,"HopIn OTP Verification",f"Your OTP is {otp}",settings.DEFAULT_FROM_EMAIL,
                         [email]),daemon=True).start()   
+    time.sleep(5)
     messages.success(request, "OTP has been send to your Email")
     return redirect("verify")
 
