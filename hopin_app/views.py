@@ -302,10 +302,11 @@ def fetchtracking(request,rideid):
     currentrequest=riderequest.objects.get(id=requestid)
     print("Request Status: ",currentrequest)
 
-    if currentrequest.status=="DROPPED" or currentride.status=="COMPLETED":
+    if currentrequest.status in ["DROPPED", "DROPPEDNOTCONFIRMED", "NOTBOARDED"] or currentride.status=="COMPLETED":
+        messages.success(request, "Ride completed successfully")
         return JsonResponse({
-            "status": "COMPLETED",
-            "message": "Ride completed"
+            "redirect": True,
+            "url": "/"
         })
     
     driverlocation=(currentride.currentlatitude,currentride.currentlongitude)
@@ -433,7 +434,7 @@ def testlocationfunction(request,rideid):
         messages.error(request, "This Ride has Successfully been completed")
         return redirect("landing")
     
-    currentrequest=riderequest.objects.filter(trip=ride, status__in=["ACCEPTED","HALFCONFIRM","FULLCONFIRM"])
+    currentrequest=riderequest.objects.filter(trip=ride, status__in=["ACCEPTED", "HALFCONFIRM","FULLCONFIRM","DROPPED", "DROPPEDNOTCONFIRMED", "NOTBOARDED"])
     print("Current Req1: ",currentrequest)
 
     if request.method=="POST":
@@ -599,10 +600,6 @@ def testdriverfunction(request):
                 print("It's time to Start")
                 startride=True'''
 
-        requests=riderequest.objects.filter(trip=activetrips,status="PENDING")
-        accepted=riderequest.objects.filter(trip=activetrips,status="ACCEPTED")
-        ongoing=trip.objects.filter(usercredentials=request.user,status="ONGOING").first()
-        print("ONGOING: ",ongoing)
     except Exception as e:
         print(e)
 
@@ -622,8 +619,11 @@ def testdriverfunction(request):
     elif action=="startride":
         return starttracking(request)
 
-    return render(request, "testdriver.html",{"requests":requests,"accepted":accepted,"lasttrip": lasttrip,"startride":startride,
-                                              "activetrips":activetrips,"ongoing":ongoing})
+    return render(request, "testdriver.html",{"requests":riderequest.objects.filter(trip=activetrips,status="PENDING"),
+                                              "accepted":riderequest.objects.filter(trip=activetrips,status="ACCEPTED"),
+                                              "lasttrip": lasttrip,"startride":startride,
+                                              "activetrips":activetrips,
+                                              "ongoing":trip.objects.filter(usercredentials=request.user,status="ONGOING").order_by("-id").first()})
 
 
 
