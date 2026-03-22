@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 import time
 import random
 import threading
+import os
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
@@ -19,6 +20,7 @@ def otpgenerator():
     return str(random.randint(100000, 999999))
 
 def send_email_async(subject, message, from_email, recipient_list):
+    print("Entered SMTP")
     try:
         send_mail(subject, message, from_email, recipient_list)
         print("Email sent successfully")
@@ -37,9 +39,14 @@ def sendotptomail(request):
     request.session['phonenumber']=phonenumber
     request.session['otpsent']=True
 
+    print("BREVO USER:", os.getenv("BREVO_USER"))
+    print("BREVO PASS:", os.getenv("BREVO_PASS"))
+
+    send_mail("HopIn OTP Verification",f"Your OTP is {otp}",settings.DEFAULT_FROM_EMAIL,["sreeramvg100@gmail.com"])
+
     threading.Thread(target=send_email_async, args=("HopIn OTP Verification",f"Your OTP is {otp}",settings.DEFAULT_FROM_EMAIL,
                         [email]),daemon=True).start()   
-    time.sleep(5)
+
     messages.success(request, "OTP has been send to your Email")
     return redirect("verify")
 
