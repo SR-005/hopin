@@ -5,7 +5,6 @@ import os
 import json
 import razorpay
 from django.http import JsonResponse
-from django.contrib import messages
 from django.shortcuts import render, redirect
 User=get_user_model()
 
@@ -26,7 +25,7 @@ def averagerating(currentrequest):
 
     avgrating=sum(allratings)/len(allratings)
     print("AVG :", avgrating)
-    driverdetails.averagerating=avgrating
+    driverdetails.averagerating=round(avgrating,1)
     driverdetails.save()
 
 
