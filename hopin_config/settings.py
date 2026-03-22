@@ -183,5 +183,9 @@ EMAIL_USE_TLS=True
 EMAIL_HOST_USER=os.environ.get("BREVO_USER")
 EMAIL_HOST_PASSWORD=os.environ.get("BREVO_PASS")
 DEFAULT_FROM_EMAIL="sreeramvg100@gmail.com"
+DEFAULT_FROM_NAME="Hop In"
+BREVO_API_URL="https://api.brevo.com/v3/smtp/email"
+BREVO_API_KEY=os.environ.get("BREVO_API_KEY")
+BREVO_API_TIMEOUT=10
 
 EMAIL_TIMEOUT = 5
