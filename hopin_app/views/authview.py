@@ -4,7 +4,6 @@ from dotenv import load_dotenv
 import os
 import random
 from django.core.mail import send_mail
-from django.http import JsonResponse
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib import messages
