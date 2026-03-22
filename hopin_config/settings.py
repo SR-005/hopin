@@ -183,3 +183,6 @@ EMAIL_USE_TLS=True
 EMAIL_HOST_USER=os.getenv("MAIL_USER")
 EMAIL_HOST_PASSWORD=os.getenv("MAIL_PASS")
 DEFAULT_FROM_EMAIL=EMAIL_HOST_USER
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_TIMEOUT = 5

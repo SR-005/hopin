@@ -33,9 +33,9 @@ def sendotptomail(request):
     request.session['otpsent']=True
 
     try:
-        send_mail(subject="HopIn OTP Verification",message=f"Your OTP is {otp}",from_email=os.environ.get("MAIL_USER"),
-                  recipient_list=[email],fail_silently=False)
-        messages.success(request, "OTP has been send to your Email.")
+        '''send_mail(subject="HopIn OTP Verification",message=f"Your OTP is {otp}",from_email=os.environ.get("MAIL_USER"),
+                  recipient_list=[email],fail_silently=False)'''
+        messages.success(request, f"OTP has been send to your Email: {otp}")
     except Exception as e:
         print("EMAIL ERROR:", e)
         messages.success(request, "SMTP is currently facing some issues. Try again after sometime!!")
