@@ -1,10 +1,8 @@
 from ..models import userdetail,payment
+from ..email.brevo import sendemail
 from django.contrib.auth import get_user_model
-import time
 import random
 import logging
-import requests
-from django.conf import settings
 from django.utils import timezone
 from django.contrib import messages
 from django.shortcuts import render, redirect
@@ -19,34 +17,6 @@ logger = logging.getLogger(__name__)
 def otpgenerator():
     return str(random.randint(100000, 999999))
 
-def send_brevo_email(subject, message, recipient_email):
-    api_key = (settings.BREVO_API_KEY or "").strip()
-    if not api_key:
-        raise ValueError("BREVO_API_KEY is not configured")
-
-    response = requests.post(
-        settings.BREVO_API_URL,
-        headers={
-            "accept": "application/json",
-            "api-key": api_key,
-            "content-type": "application/json",
-        },
-        json={
-            "sender": {
-                "name": settings.DEFAULT_FROM_NAME,
-                "email": settings.DEFAULT_FROM_EMAIL,
-            },
-            "to": [{"email": recipient_email}],
-            "subject": subject,
-            "textContent": message,
-        },
-        timeout=settings.BREVO_API_TIMEOUT,
-    )
-    if not response.ok:
-        raise ValueError(
-            f"Brevo API error {response.status_code}: {response.text}"
-        )
-
 # send otp to user email
 def sendotptomail(request):
     user=request.user
@@ -60,7 +30,7 @@ def sendotptomail(request):
     request.session['otpsent']=True
 
     try:
-        send_brevo_email(
+        sendemail(
             "HopIn OTP Verification",
             f"Your OTP is {otp}",
             email,
