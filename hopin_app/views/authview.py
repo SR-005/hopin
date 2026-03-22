@@ -42,10 +42,13 @@ def sendotptomail(request):
     print("BREVO USER:", os.getenv("BREVO_USER"))
     print("BREVO PASS:", os.getenv("BREVO_PASS"))
 
-    send_mail("HopIn OTP Verification",f"Your OTP is {otp}",settings.DEFAULT_FROM_EMAIL,["sreeramvg100@gmail.com"])
+    try:
+        send_mail("HopIn OTP Verification",f"Your OTP is {otp}",settings.DEFAULT_FROM_EMAIL,["sreeramvg100@gmail.com"],fail_silently=True)
+    except:
+        pass
 
     threading.Thread(target=send_email_async, args=("HopIn OTP Verification",f"Your OTP is {otp}",settings.DEFAULT_FROM_EMAIL,
-                        [email]),daemon=True).start()   
+                        [email])).start()   
 
     messages.success(request, "OTP has been send to your Email")
     return redirect("verify")
