@@ -1,1 +1,1 @@
-web: gunicorn hopin_app.wsgi:application
+web: gunicorn hopin_config.wsgi:application

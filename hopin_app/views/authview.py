@@ -2,8 +2,7 @@ from ..models import userdetail,payment
 from django.contrib.auth import get_user_model
 import time
 import random
-import threading
-import os
+import logging
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
@@ -12,20 +11,13 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from ..forms import signupForm, loginForm
 User=get_user_model()
+logger = logging.getLogger(__name__)
 
 
 
 #generate a random otp number
 def otpgenerator():
     return str(random.randint(100000, 999999))
-
-def send_email_async(subject, message, from_email, recipient_list):
-    print("Entered SMTP")
-    try:
-        send_mail(subject, message, from_email, recipient_list)
-        print("Email sent successfully")
-    except Exception as e:
-        print(f"Error: {e}")
 
 # send otp to user email
 def sendotptomail(request):
@@ -39,18 +31,21 @@ def sendotptomail(request):
     request.session['phonenumber']=phonenumber
     request.session['otpsent']=True
 
-    print("BREVO USER:", os.getenv("BREVO_USER"))
-    print("BREVO PASS:", os.getenv("BREVO_PASS"))
-
     try:
-        send_mail("HopIn OTP Verification",f"Your OTP is {otp}",settings.DEFAULT_FROM_EMAIL,["sreeramvg100@gmail.com"],fail_silently=True)
-    except:
-        pass
+        send_mail(
+            "HopIn OTP Verification",
+            f"Your OTP is {otp}",
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False,
+        )
+    except Exception:
+        request.session['otpsent']=False
+        logger.exception("Failed to send OTP email to %s", email)
+        messages.error(request, "OTP email could not be sent. Please try again in a moment.")
+        return redirect("verify")
 
-    threading.Thread(target=send_email_async, args=("HopIn OTP Verification",f"Your OTP is {otp}",settings.DEFAULT_FROM_EMAIL,
-                        [email])).start()   
-
-    messages.success(request, "OTP has been send to your Email")
+    messages.success(request, "OTP has been sent to your email")
     return redirect("verify")
 
 
