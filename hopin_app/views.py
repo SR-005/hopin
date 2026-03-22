@@ -297,16 +297,23 @@ def cleanup(request):
 def fetchtracking(request,rideid):
     currentride=trip.objects.get(id=rideid)
     requestid=request.GET.get("requestid")
+    if not requestid:
+        return JsonResponse({"error": "Missing requestid"},status=400)
     currentrequest=riderequest.objects.get(id=requestid)
+    print("Request Status: ",currentrequest)
+
     if currentrequest.status=="DROPPED" or currentride.status=="COMPLETED":
         return JsonResponse({
             "status": "COMPLETED",
-            "message": "This Ride has been Ended"
+            "message": "Ride completed"
         })
     
     driverlocation=(currentride.currentlatitude,currentride.currentlongitude)
     riderlocation=(currentrequest.pickuplatitude,currentrequest.pickuplongitude)
-    eta=speedcalculation(driverlocation,riderlocation)
+    try:
+        eta=speedcalculation(driverlocation, riderlocation)
+    except:
+        eta=0
 
     print("Tracked Latitiude: ",currentride.currentlatitude)
     print("Tracked Longitude: ",currentride.currentlongitude)
@@ -314,7 +321,7 @@ def fetchtracking(request,rideid):
 
     return JsonResponse({
         "lat": currentride.currentlatitude,"lng": currentride.currentlongitude,
-        "route": json.dumps(currentride.routegeometry),"status": currentride.status,
+        "route": currentride.routegeometry,"status": currentride.status,
         "eta": round(eta)
     })
 
@@ -340,10 +347,11 @@ def confirmride(request):
 #to render tracking page
 def testtrackingfunction(request,rideid):
     currentrideid=None
-    currentride=get_object_or_404(trip, id=rideid, status="ONGOING")
+    currentride=get_object_or_404(trip, id=rideid, status__in=["ONGOING","COMPLETED"])
+    print("Current Tracking Ride: ",currentride)
     currentrideid=rideid
     
-    currentrequest=riderequest.objects.get(trip=currentride,rider=request.user,status__in=["ACCEPTED", "HALFCONFIRM","FULLCONFIRM"])
+    currentrequest=riderequest.objects.get(trip=currentride,rider=request.user,status__in=["ACCEPTED", "HALFCONFIRM","FULLCONFIRM","DROPPED"])
     riderlatitude=currentrequest.pickuplatitude
     riderlongitude=currentrequest.pickuplongitude
 
@@ -355,11 +363,12 @@ def testtrackingfunction(request,rideid):
     return render(request, "testtracking.html",{"rideid":currentrideid,"requestid":currentrequest.id,"riderlatitude":riderlatitude,"riderlongitude":riderlongitude})
 
 def rideend(currentride):
+    print("Ride status:", currentride.status)
     if not currentride.has_boarded:
         return
     
     pendingrides=riderequest.objects.filter(trip=currentride,status="FULLCONFIRM")
-    if not pendingrides.exists():
+    if not pendingrides.exists() and currentride.has_boarded:
         currentride.status="COMPLETED" 
         currentride.save()
 
@@ -402,6 +411,7 @@ def updatelocation(request,rideid):
         currentride.save()
 
         riders=riderequest.objects.filter(trip=currentride,status__in=["FULLCONFIRM", "HALFCONFIRM", "ACCEPTED"])
+        print("Current Req2: ",riders)
         riderdropped(latitude,longitude,riders)
         rideend(currentride)
         return JsonResponse({"status": currentride.status})
@@ -421,10 +431,10 @@ def testlocationfunction(request,rideid):
 
     if ride.status != "ONGOING":
         messages.error(request, "This Ride has Successfully been completed")
-        return redirect("testdriver")
+        return redirect("landing")
     
     currentrequest=riderequest.objects.filter(trip=ride, status__in=["ACCEPTED","HALFCONFIRM","FULLCONFIRM"])
-    print("Current Req: ",currentrequest)
+    print("Current Req1: ",currentrequest)
 
     if request.method=="POST":
         pickupid=request.POST.get("requestid")
@@ -432,7 +442,7 @@ def testlocationfunction(request,rideid):
         pickuprider.status="HALFCONFIRM"
         pickuprider.save()
 
-    return render(request, "testlocation.html",{"rideid":rideid,"riders":currentrequest})
+    return render(request,"testlocation.html",{"rideid":rideid,"riders":currentrequest})
 
 
 
@@ -573,7 +583,7 @@ def testdriverfunction(request):
     activetrips=None
     #fetch trips of the current user
     try:
-        lasttrip=trip.objects.filter(usercredentials=request.user,status="COMPLETED").first()
+        lasttrip=trip.objects.filter(usercredentials=request.user,status="COMPLETED").order_by("-id").first()
         activetrips=trip.objects.filter(usercredentials=request.user,status__in=["ACTIVE", "EMPTY"]).first()
         print("ACTIVE: ",activetrips)
         print("PAST: ",lasttrip)

@@ -19,7 +19,7 @@
     {% if messages %}
         {% for message in messages %}
             <script>
-            alert("{{ message|escapejs }}");
+                alert("{{ message|escapejs }}");
             </script>
         {% endfor %}
     {% endif %}
@@ -96,6 +96,10 @@
             .then(res => res.json())
             .then(data => {
                 console.log(data);
+                if (data.status === "COMPLETED") {
+                    alert("Ride completed");
+                    window.location.href = "/";
+                }
 
                 if(data.eta !== undefined){
                     if(lastETA === null){
@@ -108,12 +112,7 @@
                         `Driver arrives in ${Math.round(lastETA)} min`;
                 }
 
-                if(data.status === "COMPLETED"){
-                    clearInterval(trackingInterval);
-                    alert(data.message);
-                    window.location.href="/";
-                    return;
-                }
+
 
                 const lat=data.lat;
                 const lng=data.lng;
@@ -121,7 +120,7 @@
 
                 if(routeCoords.length === 0 && data.route){
 
-                    const routeGeoJSON=JSON.parse(data.route);
+                    const routeGeoJSON = data.route;
                     routeCoords=routeGeoJSON.coordinates.map(coord => [coord[1], coord[0]]);
 
                     remainingRouteLine=L.polyline(routeCoords, {
