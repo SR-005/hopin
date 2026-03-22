@@ -13,8 +13,6 @@ from ..forms import signupForm, loginForm
 User=get_user_model()
 
 
-load_dotenv()
-EMAIL=os.getenv("MAIL_USER")
 
 
 #generate a random otp number
@@ -34,9 +32,15 @@ def sendotptomail(request):
     request.session['phonenumber']=phonenumber
     request.session['otpsent']=True
 
-    send_mail(subject="HopIn OTP Verification",message=f"Your OTP is {otp}",
-        from_email=EMAIL,recipient_list=[email],)
-    messages.success(request, "OTP has been send to your Email.")
+    try:
+        send_mail(subject="HopIn OTP Verification",message=f"Your OTP is {otp}",from_email=os.environ.get("MAIL_USER"),
+                  recipient_list=[email],fail_silently=False)
+        messages.success(request, "OTP has been send to your Email.")
+    except Exception as e:
+        print("EMAIL ERROR:", e)
+        messages.success(request, "SMTP is currently facing some issues. Try again after sometime!!")
+
+
     return redirect("verify")
 
 
