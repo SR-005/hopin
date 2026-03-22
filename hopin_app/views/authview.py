@@ -18,11 +18,12 @@ User=get_user_model()
 def otpgenerator():
     return str(random.randint(100000, 999999))
 
-def send_email_async(subject, message, from_email, recipient_list):
+def send_email_async(request,subject, message, from_email, recipient_list):
     try:
         send_mail(subject, message, from_email, recipient_list)
     except Exception as e:
-        print("EMAIL ERROR:", e)
+        messages.success(request, f"SMTP Error {e}")
+        return redirect("verify")
 
 # send otp to user email
 def sendotptomail(request):
@@ -36,11 +37,9 @@ def sendotptomail(request):
     request.session['phonenumber']=phonenumber
     request.session['otpsent']=True
 
-    threading.Thread(target=send_email_async, args=("HopIn OTP Verification",f"Your OTP is {otp}",settings.DEFAULT_FROM_EMAIL,
+    threading.Thread(target=send_email_async, args=(request,"HopIn OTP Verification",f"Your OTP is {otp}",settings.DEFAULT_FROM_EMAIL,
                         [email]),daemon=True).start()   
     messages.success(request, "OTP has been send to your Email")
-
-
     return redirect("verify")
 
 
