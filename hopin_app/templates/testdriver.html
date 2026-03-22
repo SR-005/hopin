@@ -496,33 +496,40 @@
             }
 
             debounceTimer=setTimeout(() => {
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5&accept-language=en`)
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(query)}&countrycodes=in&limit=5&accept-language=en`)
                     .then(response => response.json())
                     .then(data => {
 
                         resultsBox.innerHTML="";
 
                         data.forEach(place => {
-                            const item=document.createElement("a");
-                            item.className="list-group-item list-group-item-action";
-                            item.textContent=place.display_name;
+                            const item = document.createElement("a");
+                            item.className = "list-group-item list-group-item-action";
+
+                            // 👇 ADD THIS HERE
+                            const name = place.name || "";
+                            const city = place.address?.city || place.address?.town || place.address?.village || "";
+                            const shortName = city ? `${name}, ${city}` : name;
+
+                            item.textContent = shortName;
 
                             item.addEventListener("click", () => {
 
-                                input.value=place.display_name;
+                                // 👇 ALSO CHANGE THIS
+                                input.value = shortName;
 
-                                const lat=parseFloat(place.lat);
-                                const lon=parseFloat(place.lon);
+                                const lat = parseFloat(place.lat);
+                                const lon = parseFloat(place.lon);
 
-                                document.getElementById("lat").value=lat;
-                                document.getElementById("lng").value=lon;
+                                document.getElementById("lat").value = lat;
+                                document.getElementById("lng").value = lon;
 
                                 map.setView([lat, lon], 16);
                                 marker.setLatLng([lat, lon]);
 
                                 drawRoute(lat, lon);
 
-                                resultsBox.innerHTML="";
+                                resultsBox.innerHTML = "";
                             });
 
                             resultsBox.appendChild(item);
