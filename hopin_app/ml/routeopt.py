@@ -139,7 +139,7 @@ def riderdropped(currentlatitude, currentlongitude, riders):
             distance=haversine((currentlatitude, currentlongitude),(dropofflatitude, dropofflongitude),
                                 unit=Unit.KILOMETERS)
 
-            if distance <= completionradius:
+            if distance<=completionradius:
                 ride.status="DROPPED"
                 ride.save()
                 print(f"Ride ended for {ride}")
