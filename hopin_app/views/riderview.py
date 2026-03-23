@@ -220,31 +220,25 @@ def testriderfunction(request):
 
 @login_required
 def riderpoll(request):
-    print("Polling..")
-    user = request.user
+    user=request.user
     requests=None
     accepted=None
     requestedrides=None
 
-    userrequests = riderequest.objects.filter(rider=user).annotate(
-        trip_exists=Exists(trip.objects.filter(id=OuterRef("trip_id")))
-    )
-    stale_request_ids = list(
-        userrequests.filter(trip_exists=False).values_list("id", flat=True)
-    )
-    if stale_request_ids:
-        riderequest.objects.filter(id__in=stale_request_ids).delete()
+    userrequests=riderequest.objects.filter(rider=user).annotate(trip_exists=Exists(trip.objects.filter(id=OuterRef("trip_id"))))
+    stalerequestids=list(userrequests.filter(trip_exists=False).values_list("id", flat=True))
+    if stalerequestids:
+        riderequest.objects.filter(id__in=stalerequestids).delete()
 
-    validrequests = riderequest.objects.filter(rider=user).annotate(
-        trip_exists=Exists(trip.objects.filter(id=OuterRef("trip_id")))
-    ).filter(trip_exists=True)
+    validrequests=riderequest.objects.filter(rider=user).annotate(
+        trip_exists=Exists(trip.objects.filter(id=OuterRef("trip_id")))).filter(trip_exists=True)
 
-    requests = validrequests.filter(status="PENDING")
-    accepted = validrequests.filter(status="ACCEPTED")
-    rejected = validrequests.filter(status="REJECTED")
-    requestedrides = ongoingrequest(validrequests.exclude(status="REJECTED"))
+    requests=validrequests.filter(status="PENDING")
+    accepted=validrequests.filter(status="ACCEPTED")
+    rejected=validrequests.filter(status="REJECTED")
+    requestedrides=ongoingrequest(validrequests.exclude(status="REJECTED"))
     
-    html = render_to_string("partials/riderpartials.html", {
+    html=render_to_string("partials/riderpartials.html", {
         "requests": requests,
         "accepted": accepted,
         "requestedrides": requestedrides
