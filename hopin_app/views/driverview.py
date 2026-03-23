@@ -95,7 +95,11 @@ def tripdetails(request):
 #accept a ride request
 def acceptride(request):
     print("ACCEPT")
-    currentrequest=riderequest.objects.get(id=request.POST.get("requestid"))
+    try:
+        currentrequest=riderequest.objects.get(id=request.POST.get("requestid"))
+    except:
+        messages.error(request, "Ride Request has been Withdrawn!!")
+        return redirect("testdriver")
     currentride=currentrequest.trip
     rider=currentrequest.rider
     

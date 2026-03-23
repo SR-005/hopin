@@ -243,7 +243,7 @@
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-3xl font-extrabold uppercase">Search Results</h1>
                 <div class="flex items-center gap-4">
-                    <span class="text-sm font-bold uppercase tracking-widest bg-white/10 px-4 py-2 rounded-lg">
+                    <span id="ridesCountLabel" class="text-sm font-bold uppercase tracking-widest bg-white/10 px-4 py-2 rounded-lg">
                         {{ rides|length|default:"0" }} Rides Available
                     </span>
                     <a href="#search-section">
@@ -256,12 +256,16 @@
             </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-                <div class="xl:col-span-8 flex flex-col gap-4 overflow-y-auto max-h-[700px] pr-3 custom-scrollbar">
+                <div id="ridesList" class="xl:col-span-8 flex flex-col gap-4 overflow-y-auto max-h-[700px] pr-3 custom-scrollbar">
 
                     {% if rides %}
                     {% for trip, distance, score, amount in rides %}
                     <div
-                        class="bg-white rounded-[1.5rem] p-6 text-[#191265] shadow-lg hover:shadow-2xl transition duration-300">
+                        class="ride-card bg-white rounded-[1.5rem] p-6 text-[#191265] shadow-lg hover:shadow-2xl transition duration-300"
+                        data-vehicle="{{ trip.vehicletype|lower }}"
+                        data-helmet="{{ trip.helmet|default_if_none:''|lower }}"
+                        data-price="{{ amount }}"
+                        data-original-order="{{ forloop.counter0 }}">
                         <div class="flex justify-between items-center mb-4">
                             <div class="flex items-center gap-3">
                                 <img src="https://ui-avatars.com/api/?name={{ trip.usercredentials }}&background=191265&color=fff"
@@ -299,6 +303,17 @@
                             </div>
                         </div>
 
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="bg-indigo-50 text-indigo-700 text-xs px-3 py-1 rounded-full font-bold uppercase">
+                                {{ trip.vehicletype }}
+                            </span>
+                            {% if trip.vehicletype|lower == "bike" %}
+                            <span class="bg-green-50 text-green-700 text-xs px-3 py-1 rounded-full font-bold uppercase">
+                                Helmet: {{ trip.helmet|default:"No" }}
+                            </span>
+                            {% endif %}
+                        </div>
+
                         <div class="flex justify-end border-t border-gray-100 pt-4">
                             <form method="POST" action="{% url 'rider' %}">
                                 {% csrf_token %}
@@ -319,6 +334,11 @@
                         </div>
                     </div>
                     {% endfor %}
+                    <div id="filteredEmptyState"
+                        class="hidden bg-white/10 rounded-[1.5rem] p-10 text-center border-2 border-dashed border-white/20">
+                        <p class="text-xl font-semibold mb-2 text-white">No rides match the selected filters.</p>
+                        <p class="text-gray-300 text-sm">Try choosing a different sort or clear all filters.</p>
+                    </div>
                     {% else %}
                     <div class="bg-white/10 rounded-[1.5rem] p-10 text-center border-2 border-dashed border-white/20">
                         <p class="text-xl font-semibold mb-2 text-white">No rides found for this route.</p>
@@ -338,13 +358,28 @@
                     </div>
                     <div class="bg-white rounded-xl p-5 text-[#191265] shadow-inner">
                         <label class="flex items-center gap-3 cursor-pointer mb-4">
-                            <input type="radio" name="vehicle" class="w-4 h-4 text-[#191265] focus:ring-[#191265]">
+                            <input type="radio" name="vehicle" value="bike" class="w-4 h-4 text-[#191265] focus:ring-[#191265]">
                             <span class="font-bold text-lg">Bikes / Scooters</span>
                         </label>
-                        <label class="flex items-center gap-3 cursor-pointer">
-                            <input type="radio" name="vehicle" class="w-4 h-4 text-[#191265] focus:ring-[#191265]">
+                        <label class="flex items-center gap-3 cursor-pointer mb-4">
+                            <input type="radio" name="vehicle" value="car" class="w-4 h-4 text-[#191265] focus:ring-[#191265]">
                             <span class="font-bold text-lg">Cars</span>
                         </label>
+                        <label class="flex items-center gap-3 cursor-pointer mb-5">
+                            <input id="helmetFilter" type="checkbox"
+                                class="w-4 h-4 rounded text-[#191265] focus:ring-[#191265]">
+                            <span class="font-bold text-lg">Helmet Available</span>
+                        </label>
+
+                        <label for="sortFilter" class="block text-xs font-bold uppercase tracking-[0.2em] text-gray-500 mb-2">
+                            Sort By
+                        </label>
+                        <select id="sortFilter"
+                            class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 font-semibold text-[#191265] focus:border-[#191265] focus:ring-[#191265]">
+                            <option value="optimized">Optimized Ride</option>
+                            <option value="price-asc">Price: Low to High</option>
+                            <option value="price-desc">Price: High to Low</option>
+                        </select>
                     </div>
                 </div>
             </div>

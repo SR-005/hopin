@@ -310,6 +310,10 @@ def riderdetails(request):
 
 #request for a ride to driver
 def requestride(request):
+    if riderequest.objects.filter(rider=request.user,status="ACCEPTED").exists():
+        messages.error(request, "You already have an Accepted Ride. Cannot send more Requests")
+        return redirect("rider")
+    
     rideid=request.POST.get("rideid")
     ride=get_object_or_404(trip, id=rideid)
 
@@ -335,6 +339,11 @@ def requestride(request):
 
 #request for a ride previously booked driver
 def requestrideagain(request,pastrides):
+    
+    if riderequest.objects.filter(rider=request.user,status="ACCEPTED").exists():
+        messages.error(request, "You already have an Accepted Ride. Cannot send more Requests")
+        return redirect("rider")
+
     tripid=request.POST.get("tripid")
     print("Book Again ID: ",tripid)
     currenttrip=trip.objects.get(id=tripid)

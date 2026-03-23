@@ -28,6 +28,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const pickupResults=document.getElementById("pickup-results");
     const destinationResults=document.getElementById("destination-results");
+    const ridesList=document.getElementById("ridesList");
+    const rideCards=ridesList ? Array.from(ridesList.querySelectorAll(".ride-card")) : [];
+    const vehicleRadios=Array.from(document.querySelectorAll('input[name="vehicle"]'));
+    const helmetFilter=document.getElementById("helmetFilter");
+    const helmetFilterLabel=helmetFilter ? helmetFilter.closest("label") : null;
+    const sortFilter=document.getElementById("sortFilter");
+    const filteredEmptyState=document.getElementById("filteredEmptyState");
+    const ridesCountLabel=document.getElementById("ridesCountLabel");
 
     function trimLocationLabel(label) {
         if (!label) return "";
@@ -279,9 +287,121 @@ document.addEventListener("DOMContentLoaded", function () {
         const resultsSection=document.getElementById("search-results");
         if (resultsSection) resultsSection.scrollIntoView({ behavior: "smooth" });
     }
-});
 
-function clearFilters() {
-    const radios=document.querySelectorAll('input[name="vehicle"]');
-    radios.forEach(radio => radio.checked=false);
-}
+    /* ---------------- RESULT FILTERS & SORT ---------------- */
+    function updateResultsCount(count) {
+        if (!ridesCountLabel) return;
+        ridesCountLabel.textContent=`${count} Ride${count === 1 ? "" : "s"} Available`;
+    }
+
+    function reorderRideCards(cards) {
+        if (!ridesList) return;
+        cards.forEach(card => ridesList.appendChild(card));
+        if (filteredEmptyState) ridesList.appendChild(filteredEmptyState);
+    }
+
+    function getSelectedVehicle() {
+        const selectedRadio=vehicleRadios.find(radio => radio.checked);
+        return selectedRadio ? selectedRadio.value : "";
+    }
+
+    function sortRideCards(cards, sortValue) {
+        const sortedCards=[...cards];
+
+        if (sortValue === "price-asc") {
+            sortedCards.sort((a, b) => parseFloat(a.dataset.price || "0") - parseFloat(b.dataset.price || "0"));
+        } else if (sortValue === "price-desc") {
+            sortedCards.sort((a, b) => parseFloat(b.dataset.price || "0") - parseFloat(a.dataset.price || "0"));
+        } else {
+            sortedCards.sort((a, b) => parseInt(a.dataset.originalOrder || "0", 10) - parseInt(b.dataset.originalOrder || "0", 10));
+        }
+
+        return sortedCards;
+    }
+
+    function updateHelmetFilterState() {
+        if (!helmetFilter) return;
+
+        const selectedVehicle=getSelectedVehicle();
+        const shouldDisableHelmet=selectedVehicle === "car";
+
+        if (shouldDisableHelmet) {
+            helmetFilter.checked=false;
+        }
+
+        helmetFilter.disabled=shouldDisableHelmet;
+
+        if (helmetFilterLabel) {
+            helmetFilterLabel.classList.toggle("opacity-50", shouldDisableHelmet);
+            helmetFilterLabel.classList.toggle("cursor-not-allowed", shouldDisableHelmet);
+        }
+    }
+
+    function applyRideFilters() {
+        if (!rideCards.length) return;
+
+        const selectedVehicle=getSelectedVehicle();
+        const requiresHelmet=helmetFilter ? helmetFilter.checked : false;
+        const sortValue=sortFilter ? sortFilter.value : "optimized";
+        const sortedCards=sortRideCards(rideCards, sortValue);
+
+        let visibleCount=0;
+
+        sortedCards.forEach(card => {
+            const cardVehicle=(card.dataset.vehicle || "").toLowerCase();
+            const cardHelmet=(card.dataset.helmet || "").toLowerCase();
+            const matchesVehicle=!selectedVehicle || cardVehicle === selectedVehicle;
+            const matchesHelmet=!requiresHelmet || (cardVehicle === "bike" && cardHelmet === "yes");
+            const shouldShow=matchesVehicle && matchesHelmet;
+
+            card.classList.toggle("hidden", !shouldShow);
+            if (shouldShow) visibleCount += 1;
+        });
+
+        reorderRideCards(sortedCards);
+        updateResultsCount(visibleCount);
+
+        if (filteredEmptyState) {
+            filteredEmptyState.classList.toggle("hidden", visibleCount !== 0);
+        }
+    }
+
+    function clearRideFilters() {
+        vehicleRadios.forEach(radio => {
+            radio.checked=false;
+        });
+
+        if (helmetFilter) {
+            helmetFilter.checked=false;
+        }
+
+        if (sortFilter) {
+            sortFilter.value="optimized";
+        }
+
+        updateHelmetFilterState();
+        applyRideFilters();
+    }
+
+    if (rideCards.length) {
+        vehicleRadios.forEach(radio => {
+            radio.addEventListener("change", function () {
+                updateHelmetFilterState();
+                applyRideFilters();
+            });
+        });
+
+        if (helmetFilter) {
+            helmetFilter.addEventListener("change", applyRideFilters);
+        }
+
+        if (sortFilter) {
+            sortFilter.addEventListener("change", applyRideFilters);
+        }
+
+        updateHelmetFilterState();
+        applyRideFilters();
+    }
+
+    window.clearFilters=clearRideFilters;
+});
