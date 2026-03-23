@@ -446,20 +446,40 @@ document.addEventListener("DOMContentLoaded", function () {
         async function poll() {
             try {
                 const res = await fetch("/rider/poll/");
+                const contentType = res.headers.get("content-type") || "";
+
+                if (!res.ok || !contentType.includes("application/json")) {
+                    const responseText = await res.text();
+                    throw new Error(`Polling returned ${res.status}: ${responseText.slice(0, 120)}`);
+                }
+
                 const data = await res.json();
 
                 if (initialized) {
                     const newlyAccepted = getNewItems(data.accepted_ids, prevAccepted);
                     const removedPending = getRemovedItems(data.pending_ids, prevPending);
+                    const removedAccepted = getRemovedItems(data.accepted_ids, prevAccepted);
+                    const rejectedIds = data.rejected_ids || [];
+                    const activeRequestIds = data.active_request_ids || [];
+                    const deletedPendingRequests = removedPending.filter(id =>
+                        !rejectedIds.includes(id) && !activeRequestIds.includes(id)
+                    );
+                    const deletedAcceptedRequests = removedAccepted.filter(id =>
+                        !rejectedIds.includes(id) && !activeRequestIds.includes(id)
+                    );
 
                     if (newlyAccepted.length > 0) {
                         showToast("🎉 Your ride was accepted!", "success");
                     }
 
-                    const actuallyRejected = removedPending.filter(id => !data.accepted_ids.includes(id));
+                    const actuallyRejected = removedPending.filter(id => rejectedIds.includes(id));
 
                     if (actuallyRejected.length > 0) {
                         showToast("❌ A driver rejected your request", "error");
+                    }
+
+                    if (deletedPendingRequests.length > 0 || deletedAcceptedRequests.length > 0) {
+                        showToast("The driver deleted the ride, so your request was removed.", "error");
                     }
                 }
                 initialized = true;

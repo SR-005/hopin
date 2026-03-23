@@ -4,6 +4,7 @@ from ..models import trip, riderequest
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.utils import timezone
+from django.db.models import Exists, OuterRef
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
@@ -217,17 +218,32 @@ def testriderfunction(request):
 
 #------------------------------------------------------RIDER PAGE FUNCTIONS------------------------------------------------------
 
-def rider_poll(request):
+@login_required
+def riderpoll(request):
     print("Polling..")
     user = request.user
     requests=None
     accepted=None
     requestedrides=None
 
-    requests = riderequest.objects.filter(rider=user, status="PENDING")
-    accepted = riderequest.objects.filter(rider=user, status="ACCEPTED")
-    requestedrides = ongoingrequest(riderequest.objects.filter(rider=user))
+    userrequests = riderequest.objects.filter(rider=user).annotate(
+        trip_exists=Exists(trip.objects.filter(id=OuterRef("trip_id")))
+    )
+    stale_request_ids = list(
+        userrequests.filter(trip_exists=False).values_list("id", flat=True)
+    )
+    if stale_request_ids:
+        riderequest.objects.filter(id__in=stale_request_ids).delete()
 
+    validrequests = riderequest.objects.filter(rider=user).annotate(
+        trip_exists=Exists(trip.objects.filter(id=OuterRef("trip_id")))
+    ).filter(trip_exists=True)
+
+    requests = validrequests.filter(status="PENDING")
+    accepted = validrequests.filter(status="ACCEPTED")
+    rejected = validrequests.filter(status="REJECTED")
+    requestedrides = ongoingrequest(validrequests.exclude(status="REJECTED"))
+    
     html = render_to_string("partials/riderpartials.html", {
         "requests": requests,
         "accepted": accepted,
@@ -237,6 +253,8 @@ def rider_poll(request):
     return JsonResponse({"html": html,
                             "accepted_ids": list(accepted.values_list("id", flat=True)),
                             "pending_ids": list(requests.values_list("id", flat=True)),
+                            "rejected_ids": list(rejected.values_list("id", flat=True)),
+                            "active_request_ids": list(validrequests.exclude(status="REJECTED").values_list("id", flat=True)),
                         })
 
 

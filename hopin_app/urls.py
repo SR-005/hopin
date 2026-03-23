@@ -24,7 +24,7 @@ urlpatterns=[
     #rider view functions
     #path("testrider/", riderview.testriderfunction, name="testrider"),   #test rider
     path("rider/", riderview.riderfunction, name="rider"),
-    path("rider/poll/", riderview.rider_poll, name="rider_poll"),
+    path("rider/poll/", riderview.riderpoll, name="riderpoll"),
 
     #live location view functions
     path("testlocation/<int:rideid>/", locationview.testlocationfunction, name="testlocation"),   #test live location
