@@ -1,6 +1,8 @@
 from datetime import  time, datetime, timedelta, time
 from ..ml.routeopt import routeoptimization,requestprice,routesegmentation
 from ..models import trip, riderequest
+from django.template.loader import render_to_string
+from django.http import JsonResponse
 from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -215,6 +217,29 @@ def testriderfunction(request):
 
 #------------------------------------------------------RIDER PAGE FUNCTIONS------------------------------------------------------
 
+def rider_poll(request):
+    print("Polling..")
+    user = request.user
+    requests=None
+    accepted=None
+    requestedrides=None
+
+    requests = riderequest.objects.filter(rider=user, status="PENDING")
+    accepted = riderequest.objects.filter(rider=user, status="ACCEPTED")
+    requestedrides = ongoingrequest(riderequest.objects.filter(rider=user))
+
+    html = render_to_string("partials/riderpartials.html", {
+        "requests": requests,
+        "accepted": accepted,
+        "requestedrides": requestedrides
+    }, request=request)
+
+    return JsonResponse({"html": html,
+                            "accepted_ids": list(accepted.values_list("id", flat=True)),
+                            "pending_ids": list(requests.values_list("id", flat=True)),
+                        })
+
+
 #selectes rides from past that are active again
 def rebookable(pastrides):
     preferredtrips=[]
@@ -227,7 +252,6 @@ def rebookable(pastrides):
         if activeagain.exists():
             preferredtrips.append(activeagain.first())
     return preferredtrips
-
 
 
 def requesttimevalidation(request):
@@ -259,7 +283,6 @@ def requesttimevalidation(request):
             messages.error(request, "Cannot Request a ride in the past")
             return redirect("rider")
     return 0
-
 
 
 #default ride function
@@ -307,7 +330,6 @@ def riderdetails(request):
     return rides,latitude,longitude
 
 
-
 #request for a ride to driver
 def requestride(request):
     if riderequest.objects.filter(rider=request.user,status="ACCEPTED").exists():
@@ -336,7 +358,6 @@ def requestride(request):
     return redirect("rider")
 
 
-
 #request for a ride previously booked driver
 def requestrideagain(request,pastrides):
     
@@ -357,7 +378,6 @@ def requestrideagain(request,pastrides):
                                pickuplatitude=pastride.pickuplatitude,pickuplongitude=pastride.pickuplongitude,
                                price=amount)
     return redirect("rider")
-
 
 
 #cancel an active ride request
@@ -389,7 +409,6 @@ def cancelrequest(request):
     
     messages.success(request, "Your Ride Request has been Cancelled!")
     return redirect("rider")
-
 
 
 #fetch all currently ongoing ride requests

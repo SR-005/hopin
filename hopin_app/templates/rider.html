@@ -86,63 +86,9 @@
                     class="bg-[#191265] mt-10 text-white w-[401px] text-2xl py-3 rounded-full font-['Bricolage_Grotesque'] hover:bg-indigo-900 transition">
                     Search
                 </button>
-
-                {% if accepted %}
-                {% for request in accepted %}
-                <div class="mt-6 w-[401px] relative">
-                    <div
-                        class="flex items-center justify-between border-2 border-green-600 rounded-2xl px-4 py-3 bg-green-50">
-                        <div class="flex items-center gap-3">
-                            <img src="https://ui-avatars.com/api/?name={{ request.trip.usercredentials }}"
-                                class="w-12 h-12 rounded-full">
-                            <div class="leading-tight">
-                                <p class="text-green-700 text-sm font-semibold">Ride accepted by</p>
-                                <p class="text-green-800 font-bold text-lg">{{ request.trip.usercredentials }}</p>
-                            </div>
-                        </div>
-                        <form method="POST" action="{% url 'rider' %}" class="flex gap-2">
-                            {% csrf_token %}
-                            <input type="hidden" name="requestid" value="{{ request.id }}">
-                            <input type="hidden" name="tripid" value="{{ request.trip.id }}">
-                            <button type="submit" name="action" value="seemore"
-                                class="bg-green-700 hover:bg-green-800 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow transition">
-                                View
-                            </button>
-                            <button type="submit" name="action" value="cancelrequest"
-                                class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow transition">
-                                Cancel
-                            </button>
-                        </form>
-                    </div>
+                <div id="rider-state">
+                    {% include "partials/riderpartials.html" %}
                 </div>
-                {% endfor %}
-                {% endif %}
-
-                {% if requests %}
-                {% for request in requests %}
-                <div class="mt-4 w-[401px] relative">
-                    <div
-                        class="flex items-center justify-between border-2 border-blue-600 rounded-2xl px-4 py-3 bg-blue-50">
-                        <div class="flex items-center gap-3">
-                            <img src="https://ui-avatars.com/api/?name={{ request.trip.usercredentials }}"
-                                class="w-12 h-12 rounded-full">
-                            <div class="leading-tight">
-                                <p class="text-blue-700 text-sm font-semibold">Pending Request sent to</p>
-                                <p class="text-blue-800 font-bold text-lg">{{ request.trip.usercredentials }}</p>
-                            </div>
-                        </div>
-                        <form method="POST" action="{% url 'rider' %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="requestid" value="{{ request.id }}">
-                            <button type="submit" name="action" value="cancelrequest"
-                                class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow transition">
-                                Cancel
-                            </button>
-                        </form>
-                    </div>
-                </div>
-                {% endfor %}
-                {% endif %}
             </div>
 
             <img src="{% static 'hopin_app/images/rider.png' %}"

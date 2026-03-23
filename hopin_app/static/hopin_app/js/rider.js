@@ -37,6 +37,28 @@ document.addEventListener("DOMContentLoaded", function () {
     const filteredEmptyState=document.getElementById("filteredEmptyState");
     const ridesCountLabel=document.getElementById("ridesCountLabel");
 
+    //TOAST
+    function showToast(message, type = "info") {
+            const toast = document.createElement("div");
+
+            const colors = {
+                success: "bg-green-600",
+                error: "bg-red-600",
+                info: "bg-blue-600"
+            };
+
+            toast.className = `${colors[type]} text-white px-4 py-3 rounded-xl shadow-lg fixed top-5 right-5 z-50`;
+
+            toast.innerText = message;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+
     function trimLocationLabel(label) {
         if (!label) return "";
         const normalized=label.replace(/\s+/g, " ").trim();
@@ -404,4 +426,58 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     window.clearFilters=clearRideFilters;
+
+    let prevAccepted = [];
+    let prevPending = [];
+    let initialized = false;
+
+    function getNewItems(newArr, oldArr) {
+        return newArr.filter(id => !oldArr.includes(id));
+    }
+
+    function getRemovedItems(newArr, oldArr) {
+        return oldArr.filter(id => !newArr.includes(id));
+    }
+
+    function startRiderPolling() {
+        const container = document.getElementById("rider-state");
+        if (!container) return;
+
+        async function poll() {
+            try {
+                const res = await fetch("/rider/poll/");
+                const data = await res.json();
+
+                if (initialized) {
+                    const newlyAccepted = getNewItems(data.accepted_ids, prevAccepted);
+                    const removedPending = getRemovedItems(data.pending_ids, prevPending);
+
+                    if (newlyAccepted.length > 0) {
+                        showToast("🎉 Your ride was accepted!", "success");
+                    }
+
+                    const actuallyRejected = removedPending.filter(id => !data.accepted_ids.includes(id));
+
+                    if (actuallyRejected.length > 0) {
+                        showToast("❌ A driver rejected your request", "error");
+                    }
+                }
+                initialized = true;
+                prevAccepted = [...data.accepted_ids];
+                prevPending = [...data.pending_ids];
+
+                if (data.html) {
+                    container.innerHTML = data.html;
+                }
+            } catch (err) {
+                console.error("Polling error:", err);
+            }
+        }
+
+        // poll every 5 seconds
+        setInterval(poll, 5000);
+    }
+
+    // start after DOM ready
+    startRiderPolling();
 });
