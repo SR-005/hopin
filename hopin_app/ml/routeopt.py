@@ -123,12 +123,21 @@ def speedcalculation(driverlocation, riderlocation):
     return eta
 
 
+def getriderdropofflocation(ride):
+    if ride.trip.prefereddirection=="to":
+        destination=ride.trip.routegeometry["coordinates"][-1]
+        return destination[1], destination[0]
+
+    return ride.pickuplatitude, ride.pickuplongitude
+
+
 def riderdropped(currentlatitude, currentlongitude, riders):
-    completionradius=5
+    completionradius=5      #dropped off trigger radius: 5km
     for ride in riders:
-        if ride.status == "FULLCONFIRM":
-            distance=haversine((currentlatitude, currentlongitude),
-                                 (ride.pickuplatitude, ride.pickuplongitude), unit=Unit.KILOMETERS)
+        if ride.status=="FULLCONFIRM":
+            dropofflatitude, dropofflongitude=getriderdropofflocation(ride)
+            distance=haversine((currentlatitude, currentlongitude),(dropofflatitude, dropofflongitude),
+                                unit=Unit.KILOMETERS)
 
             if distance <= completionradius:
                 ride.status="DROPPED"
