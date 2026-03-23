@@ -63,11 +63,13 @@ def verifypayment(request):
 def createpayment(request):
     requestid=request.POST.get("requestid")
     currentrequest=riderequest.objects.get(id=requestid)
+    paymentrecord=payment.objects.get(requestdetails=currentrequest)
 
     print("RAZORID", RAZORID)
     print("RAZORSECRET", RAZORSECRET)
     razorpayclient=razorpay.Client(auth=(RAZORID, RAZORSECRET))
-    amount=1000  # amount should be in paise: 10 rupees=1000 paise
+    amount_rupees=paymentrecord.amount
+    amount=max(100, int(round(amount_rupees * 100)))  # Razorpay expects paise and enforces a minimum amount
     currentorder=razorpayclient.order.create({
         "amount": amount,
         "currency": "INR",

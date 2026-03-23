@@ -1,5 +1,5 @@
 from datetime import  time, datetime, timedelta, time
-from ..ml.routeopt import routeoptimization,requestprice
+from ..ml.routeopt import routeoptimization,requestprice,routesegmentation
 from ..models import trip, riderequest
 from django.utils import timezone
 from django.contrib import messages
@@ -318,7 +318,17 @@ def requestride(request):
     longitude=request.session.get("riderlongitude")
     print(latitude,",",longitude)
 
-    riderequest.objects.create(trip=ride,rider=request.user,pickuplocation=location,pickuplatitude=latitude,pickuplongitude=longitude)
+    pickupindex,_=routesegmentation((float(latitude), float(longitude)), ride.routegeometry)
+    amount=requestprice(ride,pickupindex,(float(latitude), float(longitude)))
+
+    riderequest.objects.create(
+        trip=ride,
+        rider=request.user,
+        pickuplocation=location,
+        pickuplatitude=latitude,
+        pickuplongitude=longitude,
+        price=amount
+    )
     return redirect("rider")
 
 
@@ -330,9 +340,13 @@ def requestrideagain(request,pastrides):
     currenttrip=trip.objects.get(id=tripid)
     
     pastride=pastrides.filter(trip__usercredentials=currenttrip.usercredentials).first()
+    location=(float(pastride.pickuplatitude), float(pastride.pickuplongitude))
+    pickupindex,_=routesegmentation(location, currenttrip.routegeometry)
+    amount=requestprice(currenttrip,pickupindex,location)
 
     riderequest.objects.create(trip=currenttrip,rider=request.user,
-                               pickuplatitude=pastride.pickuplatitude,pickuplongitude=pastride.pickuplongitude)
+                               pickuplatitude=pastride.pickuplatitude,pickuplongitude=pastride.pickuplongitude,
+                               price=amount)
     return redirect("rider")
 
 

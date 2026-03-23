@@ -55,12 +55,30 @@
         const csrftoken=getCookie("csrftoken");
 
         //ride request status check
+        let hasRideEnded=false;
+        let pickupInterval=null;
+        let trackingInterval=null;
+
+        function handleRideEnded() {
+            if (hasRideEnded) return;
+            hasRideEnded=true;
+            clearInterval(pickupInterval);
+            clearInterval(trackingInterval);
+            alert("Ride completed successfully");
+            window.location.href="/";
+        }
+
         function checkPickup() {
+            if (hasRideEnded) return;
             
             fetch("/fetchstatus/{{ requestid }}/")
             .then(response => response.json())
             .then(data => {
                 console.log(data.status)
+                if (["DROPPED", "DROPPEDNOTCONFIRMED", "NOTBOARDED"].includes(data.status)) {
+                    handleRideEnded();
+                    return;
+                }
                 if(data.status === "HALFCONFIRM") {
 
                     document.getElementById("confirmbutton").disabled=false;
@@ -74,7 +92,7 @@
             });
 
         }
-        setInterval(checkPickup, 3000);
+        pickupInterval=setInterval(checkPickup, 1000);
 
 
 
@@ -91,12 +109,14 @@
         let lastETA=null;
         
         function getDriverLocation(){
+            if (hasRideEnded) return;
 
             fetch("/fetchtracking/{{ rideid }}/?requestid={{ requestid }}")
             .then(res => res.json())
             .then(data => {
                 if (data.redirect) {
-                    window.location.href = data.url;
+                    handleRideEnded();
+                    return;
                 }
 
                 if(data.eta !== undefined){
@@ -177,7 +197,9 @@
 
 
 
-        const trackingInterval=setInterval(getDriverLocation, 3000);
+        checkPickup();
+        getDriverLocation();
+        trackingInterval=setInterval(getDriverLocation, 1000);
     </script>
 </body>
 </html>

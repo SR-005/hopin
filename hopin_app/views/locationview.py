@@ -29,8 +29,7 @@ def rideend(currentride):
 
         ridecompletedriders=riderequest.objects.filter(trip=currentride,status__in=["DROPPEDNOTCONFIRMED","DROPPED"])
         for riders in ridecompletedriders:
-            payment.objects.create(requestdetails=riders,amount=10)
-            payment.save()
+            payment.objects.create(requestdetails=riders,amount=riders.price)
             print(f"Payment Request Created for {riders}")
         print("Trip Ended")
 
