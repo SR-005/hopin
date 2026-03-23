@@ -4,18 +4,6 @@ import math
 sematicweight=0.6
 spacialweight=0.4
 
-# Haversine's Distance Function- Price Calculation
-
-
-def price(location1, location2):
-    # calculating distance between two locations (in km)
-    distance=haversine(location1, location2)
-    print(distance, "km")
-    price=round(distance*1.3)  # 1.3 rupees per km
-    print("Price: ", price)
-    return price
-
-
 def segmentdistance(rider, startsegment, endsegment):
 
     # convert to simple cartesian approximation
@@ -69,18 +57,17 @@ def routesegmentation(rider, routegeometry):
 def proximitycheck(riderlatitude, riderlongitude, ride):
 
     rider=(riderlatitude, riderlongitude)
-
     index, distance=routesegmentation(rider, ride.routegeometry)
 
     if distance > 2.0:  # 2km is the cutoff
-        return False
+        return False, None
 
     totalsegments=len(ride.routegeometry["coordinates"]) - 1
 
     if ride.prefereddirection == "to":
-        return index < totalsegments
+        return index < totalsegments,index
     else:
-        return index > 0
+        return index > 0,index
 
 
 # Haversine's Distance Function- Spacial Score Computation
@@ -109,7 +96,8 @@ def routeoptimization(riderlatitude, riderlongitude, availabletrips):
     print("availabletrips", availabletrips)
 
     for trip in availabletrips:
-        if not proximitycheck(riderlatitude, riderlongitude, trip):
+        value,index=proximitycheck(riderlatitude, riderlongitude, trip)
+        if not value:
             continue
 
         distance, spacialscore=haversinefunction(
@@ -118,7 +106,8 @@ def routeoptimization(riderlatitude, riderlongitude, availabletrips):
         finallist.append([
             trip,
             distance,
-            spacialscore
+            spacialscore,
+            index
         ])
 
     ranked=sorted(finallist, key=lambda x: x[2], reverse=True)
@@ -145,3 +134,50 @@ def riderdropped(currentlatitude, currentlongitude, riders):
                 ride.status="DROPPED"
                 ride.save()
                 print(f"Ride ended for {ride}")
+
+
+# Haversine's Distance Function- Price Calculation
+
+def routedistance(routegeometry,startindex,endindex):
+    coords=routegeometry["coordinates"]
+
+    if startindex>endindex:
+        startindex,endindex=endindex,startindex
+
+    totaldistance=0
+    for i in range(startindex,endindex):
+        point1=(coords[i][1],coords[i][0])
+        point2=(coords[i+1][1],coords[i+1][0])
+        totaldistance=totaldistance+haversine(point1,point2,unit=Unit.KILOMETERS)
+
+    return totaldistance
+
+def requestprice(currenttrip,pickupindex,location1):
+    totalrouteindex=len(currenttrip.routegeometry["coordinates"]) - 1
+    fulltripdistance=routedistance(currenttrip.routegeometry,0,totalrouteindex)
+
+    if currenttrip.prefereddirection=="to":
+        startindex=pickupindex
+        endindex=totalrouteindex
+    else:
+        startindex=0
+        endindex=pickupindex
+
+    distance=routedistance(currenttrip.routegeometry,startindex,endindex)
+    print(distance, "km")
+
+    if fulltripdistance <= 0:
+        return 0.0
+
+    price=(distance/fulltripdistance)*currenttrip.price  #proportional fare along the saved route
+    price=round(price,2)
+    print("Price: ", price)
+    return price
+
+def tripprice(routegeometry):
+    totalrouteindex=len(routegeometry["coordinates"]) - 1
+    distance=routedistance(routegeometry,0,totalrouteindex)
+    print(distance, "km")
+    price=round(distance*1.3, 2)  # 1.3 rupees per km
+    print("Price: ", price)
+    return distance, price

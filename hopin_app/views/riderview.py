@@ -1,5 +1,5 @@
 from datetime import  time, datetime, timedelta, time
-from ..ml.routeopt import routeoptimization
+from ..ml.routeopt import routeoptimization,requestprice
 from ..models import trip, riderequest
 from django.utils import timezone
 from django.contrib import messages
@@ -295,7 +295,15 @@ def riderdetails(request):
     latitude=float(latitude)
     longitude=float(longitude)
 
-    rides=routeoptimization(latitude,longitude,availabletrips)
+    rankedrides=routeoptimization(latitude,longitude,availabletrips)
+    rides=[]
+    for currenttrip, distance, score, pickupindex in rankedrides:
+        print(f"Driver Lat: {currenttrip.latitude}")
+        print(f"Driver Lng: {currenttrip.longitude}")
+        amount=requestprice(currenttrip,pickupindex,(latitude,longitude))
+        print(f"Amount {amount}")
+        rides.append((currenttrip, distance, score, amount))
+
     return rides,latitude,longitude
 
 

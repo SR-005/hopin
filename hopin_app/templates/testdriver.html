@@ -25,192 +25,182 @@
         {% endfor %}
     {% endif %}
 
-    {% comment %} accepted rides {% endcomment %}
-    <h1>Active Rides</h1>
-    {% if ongoing %}
-        <form method="POST" action="{% url 'testdriver' %}">
-            {% csrf_token %}
-            <p>{{ ongoing.usercredentials }}</p>
-            <input type="hidden" name="tripid" id="tripid" value="{{ ongoing.id }}">
-            <button type="submit" name="action" value="startride">Resume Ride</button>
-            </form>
-        {% else %}
-    <p>No Active Rides</p>
-    {% endif %}
 
-    <h1>Accepted Rides</h1>
-    {% if accepted %}
-        {% for request in accepted %}
-        <form method="POST" action="{% url 'testdriver' %}">
-            {% csrf_token %}
 
-            <p>{{ request.rider }}</p>
-            <input type="hidden" name="tripid" id="tripid" value="{{ request.trip.id }}">
-        
-        {% endfor %}
+    
+    {% if activetrips %}
 
-        {% comment %} map for all riders {% endcomment %}
-        <div id="common-map" style="height:200px;width:25%;margin-bottom:10px;"></div>
-        <script>
-            const riders = [];
+        {% comment %} Ongoing rides {% endcomment %}
+        {% if ongoing %}
+        <h1>Ongoing Rides</h1>
+            <form method="POST" action="{% url 'testdriver' %}">
+                {% csrf_token %}
+                <p>{{ ongoing.usercredentials }}</p>
+                <input type="hidden" name="tripid" id="tripid" value="{{ ongoing.id }}">
+                <button type="submit" name="action" value="startride">Resume Ride</button>
+                </form>
+            {% else %}
+        <p>No Ongoing Rides</p>
+        {% endif %}
 
+        {% comment %} Accepted Requests{% endcomment %}
+        {% if accepted %}
+            <h1>Accepted Rides</h1>
             {% for request in accepted %}
-                riders.push({
-                    lat: {{ request.pickuplatitude }},
-                    lng: {{ request.pickuplongitude }},
-                    name: "{{ request.rider.email }}"
-                });
+            <form method="POST" action="{% url 'testdriver' %}">
+                {% csrf_token %}
+
+                <p>{{ request.rider }}</p>
+                <input type="hidden" name="tripid" id="tripid" value="{{ request.trip.id }}">
+            
             {% endfor %}
 
-            // Route (same for all since same trip)
-            const route = {{ accepted.0.trip.routegeometry|safe }};
-            const tripId = {{ accepted.0.trip.id }};
+            {% comment %} map for all riders {% endcomment %}
+            <div id="common-map" style="height:200px;width:25%;margin-bottom:10px;"></div>
+            <script>
+                const riders = [];
+
+                {% for request in accepted %}
+                    riders.push({
+                        lat: {{ request.pickuplatitude }},
+                        lng: {{ request.pickuplongitude }},
+                        name: "{{ request.rider.email }}"
+                    });
+                {% endfor %}
+
+                // Route (same for all since same trip)
+                const route = {{ accepted.0.trip.routegeometry|safe }};
+                const tripId = {{ accepted.0.trip.id }};
 
 
-            document.addEventListener("DOMContentLoaded", function () {
+                document.addEventListener("DOMContentLoaded", function () {
 
-                if (!route || riders.length === 0) return;
+                    if (!route || riders.length === 0) return;
 
-                const first = route.coordinates[0];
-                const map = L.map('common-map').setView([first[1], first[0]], 13);
+                    const first = route.coordinates[0];
+                    const map = L.map('common-map').setView([first[1], first[0]], 13);
 
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19
-                }).addTo(map);
-                const latlngs = route.coordinates.map(coord => [coord[1], coord[0]]);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19
+                    }).addTo(map);
+                    const latlngs = route.coordinates.map(coord => [coord[1], coord[0]]);
 
-                const polyline = L.polyline(latlngs, {
-                    color: 'blue',
-                    weight: 5
-                }).addTo(map);
+                    const polyline = L.polyline(latlngs, {
+                        color: 'blue',
+                        weight: 5
+                    }).addTo(map);
 
-                riders.forEach(r => {
-                    L.marker([r.lat, r.lng])
+                    riders.forEach(r => {
+                        L.marker([r.lat, r.lng])
+                            .addTo(map)
+                            .bindPopup("Rider: " + r.name);
+                    });
+
+                    L.marker(latlngs[0]).addTo(map).bindPopup("Start");
+                    L.marker(latlngs[latlngs.length - 1]).addTo(map).bindPopup("Destination");
+
+                    map.fitBounds(polyline.getBounds());
+
+                    // 🚗 Driver marker (initial dummy)
+                    const driverMarker = L.marker(latlngs[0])
                         .addTo(map)
-                        .bindPopup("Rider: " + r.name);
+                        .bindPopup("Driver");
+
                 });
+            </script>
 
-                L.marker(latlngs[0]).addTo(map).bindPopup("Start");
-                L.marker(latlngs[latlngs.length - 1]).addTo(map).bindPopup("Destination");
+                {% if startride %}
+                    <button type="submit" name="action" value="startride">Start Ride</button>
+                {% else %}
+                    <a href="{% url 'testrider' %}" <button type="submit" name="action" value="startride" disabled>Start Ride</button>
+                    </a>
+                {% endif %}
+                </form>
 
-                map.fitBounds(polyline.getBounds());
-
-                // 🚗 Driver marker (initial dummy)
-                const driverMarker = L.marker(latlngs[0])
-                    .addTo(map)
-                    .bindPopup("Driver");
-
-            });
-        </script>
-
-            {% if startride %}
-                <button type="submit" name="action" value="startride">Start Ride</button>
             {% else %}
-                <a href="{% url 'testrider' %}" <button type="submit" name="action" value="startride" disabled>Start Ride</button>
-                </a>
-            {% endif %}
-            </form>
+        <p>No Accepted Rides</p>
+        {% endif %}
+        
+        {% comment %} Incoming Ride Request {% endcomment %}
+        {% if requests %}
+        <h1>Incoming Ride Requests</h1>
+            {% for request in requests %}
 
+                <form method="POST" action="{% url 'testdriver' %}">
+                    {% csrf_token %}
+
+                    <p>{{ request.rider }}</p>
+
+                    <div id="map{{ request.id }}" style="height:200px;width:25%;margin-bottom:10px;"></div>
+
+                    <script>
+                    document.addEventListener("DOMContentLoaded", function(){
+
+                        const route={{ request.trip.routegeometry|safe }};
+
+                        const riderLat={{ request.pickuplatitude }};
+                        const riderLng={{ request.pickuplongitude }};
+
+                        const first=route.coordinates[0];
+                        const startLat=first[1];
+                        const startLng=first[0];
+
+                        const map=L.map('map{{ request.id }}').setView([startLat, startLng], 13);
+
+                        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                            maxZoom: 19
+                        }).addTo(map);
+
+                        // Convert GeoJSON coords
+                        const latlngs=route.coordinates.map(coord => [coord[1], coord[0]]);
+
+                        // Draw route
+                        const polyline=L.polyline(latlngs, {
+                            color: 'blue',
+                            weight: 4
+                        }).addTo(map);
+
+                        // Start marker
+                        L.marker(latlngs[0])
+                            .addTo(map)
+                            .bindPopup("Ride Start");
+
+                        // Destination marker
+                        const last=latlngs[latlngs.length - 1];
+                        L.marker(last)
+                            .addTo(map)
+                            .bindPopup("Destination");
+
+                        // Rider pickup marker
+                        L.marker([riderLat, riderLng])
+                            .addTo(map)
+                            .bindPopup("Rider Pickup");
+
+                        map.fitBounds(polyline.getBounds());
+
+                    });
+                    </script>
+
+                    <input type="hidden" name="requestid" value="{{ request.id }}">
+
+                    <button type="submit" name="action" value="accept">Accept</button>
+                    <button type="submit" name="action" value="reject">Reject</button>
+
+                </form>
+
+            {% endfor %}
         {% else %}
-    <p>No Accepted Rides</p>
-    {% endif %}
+        <p>No Incoming Request</p>
+        {% endif %}
 
-    <h1 class="text-center">Create a trip</h1>
-    {% comment %} form div {% endcomment %}
-    <div class="d-flex justify-content-center mt-5">
-        <form method="POST" action="{% url 'testdriver' %}">
-            {% csrf_token %}
-
-            {% comment %} location {% endcomment %}
-            <div class="mb-2">
-                <label>Location: </label>
-                <input id="location-input" type="text" name="preferedlocation" value="{{ lasttrip.preferedlocation|default:'' }}">
-                <div id="autocomplete-results" class="list-group position-absolute w-100 shadow" style="z-index: 1000;">
-                </div>
-                <input type="hidden" name="latitude" id="lat" value="{{ lasttrip.latitude|default:'' }}">
-
-                <input type="hidden" name="longitude" id="lng" value="{{ lasttrip.longitude|default:'' }}">
-            </div>
-            <div id="map" style="height:400px;" class="mb-3"></div>
-
-            {% comment %} route {% endcomment %}
-            <div class="mb-2">
-                <input type="hidden" name="routegeometry" id="routegeometry" value="{{ lasttrip.routegeometry|default:'' }}">
-            </div>
-
-            {% comment %} direction {% endcomment %}
-            <div class="mb-2">
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" value="to" name="prefereddirection" {% if lasttrip.prefereddirection == "to" %}checked{% endif %}>
-                    <label>To College</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" value="from" name="prefereddirection" {% if lasttrip.prefereddirection == "from" %}checked{% endif %}>
-                    <label>From College</label>
-                </div>
-            </div>
-
-            {% comment %} Date {% endcomment %}
-            <label>Date</label>
-            <input type="date" name="ridedate">
-
-            {% comment %} Time {% endcomment %}
-            <label>Time</label>
-            <input type="time" id="ridetime" name="ridetime" value="{{ lasttrip.ridetime|time:'H:i'|default:'' }}">
-
-            {% comment %} vehicle type {% endcomment %}
-            <div class="mb-2">
-                <label>Vehicle Type:</label><br>
-
-                <input type="radio" name="vehicletype" value="car"
-                    {% if lasttrip.vehicletype == "car" %}checked{% endif %}
-                    onchange="toggleHelmetField()"> Car
-
-                <input type="radio" name="vehicletype" value="bike"
-                    {% if lasttrip.vehicletype == "bike" %}checked{% endif %}
-                    onchange="toggleHelmetField()"> Bike
-            </div>
-
-            <div id="helmetField" class="mb-2" style="display: none;">
-                <label>Helmet Available:</label><br>
-
-                <input type="radio" name="helmet" value="yes"
-                    {% if lasttrip.helmet == "yes" %}checked{% endif %}> Yes
-
-                <input type="radio" name="helmet" value="no"
-                    {% if lasttrip.helmet == "no" %}checked{% endif %}> No
-            </div>
-
-            {% comment %} available seats {% endcomment %}
-            <div class="mb-2">
-                <label>Available Seats: </label>
-                <input type="number" name="availableseats">
-            </div>
-
-            {% comment %} vehicle number {% endcomment %}
-            <div class="mb-2">
-                <label>Vehicle Number: </label>
-                <input type="text" name="vehiclenumber" value="{{ lasttrip.vehiclenumber }}">
-            </div>
-
-            {% comment %} vehicle model {% endcomment %}
-            <div class="mb-2">
-                <label>Vehicle Model: </label>
-                <input type="text" name="vehiclemodel" value="{{ lasttrip.vehiclemodel }}">
-            </div>
-
-            <button type="submit" name="action" value="tripdetails">Enter</button>
-        </form>
-    </div>
-
-    <h1>Active Rides</h1>
-    {% if activetrips %}
+        {% comment %} Active Ride {% endcomment %}
+        <h1>Active Rides</h1>
         <form method="POST" action="{% url 'testdriver' %}">
             {% csrf_token %}
 
             <input type="hidden" name="tripid" id="tripid" value="{{ activetrips.id }}">
-            <p>{{ activetrips.preferedlocation }}</p>
-            <p>{{ activetrips.prefereddirection }} College </p>
+            <p>Location: {{ activetrips.preferedlocation }}</p>
+            <p>Date: {{ activetrips.prefereddirection }} College </p>
             <p>Date: {{ activetrips.ridedate }}</p>
             <p>Time: {{ activetrips.ridetime }}</p>
             <p>Bike/Car: {{ activetrips.vehicletype }}</p>
@@ -218,83 +208,100 @@
                 <p>Helmet Available: {{ activetrips.helmet }}</p>
             {% endif %}
             <p>Model: {{ activetrips.vehiclemodel }}</p>
+            <p>Price: {{ activetrips.price }}Rs</p>
             <button type="submit" name="action" value="delete">Delete Ride</button>
         </form>
         {% else %}
-    <p>No Actice Rides</p>
+            {% comment %} Create new ride {% endcomment %}
+            <h1 class="text-center">Create a trip</h1>
+            {% comment %} form div {% endcomment %}
+            <div class="d-flex justify-content-center mt-5">
+                <form method="POST" action="{% url 'testdriver' %}">
+                    {% csrf_token %}
+
+                    {% comment %} location {% endcomment %}
+                    <div class="mb-2">
+                        <label>Location: </label>
+                        <input id="location-input" type="text" name="preferedlocation" value="{{ lasttrip.preferedlocation|default:'' }}">
+                        <div id="autocomplete-results" class="list-group position-absolute w-100 shadow" style="z-index: 1000;">
+                        </div>
+                        <input type="hidden" name="latitude" id="lat" value="{{ lasttrip.latitude|default:'' }}">
+
+                        <input type="hidden" name="longitude" id="lng" value="{{ lasttrip.longitude|default:'' }}">
+                    </div>
+                    <div id="map" style="height:400px;" class="mb-3"></div>
+
+                    {% comment %} route {% endcomment %}
+                    <div class="mb-2">
+                        <input type="hidden" name="routegeometry" id="routegeometry" value="{{ lasttrip.routegeometry|default:'' }}">
+                    </div>
+
+                    {% comment %} direction {% endcomment %}
+                    <div class="mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" value="to" name="prefereddirection" {% if lasttrip.prefereddirection == "to" %}checked{% endif %}>
+                            <label>To College</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" value="from" name="prefereddirection" {% if lasttrip.prefereddirection == "from" %}checked{% endif %}>
+                            <label>From College</label>
+                        </div>
+                    </div>
+
+                    {% comment %} Date {% endcomment %}
+                    <label>Date</label>
+                    <input type="date" name="ridedate">
+
+                    {% comment %} Time {% endcomment %}
+                    <label>Time</label>
+                    <input type="time" id="ridetime" name="ridetime" value="{{ lasttrip.ridetime|time:'H:i'|default:'' }}">
+
+                    {% comment %} vehicle type {% endcomment %}
+                    <div class="mb-2">
+                        <label>Vehicle Type:</label><br>
+
+                        <input type="radio" name="vehicletype" value="car"
+                            {% if lasttrip.vehicletype == "car" %}checked{% endif %}
+                            onchange="toggleHelmetField()"> Car
+
+                        <input type="radio" name="vehicletype" value="bike"
+                            {% if lasttrip.vehicletype == "bike" %}checked{% endif %}
+                            onchange="toggleHelmetField()"> Bike
+                    </div>
+
+                    <div id="helmetField" class="mb-2" style="display: none;">
+                        <label>Helmet Available:</label><br>
+
+                        <input type="radio" name="helmet" value="yes"
+                            {% if lasttrip.helmet == "yes" %}checked{% endif %}> Yes
+
+                        <input type="radio" name="helmet" value="no"
+                            {% if lasttrip.helmet == "no" %}checked{% endif %}> No
+                    </div>
+
+                    {% comment %} available seats {% endcomment %}
+                    <div class="mb-2">
+                        <label>Available Seats: </label>
+                        <input type="number" name="availableseats">
+                    </div>
+
+                    {% comment %} vehicle number {% endcomment %}
+                    <div class="mb-2">
+                        <label>Vehicle Number: </label>
+                        <input type="text" name="vehiclenumber" value="{{ lasttrip.vehiclenumber }}">
+                    </div>
+
+                    {% comment %} vehicle model {% endcomment %}
+                    <div class="mb-2">
+                        <label>Vehicle Model: </label>
+                        <input type="text" name="vehiclemodel" value="{{ lasttrip.vehiclemodel }}">
+                    </div>
+
+                    <button type="submit" name="action" value="tripdetails">Enter</button>
+                </form>
+            </div>
     {% endif %}
 
-    <h1>Incoming Ride Requests</h1>
-
-    {% if requests %}
-    {% for request in requests %}
-
-    <form method="POST" action="{% url 'testdriver' %}">
-        {% csrf_token %}
-
-        <p>{{ request.rider }}</p>
-
-        <div id="map{{ request.id }}" style="height:200px;width:25%;margin-bottom:10px;"></div>
-
-        <script>
-        document.addEventListener("DOMContentLoaded", function(){
-
-            const route={{ request.trip.routegeometry|safe }};
-
-            const riderLat={{ request.pickuplatitude }};
-            const riderLng={{ request.pickuplongitude }};
-
-            const first=route.coordinates[0];
-            const startLat=first[1];
-            const startLng=first[0];
-
-            const map=L.map('map{{ request.id }}').setView([startLat, startLng], 13);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19
-            }).addTo(map);
-
-            // Convert GeoJSON coords
-            const latlngs=route.coordinates.map(coord => [coord[1], coord[0]]);
-
-            // Draw route
-            const polyline=L.polyline(latlngs, {
-                color: 'blue',
-                weight: 4
-            }).addTo(map);
-
-            // Start marker
-            L.marker(latlngs[0])
-                .addTo(map)
-                .bindPopup("Ride Start");
-
-            // Destination marker
-            const last=latlngs[latlngs.length - 1];
-            L.marker(last)
-                .addTo(map)
-                .bindPopup("Destination");
-
-            // Rider pickup marker
-            L.marker([riderLat, riderLng])
-                .addTo(map)
-                .bindPopup("Rider Pickup");
-
-            map.fitBounds(polyline.getBounds());
-
-        });
-        </script>
-
-        <input type="hidden" name="requestid" value="{{ request.id }}">
-
-        <button type="submit" name="action" value="accept">Accept</button>
-        <button type="submit" name="action" value="reject">Reject</button>
-
-    </form>
-
-    {% endfor %}
-    {% else %}
-    <p>No Incoming Request</p>
-    {% endif %}
 
     <script>
 

@@ -1,5 +1,6 @@
 from datetime import  time, datetime, timedelta, time
 from ..models import trip, riderequest
+from ..ml.routeopt import tripprice
 from django.contrib.auth import get_user_model
 
 import json
@@ -75,6 +76,14 @@ def tripdetails(request):
 
             helmetavailable=request.POST.get("helmet")
             newtrip.helmet=helmetavailable
+
+            latitude=float(request.POST.get("latitude"))
+            longitude=float(request.POST.get("longitude"))
+            distance,amount=tripprice(routegeometry)
+
+            newtrip.distance=distance
+            newtrip.price=amount
+
 
             newtrip.save()
             return redirect("testdriver")

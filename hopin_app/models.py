@@ -61,6 +61,7 @@ class trip(models.Model):
     preferedlocation=models.CharField()                 #location suggession
     latitude=models.FloatField(null=False, blank=False)
     longitude=models.FloatField(null=False, blank=False)
+    distance=models.FloatField(default=7.9,null=False,blank=False)
     routegeometry=models.JSONField(null=True, blank=True)                         #route path (lat and long)
     prefereddirection=models.CharField(null=False, blank=False)                #direction suggession
     ridedate=models.DateField(null=False, blank=False)
@@ -73,6 +74,7 @@ class trip(models.Model):
     availableseats=models.IntegerField(null=False, blank=False)
     vehiclenumber=models.CharField(max_length=12,null=False, blank=False)       #KL 41 **** ****
     vehiclemodel=models.CharField(null=False, blank=False)                     #car or bike model name
+    price=models.FloatField(null=False,blank=False)
     status=models.CharField(default="EMPTY")
     has_boarded=models.BooleanField(default=False)
     
@@ -88,6 +90,7 @@ class riderequest(models.Model):
     pickuplatitude=models.FloatField(null=True, blank=True)
     pickuplongitude=models.FloatField(null=True, blank=True)
     rating=models.IntegerField(null=True, blank=True)
+    price=models.FloatField(default=10,null=False,blank=False)
     status=models.CharField(default="PENDING")
 
     class Meta:

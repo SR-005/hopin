@@ -259,7 +259,7 @@
                 <div class="xl:col-span-8 flex flex-col gap-4 overflow-y-auto max-h-[700px] pr-3 custom-scrollbar">
 
                     {% if rides %}
-                    {% for trip, distance, score in rides %}
+                    {% for trip, distance, score, amount in rides %}
                     <div
                         class="bg-white rounded-[1.5rem] p-6 text-[#191265] shadow-lg hover:shadow-2xl transition duration-300">
                         <div class="flex justify-between items-center mb-4">
@@ -274,8 +274,11 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="font-extrabold text-3xl text-green-600">
+                            <div class="hidden font-extrabold text-3xl text-green-600">
                                 ₹10.00
+                            </div>
+                            <div class="font-extrabold text-3xl text-green-600">
+                                Rs. {{ amount }}
                             </div>
                         </div>
 
