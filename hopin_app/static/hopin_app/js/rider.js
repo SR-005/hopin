@@ -1,10 +1,11 @@
 
 document.addEventListener("DOMContentLoaded", function () {
-    // 1. SAFE DJANGO INJECTION: Wrapped in quotes to prevent SyntaxErrors!
+    
     const ridesCount=window.DJANGO_VARS.ridesCount;
     const collegeLat=10.0469;
     const collegeLng=76.3467;
     const collegeName="AISAT Engineering College";
+    const maxLocationLength=100;
 
     let direction="to"; // Default direction
     let userLat=null;
@@ -27,6 +28,46 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const pickupResults=document.getElementById("pickup-results");
     const destinationResults=document.getElementById("destination-results");
+
+    function trimLocationLabel(label) {
+        if (!label) return "";
+        const normalized=label.replace(/\s+/g, " ").trim();
+        return normalized.slice(0, maxLocationLength);
+    }
+
+    function buildShortLocationLabel(place) {
+        const address=place?.address || {};
+        const nameParts=[
+            place?.name,
+            address.road,
+            address.neighbourhood,
+            address.suburb,
+            address.hamlet,
+            address.quarter,
+            address.village,
+            address.town,
+            address.city
+        ].filter(Boolean);
+
+        const primaryName=nameParts[0] || "";
+        const locality=address.city || address.town || address.village || address.suburb || address.state_district || address.state || "";
+        const shortLabel=locality && primaryName && locality !== primaryName
+            ? `${primaryName}, ${locality}`
+            : (primaryName || locality || place?.display_name || "");
+
+        return trimLocationLabel(shortLabel);
+    }
+
+    function setSelectedLocation(placeName, isPickup) {
+        const safePlaceName=trimLocationLabel(placeName);
+        if (isPickup) {
+            pickupInput.value=safePlaceName;
+        } else {
+            destinationInput.value=safePlaceName;
+        }
+
+        if (locationHidden) locationHidden.value=safePlaceName;
+    }
 
     /* ---------------- DATE SETUP (Today & Tomorrow Only) ---------------- */
     const today=new Date();
@@ -112,14 +153,8 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
             .then(res => res.json())
             .then(data => {
-                const placeName=data.display_name;
-                if (direction === "to") {
-                    pickupInput.value=placeName;
-                    if (locationHidden) locationHidden.value=placeName;
-                } else {
-                    destinationInput.value=placeName;
-                    if (locationHidden) locationHidden.value=placeName;
-                }
+                const placeName=buildShortLocationLabel(data);
+                setSelectedLocation(placeName, direction === "to");
             });
     }
 
@@ -135,19 +170,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 data.forEach(place => {
                     const item=document.createElement("div");
                     item.className="p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-0 text-black";
-                    item.textContent=place.display_name;
+                    const shortPlaceName=buildShortLocationLabel(place);
+                    item.textContent=shortPlaceName;
 
                     item.onclick=function () {
                         const lat=parseFloat(place.lat);
                         const lon=parseFloat(place.lon);
 
-                        if (isPickup) {
-                            pickupInput.value=place.display_name;
-                            if (locationHidden) locationHidden.value=place.display_name;
-                        } else {
-                            destinationInput.value=place.display_name;
-                            if (locationHidden) locationHidden.value=place.display_name;
-                        }
+                        setSelectedLocation(shortPlaceName, isPickup);
 
                         if (latHidden) latHidden.value=lat;
                         if (lngHidden) lngHidden.value=lon;
@@ -224,12 +254,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     /* ---------------- FORM SUBMIT HANDLER ---------------- */
+    if (pickupInput) pickupInput.maxLength=maxLocationLength;
+    if (destinationInput) destinationInput.maxLength=maxLocationLength;
+
     if (searchForm) {
         searchForm.addEventListener("submit", function (e) {
             if (direction === 'to') {
-                if (locationHidden) locationHidden.value=pickupInput.value;
+                if (locationHidden) locationHidden.value=trimLocationLabel(pickupInput.value);
+                pickupInput.value=trimLocationLabel(pickupInput.value);
             } else {
-                if (locationHidden) locationHidden.value=destinationInput.value;
+                if (locationHidden) locationHidden.value=trimLocationLabel(destinationInput.value);
+                destinationInput.value=trimLocationLabel(destinationInput.value);
             }
 
             if (!latHidden.value || !lngHidden.value) {
