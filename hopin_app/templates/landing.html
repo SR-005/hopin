@@ -106,7 +106,7 @@
         document.addEventListener("DOMContentLoaded", () => {
 
             // 1. INJECT AUTH BUTTONS/USERNAME FIRST
-            const isLoggedIn = "{{ status|lower }}" === "false";
+            const isLoggedIn = "{{ status|lower }}" === "true";
             const authContainer = document.getElementById('auth-container');
 
             if (isLoggedIn) {
