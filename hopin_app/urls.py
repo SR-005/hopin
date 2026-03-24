@@ -1,8 +1,10 @@
 from django.urls import path
 from . import views
-from .views import authview,payandrateview,driverview,riderview,trackingview,locationview
+from .views import authview,payandrateview,driverview,riderview,trackingview,locationview,profileview
 
 urlpatterns=[
+    #Profile view functions
+    path("testprofile/", profileview.testprofilefunction, name="profile"),
 
     #authentication view functions
     path("", authview.landingfunction, name="landing"),

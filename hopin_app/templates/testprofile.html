@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: #1e293b;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+            color: #38bdf8;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+        }
+
+        .info p {
+            margin: 5px 0;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .driver {
+            background: #22c55e;
+        }
+
+        .rider {
+            background: #3b82f6;
+        }
+
+        .stat {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- PROFILE HEADER -->
+    <div class="card">
+        <div class="profile-header">
+            <div class="avatar">
+                {{ request.user.username|slice:":1"|upper }}
+            </div>
+
+            <div class="info">
+                <h2>{{ request.user.username }}</h2>
+                <p>{{ request.user.email }}</p>
+
+                <span class="badge driver">Driver</span>
+                <span class="badge rider">Rider</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- DRIVER SECTION -->
+    <div class="card">
+        <h2>🚗 Driver Details</h2>
+
+        <div class="stat">
+            <span>Total Rides Given</span>
+            <span>{{ driver.total_rides|default:"0" }}</span>
+        </div>
+
+        <div class="stat">
+            <span>Seats Offered</span>
+            <span>{{ driver.total_seats|default:"0" }}</span>
+        </div>
+
+        <div class="stat">
+            <span>Reliability Score</span>
+            <span>{{ driver.reliability|default:"0.0" }}</span>
+        </div>
+
+        <div class="stat">
+            <span>Active Rides</span>
+            <span>{{ driver.active_rides|default:"0" }}</span>
+        </div>
+    </div>
+
+    <!-- RIDER SECTION -->
+    <div class="card">
+        <h2>🧍 Rider Details</h2>
+
+        <div class="stat">
+            <span>Total Rides Taken</span>
+            <span>{{ rider.total_rides|default:"0" }}</span>
+        </div>
+
+        <div class="stat">
+            <span>Pending Payments</span>
+            <span>{{ rider.pending_payments|default:"0" }}</span>
+        </div>
+
+        <div class="stat">
+            <span>Completed Payments</span>
+            <span>{{ rider.completed_payments|default:"0" }}</span>
+        </div>
+
+        <div class="stat">
+            <span>Ongoing Ride</span>
+            <span>
+                {% if rider.ongoing %}
+                    Yes
+                {% else %}
+                    No
+                {% endif %}
+            </span>
+        </div>
+    </div>
+
+</div>
+
+
+<div class="container">
+
+    {% if pending %}
+    <div class="card">
+        <h2>💰 Pending Payment</h2>
+
+        <p><strong>{{ pending }}</strong></p>
+
+        <!-- RATE FORM -->
+        <form method="POST" action="{% url 'testpay' pending.id %}">
+            {% csrf_token %}
+            <label>Rate the Ride:</label><br>
+            <input type="number" name="rating" min="1" max="5" required>
+            <input type="hidden" name="requestid" value="{{ pending.requestdetails.id }}">
+            <br><br>
+            <button type="submit" name="action" value="rateride">
+                Submit Rating
+            </button>
+        </form>
+
+        <br>
+
+        <!-- PAY FORM -->
+        <form method="POST" action="{% url 'testpay' pending.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="requestid" value="{{ pending.requestdetails.id }}">
+
+            {% if pending.requestdetails.rating %}
+                <button type="submit" name="action" value="completepayment">
+                    Pay Now
+                </button>
+            {% else %}
+                <button disabled title="Please rate before paying">
+                    Pay Now
+                </button>
+            {% endif %}
+        </form>
+    </div>
+    {% endif %}
+
+</div>
+
+
+<!-- ================= RAZORPAY SCRIPT ================= -->
+{% if pending and orderid %}
+<script>
+    var options = {
+        "key": "{{ RAZORID }}",
+        "amount": "{{ amount }}",
+        "currency": "INR",
+        "name": "Hop In",
+        "description": "Ride Payment",
+        "order_id": "{{ orderid }}",
+
+        "handler": function (response) {
+            fetch("/verifypayment/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": "{{ csrf_token }}"
+                },
+                body: JSON.stringify(response)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "success") {
+                    alert("✅ Payment Successful");
+                    window.location.reload();
+                } else {
+                    alert("❌ Payment Failed");
+                }
+            });
+        },
+
+        "theme": {
+            "color": "#38bdf8"
+        }
+    };
+
+    var rzp = new Razorpay(options);
+    rzp.open();
+</script>
+{% endif %}
+
+
+</body>
+</html>
