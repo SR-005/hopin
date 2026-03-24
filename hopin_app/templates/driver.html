@@ -286,7 +286,7 @@
 
         <div class="w-full max-w-6xl flex flex-col gap-8">
             
-            {% if lasttrip == None %}
+            {% if lasttrip != None %}
                 <!-- Summary Card -->
                 <div class="bg-white rounded-[2.5rem] p-8 text-[#191265] shadow-2xl flex flex-col md:flex-row justify-between items-center gap-10">
                     <div class="flex flex-col gap-4">
@@ -315,9 +315,12 @@
                             <button type="submit" class="w-full bg-red-500 text-white px-8 py-3 rounded-xl font-black uppercase hover:bg-red-700 shadow-lg text-xs">Delete Trip</button>
                         </form>
                         {% if accepted %}
-                            <a href="{% url 'testlocation' %}" class="w-full">
-                                <button class="w-full bg-green-500 text-white px-8 py-3 rounded-xl font-black uppercase hover:bg-green-700 shadow-lg text-xs">Start Ride</button>
-                            </a>
+                            <form action="{% url 'driver' %}" method="POST" class="w-full">
+                                {% csrf_token %}
+                                <input type="hidden" name="tripid" value="{{ lasttrip.id }}">
+                                <input type="hidden" name="action" value="startride">
+                                <button type="submit" class="w-full bg-green-500 text-white px-8 py-3 rounded-xl font-black uppercase tracking-wider hover:bg-green-600 shadow-lg text-xs transition-colors">START RIDE</button>
+                            </form>
                         {% endif %}
                     </div>
                 </div>
@@ -337,14 +340,13 @@
                                 <div class="bg-white rounded-[1.5rem] p-4 flex gap-4 text-[#191265] shadow-md border-2 border-[#191265] hover:-translate-y-1 transition-transform">
                                     <div class="flex-1 flex flex-col justify-between">
                                         <div class="flex items-center gap-3 mb-2">
-                                            <img src="https://ui-avatars.com/api/?name={{ req.rider }}&background=191265&color=fff&bold=true" class="w-10 h-10 rounded-full shadow-sm">
-                                            <p class="font-extrabold text-lg">{{ req.rider }}</p>
+                                            <img src="https://ui-avatars.com/api/?name={{ req.rider.first_name|default:req.rider.email }}&background=191265&color=fff&bold=true" class="w-10 h-10 rounded-full shadow-sm">
+                                            <p class="font-extrabold text-lg truncate max-w-[150px]">{{ req.rider.first_name|default:req.rider.email }}</p>
                                         </div>
                                         <div class="mb-3 flex flex-col gap-0.5">
-                                            <div class="text-sm font-bold"><span class="text-black">From:</span> <span class="font-medium text-gray-700 ml-1">{{ req.pickup_location|default:"Aluva" }}</span></div>
-                                            <div class="text-sm font-bold"><span class="text-black">Contact:</span> <span class="font-medium text-gray-700 ml-1">{{ req.rider.phone|default:"+91 xxxxxxxxxx" }}</span></div>
+                                            <div class="text-sm font-bold"><span class="text-black">From:</span> <span class="font-medium text-gray-700 ml-1">{{ req.pickuplocation|default:"Not specified" }}</span></div>
+                                            <div class="text-sm font-bold"><span class="text-black">Contact:</span> <span class="font-medium text-gray-700 ml-1">{{ req.rider.userdetails.phonenumber|default:"N/A" }}</span></div>
                                         </div>
-                                        <!-- Actions handled dynamically to force quick refresh -->
                                         <div class="flex gap-2"> 
                                             <form class="async-form w-1/2" action="{% url 'driver' %}" method="POST">
                                                 {% csrf_token %}
@@ -360,8 +362,9 @@
                                             </form>
                                         </div>
                                     </div>
-                                    <div class="w-[120px] sm:w-[150px] shrink-0 rounded-xl overflow-hidden relative border-2 border-[#191265]/10 bg-[url('https://a.tile.openstreetmap.org/13/5798/3875.png')] bg-cover bg-center">
-                                        <svg class="w-8 h-8 text-blue-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                                    <div id="minimap-req-{{ req.id }}" class="minimap-container w-[120px] sm:w-[150px] h-[120px] sm:h-[150px] shrink-0 rounded-xl overflow-hidden relative border-2 border-[#191265]/10 z-0" 
+                                        data-lat="{{ req.pickuplatitude }}" 
+                                        data-lng="{{ req.pickuplongitude }}">
                                     </div>
                                 </div>
                                 {% endfor %}
@@ -388,19 +391,20 @@
                                 <div class="bg-white rounded-[1.5rem] p-4 flex gap-4 text-[#191265] shadow-md border-2 border-green-500 hover:-translate-y-1 transition-transform">
                                     <div class="flex-1 flex flex-col justify-between">
                                         <div class="flex items-center gap-3 mb-2">
-                                            <img src="https://ui-avatars.com/api/?name={{ req.rider }}&background=191265&color=fff&bold=true" class="w-10 h-10 rounded-full shadow-sm">
-                                            <p class="font-extrabold text-lg">{{ req.rider }}</p>
+                                            <img src="https://ui-avatars.com/api/?name={{ req.rider.first_name|default:req.rider.email }}&background=191265&color=fff&bold=true" class="w-10 h-10 rounded-full shadow-sm">
+                                            <p class="font-extrabold text-lg truncate max-w-[150px]">{{ req.rider.first_name|default:req.rider.email }}</p>
                                         </div>
                                         <div class="mb-3 flex flex-col gap-0.5">
-                                            <div class="text-sm font-bold"><span class="text-black">From:</span> <span class="font-medium text-gray-700 ml-1">{{ req.pickup_location|default:"Aluva" }}</span></div>
-                                            <div class="text-sm font-bold"><span class="text-black">Contact:</span> <span class="font-medium text-gray-700 ml-1">{{ req.rider.phone|default:"+91 xxxxxxxxxx" }}</span></div>
+                                            <div class="text-sm font-bold"><span class="text-black">From:</span> <span class="font-medium text-gray-700 ml-1">{{ req.pickuplocation|default:"Not specified" }}</span></div>
+                                            <div class="text-sm font-bold"><span class="text-black">Contact:</span> <span class="font-medium text-gray-700 ml-1">{{ req.rider.userdetails.phonenumber|default:"N/A" }}</span></div>
                                         </div>
                                         <div class="bg-[#8ccb90] text-white px-4 py-1.5 rounded-lg font-bold text-xs tracking-wider uppercase text-center w-max shadow-sm">
                                             CONFIRMED
                                         </div>
                                     </div>
-                                    <div class="w-[120px] sm:w-[150px] shrink-0 rounded-xl overflow-hidden relative border-2 border-green-500/20 bg-[url('https://a.tile.openstreetmap.org/13/5798/3875.png')] bg-cover bg-center">
-                                        <svg class="w-8 h-8 text-blue-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                                    <div id="minimap-acc-{{ req.id }}" class="minimap-container w-[120px] sm:w-[150px] h-[120px] sm:h-[150px] shrink-0 rounded-xl overflow-hidden relative border-2 border-green-500/20 z-0" 
+                                        data-lat="{{ req.pickuplatitude }}" 
+                                        data-lng="{{ req.pickuplongitude }}">
                                     </div>
                                 </div>
                                 {% endfor %}
@@ -659,42 +663,66 @@
             toBtn.onclick = () => setDirection('to');
             fromBtn.onclick = () => setDirection('from');
 
-            // --- FORMS SUBMIT INTERCEPTOR (Fixes the Refresh Issue) ---
-            // Grabs all forms (Main creation, Delete Trip, Accept, Reject requests)
-            const allForms = document.querySelectorAll('form');
-            
-            allForms.forEach(form => {
-                form.addEventListener('submit', async function(e) {
-                    e.preventDefault(); // Stop standard redirect/refresh mechanism
-                    
-                    const submitBtn = this.querySelector('button[type="submit"]');
-                    const originalText = submitBtn ? submitBtn.innerText : '';
-                    if(submitBtn) {
-                        submitBtn.innerText = "Processing...";
-                        submitBtn.disabled = true;
-                    }
-
-                    try {
-                        // Submit form payload asynchronously 
-                        await fetch(this.action, {
-                            method: this.method,
-                            body: new FormData(this)
-                        });
-                        
-                        // Force a pristine, un-cached page reload from server
-                        // This prevents any "Confirm Form Resubmission" warnings and loads new DB data instantly.
-                        window.location.href = window.location.pathname; 
-
-                    } catch (error) {
-                        console.error('Submission error:', error);
-                        // Fallback refresh on error
-                        window.location.href = window.location.pathname;
-                    }
-                });
-            });
+           
 
             // Smooth Scroll from hero
             document.getElementById('scroll-to-form').onclick = () => document.getElementById('create-ride-section').scrollIntoView({ behavior: 'smooth' });
+        
+            setTimeout(() => {
+                const minimapContainers = document.querySelectorAll('.minimap-container');
+
+                minimapContainers.forEach(container => {
+                    // Safety check: Prevent Leaflet from crashing if it tries to draw twice
+                    if (container._leaflet_id) return; 
+
+                    // Grab the coordinates saved in the HTML
+                    const lat = parseFloat(container.getAttribute('data-lat'));
+                    const lng = parseFloat(container.getAttribute('data-lng'));
+
+                    // Check if coordinates exist
+                    if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+                        
+                        // Initialize the map
+                        const mmap = L.map(container.id, {
+                            zoomControl: false,       
+                            dragging: false,          
+                            scrollWheelZoom: false,   
+                            doubleClickZoom: false,
+                            boxZoom: false,
+                            keyboard: false,
+                            attributionControl: false 
+                        }).setView([lat, lng], 15.5);
+
+                        // Add the map tiles
+                        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(mmap);
+
+                        // Add the rider dot
+                        L.circleMarker([lat, lng], {
+                            radius: 8,
+                            fillColor: "#191265",
+                            color: "#ffffff",
+                            weight: 3,
+                            opacity: 1,
+                            fillOpacity: 1
+                        }).addTo(mmap);
+                        
+                        // Final force-resize after tiles load
+                        setTimeout(() => {
+                            mmap.invalidateSize();
+                        }, 300);
+                        
+                    } else {
+                        // Fallback UI if rider has no location data
+                        container.innerHTML = `
+                            <div class="w-full h-full bg-gray-100 flex flex-col items-center justify-center text-gray-400">
+                                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <span class="text-[10px] font-bold uppercase tracking-wider">No Location</span>
+                            </div>`;
+                    }
+                });
+            }, 150); // 150ms delay to let the DOM settle
+        
+        
         });
     </script>
 </body>

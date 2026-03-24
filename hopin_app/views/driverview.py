@@ -192,44 +192,43 @@ def driverfunction(request):
     lasttrip=None
     startride=True
     activetrips=None
+    
     #fetch trips of the current user
     try:
         lasttrip=trip.objects.filter(usercredentials=request.user,status="COMPLETED").order_by("-id").first()
         activetrips=trip.objects.filter(usercredentials=request.user,status__in=["ACTIVE", "EMPTY"]).first()
         print("ACTIVE: ",activetrips)
         print("PAST: ",lasttrip)
-        '''if lasttrip.status!="ONGOING":
-            
-            currenttime=timezone.localtime()
-            ridetime=datetime.combine(lasttrip.ridedate, lasttrip.ridetime)
-            ridetime=timezone.make_aware(ridetime)
-            starttime=ridetime - timedelta(minutes=30)
-            print("C: ",currenttime)
-            print("S: ",starttime)
-            if currenttime>=starttime:
-                print("It's time to Start")
-                startride=True'''
 
     except Exception as e:
         print(e)
 
-    action=request.POST.get("action")
-    print("ACTION: ",action)
-    if action=="tripdetails":
-        notallowed=trip.objects.filter(usercredentials=request.user,status__in=["EMPTY","ACTIVE","ONGOING"]).exists()
-        if notallowed:
-            messages.error(request, "Cannot Create Two Rides at Once!!")
-            return redirect("driver")
-        return tripdetails(request)
-    elif action=="accept":
-        return acceptride(request)
-    elif action=="reject":
-        return rejectride(request)
-    elif action=="delete":
-        return deleteride(request)
-    elif action=="startride":
-        return starttracking(request)
+    # --- THIS IS THE CRITICAL FIX ---
+    # Only process actions if the form was actually submitted
+    if request.method == "POST":
+        action = request.POST.get("action")
+        print("ACTION RECEIVED: ", action)
+        
+        if action == "tripdetails":
+            notallowed = trip.objects.filter(usercredentials=request.user,status__in=["EMPTY","ACTIVE","ONGOING"]).exists()
+            if notallowed:
+                messages.error(request, "Cannot Create Two Rides at Once!!")
+                return redirect("driver")
+            return tripdetails(request)
+            
+        elif action == "accept":
+            return acceptride(request)
+            
+        elif action == "reject":
+            return rejectride(request)
+            
+        elif action == "delete":
+            return deleteride(request)
+            
+        elif action == "startride":
+            return starttracking(request)
 
+    # --- IF IT'S NOT A POST REQUEST (Just loading the page normally) ---
     pendingrequests=list(riderequest.objects.filter(trip=activetrips,status="PENDING").select_related("trip", "rider"))
     acceptedrequests=list(riderequest.objects.filter(trip=activetrips,status="ACCEPTED").select_related("trip", "rider"))
     lasttriproutegeometryjson=json.dumps(lasttrip.routegeometry) if lasttrip and lasttrip.routegeometry else ""
@@ -240,9 +239,13 @@ def driverfunction(request):
     for currentrequest in acceptedrequests:
         currentrequest.routegeometry_json=json.dumps(currentrequest.trip.routegeometry or {})
 
-    return render(request, "driver.html",{"requests":pendingrequests,
-                                              "accepted":acceptedrequests,
-                                              "lasttrip": lasttrip,"startride":startride,
-                                              "activetrips":activetrips,
-                                              "ongoing":trip.objects.filter(usercredentials=request.user,status="ONGOING").order_by("-id").first(),
-                                              "lasttrip_routegeometry_json": lasttriproutegeometryjson})
+    # NOTE: I changed "lasttrip" in the context to "activetrips" for the UI to display the CURRENT active ride, not the past one.
+    return render(request, "driver.html",{
+        "requests":pendingrequests,
+        "accepted":acceptedrequests,
+        "lasttrip": activetrips, # Changed this to show the active trip in the UI summary card
+        "startride":startride,
+        "activetrips":activetrips,
+        "ongoing":trip.objects.filter(usercredentials=request.user,status="ONGOING").order_by("-id").first(),
+        "lasttrip_routegeometry_json": lasttriproutegeometryjson
+    })

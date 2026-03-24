@@ -89,3 +89,37 @@ def testlocationfunction(request,rideid):
         pickuprider.save()
 
     return render(request,"testlocation.html",{"rideid":rideid,"riders":currentrequest})
+
+
+def testlocationfunction(request, rideid):
+    currentrequest = None
+
+    ride = get_object_or_404(trip, id=rideid)
+    print("Ride Status for Driver: ", ride.status)
+
+    if ride.status != "ONGOING":
+        messages.error(request, "This Ride has Successfully been completed")
+        return redirect("landing")
+    
+    currentrequest = riderequest.objects.filter(trip=ride, status__in=["ACCEPTED", "HALFCONFIRM", "FULLCONFIRM", "DROPPED", "DROPPEDNOTCONFIRMED", "NOTBOARDED"])
+    print("Current Req1: ", currentrequest)
+
+    if request.method == "POST":
+        pickupid = request.POST.get("requestid")
+        pickuprider = get_object_or_404(riderequest, id=pickupid, status="ACCEPTED")
+        pickuprider.status = "HALFCONFIRM"
+        pickuprider.save()
+        ride.has_boarded = True 
+        ride.save()
+
+    # --- NEW: Context variables added for the UI Navbar ---
+    context = {
+        "rideid": rideid,
+        "riders": currentrequest,
+        # Pass status as "true" or "false" string so the JS in the template reads it correctly
+        "status": "true" if request.user.is_authenticated else "false",
+        # Pass the user's first name for the top right profile display
+        "firstname": request.user.first_name if request.user.is_authenticated else "",
+    }
+
+    return render(request, "testlocation.html", context)

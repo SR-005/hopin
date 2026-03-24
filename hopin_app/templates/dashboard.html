@@ -1,0 +1,342 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Location - Hop In</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'hopin_app/css/landing.css' %}">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+    <style>
+        /* Ensures the Leaflet map doesn't overlap the fixed Tailwind Navbar */
+        .leaflet-container {
+            z-index: 10 !important;
+            font-family: 'Playfair Display', serif;
+        }
+        /* Custom scrollbar for rider list */
+        .rider-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .rider-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .rider-scroll::-webkit-scrollbar-thumb {
+            background-color: #191265;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen overflow-x-hidden relative bg-[#191265]">
+    
+    {% if messages %}
+        {% for message in messages %}
+        <script>
+            alert("{{ message|escapejs }}");
+        </script>
+        {% endfor %}
+    {% endif %}
+
+    <div class="absolute bottom-0 right-0 w-full h-[55%] bg-[#F4F5F7] rounded-t-[3rem] lg:top-0 lg:bottom-auto lg:w-[38%] lg:h-[130vh] lg:rounded-t-none lg:rounded-bl-[140px] z-0 pointer-events-none shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.1)] lg:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]"></div>
+    
+    <nav class="w-full flex items-center justify-between px-3 sm:px-6 lg:px-12 py-4 sm:py-6 fixed top-0 left-0 z-50">
+        <div class="flex items-center w-auto lg:w-1/4">
+            <img src="{% static 'hopin_app/images/logo.png' %}" class="h-6 sm:h-10 md:h-14 w-auto object-contain" alt="Hop In Logo">
+        </div>
+
+        <ul class="flex space-x-3 sm:space-x-8 md:space-x-16 font-['Playfair_Display'] tracking-widest font-extrabold text-[10px] sm:text-[14px] md:text-[18px] absolute left-[38%] sm:left-[42%] lg:left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+            <li><a href="/" class="block py-2 px-1 md:p-0 text-[#EAE9DF] opacity-50 hover:opacity-100 transition-opacity">Home</a></li>
+            <li><a href="#" class="block py-2 px-1 md:p-0 text-[#EAE9DF] opacity-100 transition-opacity">Live Ride</a></li>
+        </ul>
+
+        <div class="flex justify-end items-center gap-2 sm:gap-4 lg:gap-6 w-auto lg:w-1/4 ml-auto" id="auth-container">
+            </div>
+    </nav>
+
+    <div class="relative z-10 w-full max-w-[1400px] mx-auto px-6 lg:px-16 pt-28 sm:pt-32 pb-12 min-h-screen flex flex-col">
+        
+        <div class="flex flex-col lg:flex-row gap-8 lg:gap-12 h-full flex-1 items-start">
+            
+            <div class="w-full lg:w-[60%] flex flex-col gap-4">
+                <div class="flex flex-col">
+                    <h2 class="font-['Black_Mango'] text-xl sm:text-2xl lg:text-3xl text-[#EAE9DF] opacity-90 tracking-wide">Live Route</h2>
+                    <h1 class="font-['Black_Mango'] text-4xl sm:text-5xl lg:text-6xl text-white leading-none mb-6">Navigation</h1>
+                </div>
+
+                <div class="bg-white p-2 sm:p-3 rounded-3xl shadow-2xl w-full relative">
+                    <div id="live-map" class="h-[400px] sm:h-[500px] lg:h-[600px] w-full rounded-2xl z-10"></div>
+                </div>
+            </div>
+
+            <div class="w-full lg:w-[40%] flex flex-col mt-8 lg:mt-[5rem]">
+                <div class="bg-white/80 backdrop-blur-lg border border-white/50 p-6 sm:p-8 rounded-[2rem] shadow-xl w-full relative z-20">
+                    <h2 class="text-3xl font-['Black_Mango'] text-[#191265] mb-6 tracking-wide text-center lg:text-left">Pickup Queue</h2>
+                    
+                    <input type="hidden" name="rideid" id="rideid" value="{{ rideid }}">
+                    
+                    <div class="flex flex-col gap-4 max-h-[450px] overflow-y-auto rider-scroll pr-2">
+                        {% for rider in riders %}
+                            {% if rider.status == "ACCEPTED" %}
+                                <div class="bg-white border-[1.5px] border-gray-200 p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-10 h-10 rounded-full bg-[#191265] text-white flex items-center justify-center font-['Playfair_Display'] font-bold">
+                                            {{ rider.rider.email|make_list|first|upper }}
+                                        </div>
+                                        <p class="font-['Playfair_Display'] font-bold text-[#191265] text-lg truncate">
+                                            {{ rider.rider.email }}
+                                        </p>
+                                    </div>
+                                    
+                                    <form method="POST" action="{% url 'testlocation' rideid %}" class="w-full">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="tripid" id="tripid" value="{{ rideid }}">
+                                        <input type="hidden" name="requestid" id="requestid" value="{{ rider.id }}">
+                                        <button type="submit" name="action" value="pickup" 
+                                            class="w-full py-3 rounded-[14px] border-[1.5px] border-[#191265] bg-[#191265] text-white font-['Black_Mango'] font-semibold text-lg hover:bg-white hover:text-[#191265] transition-all duration-300 focus:ring-4 focus:ring-blue-300">
+                                            Confirm Pickup
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        {% empty %}
+                            <div class="text-center py-8">
+                                <p class="text-gray-500 font-['Playfair_Display'] text-lg italic">No pending pickups for this ride.</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const isLoggedIn = {{ status|lower|default:"false" }};
+            const authContainer = document.getElementById('auth-container');
+            const isMobile = window.innerWidth < 1024;
+
+            if (isLoggedIn) {
+                authContainer.innerHTML = `
+                  <div class="flex items-center gap-2 sm:gap-4">
+                    <span id="username-display" class="font-['Playfair_Display'] font-extrabold text-[12px] sm:text-[14px] lg:text-[18px] tracking-wide block transition-colors duration-300" style="color: ${isMobile ? '#EAE9DF' : '#191265'};">
+                       {{ firstname }}
+                    </span>
+                    <button id="user-menu-button" data-dropdown-toggle="user-dropdown" class="flex text-sm rounded-full focus:ring-4 focus:ring-gray-300">
+                        <div class="w-8 h-8 lg:w-12 lg:h-12 rounded-full border-2 border-white shadow-md bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden">
+                            <svg class="w-5 h-5 lg:w-8 lg:h-8" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                <path fill-rule="evenodd" d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </button>
+                    <div id="user-dropdown" class="hidden z-50 my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow w-44">
+                        <div class="px-4 py-3">
+                            <span class="block font-['Playfair_Display'] font-extrabold text-[#191265]">{{ user.email }}</span>
+                        </div>
+                        <ul class="py-2 text-sm text-gray-700">
+                            <li><a href="#" class="block px-4 py-2 hover:bg-gray-200">Profile</a></li>
+                            <li><a href="{% url 'logout' %}" class="block px-4 py-2 hover:bg-red-100 text-red-600">Logout</a></li>
+                        </ul>
+                    </div>
+                </div>`;
+            } else {
+                authContainer.innerHTML = `
+                    <a id="login-btn" href="{% url 'login' %}" class="font-['Playfair_Display'] font-extrabold text-[10px] sm:text-[14px] lg:text-[18px] hover:opacity-75 transition-colors duration-300 pr-1 sm:pr-4" style="color: ${isMobile ? '#EAE9DF' : '#191265'};">Login</a>
+                    <a id="signup-btn" href="{% url 'signup' %}" 
+                    class="px-3 py-1 sm:px-5 sm:py-2 lg:px-8 lg:py-2.5 rounded-[14px] ${isMobile ? 'bg-white text-[#191265]' : 'bg-[#191265] text-white'} border font-['Playfair_Display'] font-extrabold tracking-wide transition-all duration-300 shadow-sm text-[10px] sm:text-[14px] lg:text-[18px] hover:bg-opacity-80">
+                    Sign up
+                    </a>`;
+            }
+        });
+    </script>
+
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                const cookies = document.cookie.split(";");
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrftoken = getCookie("csrftoken");
+        const riders = [];
+        {% for rider in riders %}
+            riders.push({
+                lat: {{ rider.pickuplatitude|default:"0" }},
+                lng: {{ rider.pickuplongitude|default:"0" }},
+                name: "{{ rider.rider.email }}"
+            });
+        {% endfor %}
+
+        const route = {{ riders.0.trip.routegeometry|safe|default:"null" }};
+        const rideid = "{{ rideid }}";
+
+        let map;
+        let driverMarker;
+        let latlngs = [];
+        let polyline;
+        let lastKnownPosition = null;
+        let hasRideEnded = false;
+        let isUpdatingLocation = false;
+
+        function getClosestIndex(driverLat, driverLng, points) {
+            let minDist = Infinity;
+            let closestIndex = 0;
+
+            points.forEach((point, index) => {
+                const d = Math.sqrt(
+                    Math.pow(point[0] - driverLat, 2) +
+                    Math.pow(point[1] - driverLng, 2)
+                );
+
+                if (d < minDist) {
+                    minDist = d;
+                    closestIndex = index;
+                }
+            });
+
+            return closestIndex;
+        }
+
+        function handleRideEnded() {
+            if (hasRideEnded) return;
+            hasRideEnded = true;
+            clearInterval(locationSyncInterval);
+            alert("Ride Completed!");
+            window.location.href = "/";
+        }
+
+        function syncDriverLocation(lat, lng) {
+            if (hasRideEnded || isUpdatingLocation) return;
+            isUpdatingLocation = true;
+
+            fetch(`/updatelocation/${rideid}/`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken
+                },
+                body: JSON.stringify({
+                    latitude: lat,
+                    longitude: lng
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    console.log("Driver:", data);
+
+                    if (data.status === "COMPLETED") {
+                        handleRideEnded();
+                    }
+                })
+                .catch(err => console.error(err))
+                .finally(() => {
+                    isUpdatingLocation = false;
+                });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            if (!route) return;
+
+            latlngs = route.coordinates.map(coord => [coord[1], coord[0]]);
+
+            map = L.map("live-map").setView(latlngs[0], 13);
+
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 19
+            }).addTo(map);
+
+            polyline = L.polyline(latlngs, {
+                color: "#191265", // Updated to match brand color
+                weight: 6
+            }).addTo(map);
+
+            L.marker(latlngs[0]).addTo(map).bindPopup("Start");
+            L.marker(latlngs[latlngs.length - 1]).addTo(map).bindPopup("Destination");
+
+            riders.forEach(r => {
+                if(r.lat !== 0 && r.lng !== 0) {
+                    L.marker([r.lat, r.lng])
+                        .addTo(map)
+                        .bindPopup("Rider: " + r.name);
+                }
+            });
+
+            driverMarker = L.marker(latlngs[0], {
+                icon: L.icon({
+                    iconUrl: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png", // Note: Ensure this URL works for you or replace with a local static car icon
+                    iconSize: [32, 32]
+                })
+            }).addTo(map).bindPopup("Driver");
+
+            map.fitBounds(polyline.getBounds());
+        });
+
+        navigator.geolocation.watchPosition(
+            position => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                lastKnownPosition = { lat, lng };
+
+                if (driverMarker) {
+                    driverMarker.setLatLng([lat, lng]);
+
+                    const closestIndex = getClosestIndex(lat, lng, latlngs);
+
+                    if (closestIndex > 2) {
+                        latlngs = latlngs.slice(closestIndex - 1);
+                        polyline.setLatLngs(latlngs);
+                    }
+                }
+
+                syncDriverLocation(lat, lng);
+            },
+            console.error,
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 3000
+            }
+        );
+
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+                lastKnownPosition = { lat, lng };
+                syncDriverLocation(lat, lng);
+            },
+            console.error,
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 3000
+            }
+        );
+
+        const locationSyncInterval = setInterval(() => {
+            if (!lastKnownPosition || hasRideEnded) return;
+            syncDriverLocation(lastKnownPosition.lat, lastKnownPosition.lng);
+        }, 1000);
+    </script>
+</body>
+</html>
