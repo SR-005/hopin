@@ -1,56 +1,121 @@
-{% if accepted %}
-    {% for request in accepted %}
-    <div class="mt-6 w-[401px] relative">
-        <div
-            class="flex items-center justify-between border-2 border-green-600 rounded-2xl px-4 py-3 bg-green-50">
-            <div class="flex items-center gap-3">
-                <img src="https://ui-avatars.com/api/?name={{ request.trip.usercredentials }}"
-                    class="w-12 h-12 rounded-full">
-                <div class="leading-tight">
-                    <p class="text-green-700 text-sm font-semibold">Ride accepted by</p>
-                    <p class="text-green-800 font-bold text-lg">{{ request.trip.usercredentials }}</p>
-                </div>
-            </div>
-            <form method="POST" action="{% url 'rider' %}" class="flex gap-2">
-                {% csrf_token %}
-                <input type="hidden" name="requestid" value="{{ request.id }}">
-                <input type="hidden" name="tripid" value="{{ request.trip.id }}">
-                <button type="submit" name="action" value="seemore"
-                    class="bg-green-700 hover:bg-green-800 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow transition">
-                    View
-                </button>
-                <button type="submit" name="action" value="cancelrequest"
-                    class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow transition">
-                    Cancel
-                </button>
-            </form>
-        </div>
-    </div>
-    {% endfor %}
-{% endif %}
+<style>
+    /* Logic: Show/Hide the card based on the checkbox state */
+    .toggle-trigger:checked~.driver-details-card {
+        display: block !important;
+        animation: slideDown 0.3s ease-out;
+    }
 
-{% if requests %}
-    {% for request in requests %}
-    <div class="mt-4 w-[401px] relative">
+    /* Rotate the arrow icon when open */
+    .toggle-trigger:checked~.status-pill .arrow-svg {
+        transform: rotate(90deg);
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
+{% if accepted %}
+{% for request in accepted %}
+<div class="mt-4 w-[420px] relative">
+    <input type="checkbox" id="toggle-card-{{ request.id }}" class="toggle-trigger hidden">
+
+    <label for="toggle-card-{{ request.id }}"
+        class="status-pill flex items-center justify-between border-2 border-green-600 rounded-full px-4 py-2 bg-green-50 shadow-md cursor-pointer hover:bg-green-100 transition-colors">
+
+        <div class="flex items-center gap-3">
+            <img src="https://ui-avatars.com/api/?name={{ request.trip.usercredentials }}&background=16a34a&color=fff"
+                class="w-10 h-10 rounded-full">
+            <div class="leading-tight">
+                <p class="text-green-700 text-xs font-semibold">Ride accepted by</p>
+                <p class="text-green-800 font-bold">{{ request.trip.usercredentials }}</p>
+            </div>
+        </div>
+
         <div
-            class="flex items-center justify-between border-2 border-blue-600 rounded-2xl px-4 py-3 bg-blue-50">
-            <div class="flex items-center gap-3">
+            class="arrow-svg bg-green-700 text-white w-10 h-10 rounded-full flex items-center justify-center transition-transform duration-300">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+        </div>
+    </label>
+
+    <div class="driver-details-card hidden mt-3 border border-gray-200 rounded-3xl p-5 bg-white shadow-2xl relative">
+
+        <div class="flex justify-between items-start">
+            <div class="flex gap-4 items-start">
                 <img src="https://ui-avatars.com/api/?name={{ request.trip.usercredentials }}"
-                    class="w-12 h-12 rounded-full">
-                <div class="leading-tight">
-                    <p class="text-blue-700 text-sm font-semibold">Pending Request sent to</p>
-                    <p class="text-blue-800 font-bold text-lg">{{ request.trip.usercredentials }}</p>
+                    class="w-14 h-14 rounded-full border-2 border-[#191265]/10">
+                <div>
+                    <p class="text-[#191265] font-bold text-xl">{{ request.trip.usercredentials }}</p>
+                    <p class="text-gray-600 text-sm mt-1"><strong>Model:</strong> {{ request.trip.vehiclemodel }}</p>
+                    <p class="text-gray-600 text-sm"><strong>Reg:</strong> {{ request.trip.vehiclenumber}}</p>
+
+                    <div class="flex gap-2 mt-3">
+                        {% if request.trip.helmet %}
+                        <span
+                            class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-md uppercase border border-green-200">+HELMET</span>
+                        {% else %}
+                        <span
+                            class="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-1 rounded-md uppercase border border-red-200">+HELMET</span>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-            <form method="POST" action="{% url 'rider' %}">
-                {% csrf_token %}
-                <input type="hidden" name="requestid" value="{{ request.id }}">
-                <button type="submit" name="action" value="cancelrequest"
-                    class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow transition">
-                    Cancel
-                </button>
-            </form>
+
+            <div class="flex flex-col justify-between items-end self-stretch h-full min-h-[100px]">
+                <img src="/static/images/bike-icon.png" class="w-20 opacity-90" alt="bike">
+
+                <div class="flex gap-2 mt-4">
+                    <form method="POST" action="{% url 'rider' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="requestid" value="{{ request.id }}">
+                        <button type="submit" name="action" value="cancelrequest"
+                            class="bg-gray-100 hover:bg-red-50 text-red-600 px-4 py-2 rounded-full text-xs font-bold border border-red-100 transition">
+                            Cancel
+                        </button>
+                    </form>
+
+                    <a href="{% url 'tracking' request.id %}"
+                        class="bg-[#191265] hover:bg-indigo-900 text-white px-6 py-2 rounded-full font-bold text-sm shadow-md transition">
+                        See More
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
-    {% endfor %}
+</div>
+{% endfor %}
+{% endif %}
+{% if requests %}
+{% for request in requests %}
+<div class="mt-4 w-[401px] relative">
+    <div class="flex items-center justify-between border-2 border-blue-600 rounded-2xl px-4 py-3 bg-blue-50">
+        <div class="flex items-center gap-3">
+            <img src="https://ui-avatars.com/api/?name={{ request.trip.usercredentials }}"
+                class="w-12 h-12 rounded-full">
+            <div class="leading-tight">
+                <p class="text-blue-700 text-sm font-semibold">Pending Request sent to</p>
+                <p class="text-blue-800 font-bold text-lg">{{ request.trip.usercredentials }}</p>
+            </div>
+        </div>
+        <form method="POST" action="{% url 'rider' %}">
+            {% csrf_token %}
+            <input type="hidden" name="requestid" value="{{ request.id }}">
+            <button type="submit" name="action" value="cancelrequest"
+                class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-sm font-bold shadow transition">
+                Cancel
+            </button>
+        </form>
+    </div>
+</div>
+{% endfor %}
 {% endif %}

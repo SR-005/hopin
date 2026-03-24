@@ -50,7 +50,7 @@
                 <div class="flex items-center gap-4">
                     <span
                         class="text-white font-['Playfair_Display'] font-extrabold text-[18px] tracking-wide hidden sm:block">
-                        Rider
+                        {{ firstname }}
                     </span>
                     <button type="button" id="user-menu-button" data-dropdown-toggle="user-dropdown"
                         class="flex text-sm rounded-full focus:ring-4 focus:ring-gray-300">
@@ -97,7 +97,8 @@
 
         <section id="search-section" class="flex justify-center gap-20 items-center h-screen bg-transparent">
 
-            <form method="POST" id="searchForm" action="{% url 'rider' %}">
+            <form method="POST" id="searchForm" action="{% url 'rider' %}"
+                class="flex gap-6 border border-white/30 rounded-2xl p-8 bg-[#191265]/70 shadow-xl w-fit">
                 {% csrf_token %}
 
                 <input type="hidden" name="action" value="riderdetails">
@@ -106,12 +107,12 @@
                 <input type="hidden" name="latitude" id="lat-input">
                 <input type="hidden" name="longitude" id="lng-input">
 
-                <div class="border border-white/30 rounded-2xl p-8 w-[420px] bg-[#191265]/70 shadow-xl">
+                <div class="w-[400px]">
                     <h2 class="text-4xl text-white font-bold mb-6">
                         Search <span class="text-gray-300">Ride</span>
                     </h2>
 
-                    <label class="text-white">Pickup Location</label>
+                    <label class="text-white block mb-1">Pickup Location</label>
                     <div class="relative mb-4">
                         <input id="pickup" type="text"
                             class="w-full bg-gray-300 rounded-xl p-3 font-semibold text-[#191265]" autocomplete="off"
@@ -121,7 +122,7 @@
                         </div>
                     </div>
 
-                    <label class="text-white">Destination</label>
+                    <label class="text-white block mb-1">Destination</label>
                     <div class="relative mb-4">
                         <input id="destination" type="text"
                             class="w-full bg-gray-300 rounded-xl p-3 font-semibold text-[#191265]" autocomplete="off"
@@ -131,14 +132,14 @@
                         </div>
                     </div>
 
-                    <label class="text-white">Direction</label>
+                    <label class="text-white block mb-1">Direction</label>
                     <div class="flex gap-4 mb-4">
                         <button type="button" id="toCollege"
                             class="flex-1 bg-white hover:bg-gray-200 py-3 rounded-xl text-[#191265] font-bold shadow-inner transition">
                             To College
                         </button>
                         <button type="button" id="fromCollege"
-                            class="flex-1 bg-white/40 hover:bg-white/80 py-3 rounded-xl text-[#191265]  font-bold transition">
+                            class="flex-1 bg-white/40 hover:bg-white/80 py-3 rounded-xl text-[#191265] font-bold transition">
                             From College
                         </button>
                     </div>
@@ -146,20 +147,16 @@
                     <div class="flex gap-6 mb-6">
                         <div class="flex flex-col w-1/2">
                             <label class="text-white mb-2">Date</label>
-                            <div class="relative">
-                                <input id="rideDate" name="ridedate" type="date"
-                                    class="w-full bg-gray-300 rounded-xl p-3 text-[#191265] font-medium outline-none cursor-pointer"
-                                    required>
-                            </div>
+                            <input id="rideDate" name="ridedate" type="date"
+                                class="w-full bg-gray-300 rounded-xl p-3 text-[#191265] font-medium outline-none cursor-pointer"
+                                required>
                         </div>
 
                         <div class="flex flex-col w-1/2">
                             <label class="text-white mb-2">Time</label>
-                            <div class="relative">
-                                <input id="rideTime" name="ridetime" type="time"
-                                    class="w-full bg-gray-300 rounded-xl p-3 text-[#191265] font-medium outline-none cursor-pointer"
-                                    required>
-                            </div>
+                            <input id="rideTime" name="ridetime" type="time"
+                                class="w-full bg-gray-300 rounded-xl p-3 text-[#191265] font-medium outline-none cursor-pointer"
+                                required>
                         </div>
                     </div>
 
@@ -168,18 +165,13 @@
                         Search Rides
                     </button>
                 </div>
+
+                <div class="flex flex-col w-[450px]">
+
+                    <div id="map" class="flex-grow rounded-xl border-2 border-white/20 bg-gray-200 min-h-[400px]">
+                    </div>
+                </div>
             </form>
-
-            <div
-                class="border border-white/30 bg-[#191265]/50 backdrop-blur-sm rounded-2xl p-6 w-[420px] flex flex-col items-center shadow-xl">
-                <p class="text-white font-bold mb-3 w-full text-left">Confirm via Map</p>
-                <div id="map" class="w-full h-[260px] rounded-xl border-2 border-white/20"></div>
-
-                <button type="button" id="mapSubmit"
-                    class="mt-4 w-full bg-white text-[#191265] hover:bg-gray-200 py-2 rounded-xl font-bold transition">
-                    Submit
-                </button>
-            </div>
 
         </section>
     </div>
@@ -189,7 +181,8 @@
             <div class="flex justify-between items-center mb-6">
                 <h1 class="text-3xl font-extrabold uppercase">Search Results</h1>
                 <div class="flex items-center gap-4">
-                    <span id="ridesCountLabel" class="text-sm font-bold uppercase tracking-widest bg-white/10 px-4 py-2 rounded-lg">
+                    <span id="ridesCountLabel"
+                        class="text-sm font-bold uppercase tracking-widest bg-white/10 px-4 py-2 rounded-lg">
                         {{ rides|length|default:"0" }} Rides Available
                     </span>
                     <a href="#search-section">
@@ -202,15 +195,14 @@
             </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
-                <div id="ridesList" class="xl:col-span-8 flex flex-col gap-4 overflow-y-auto max-h-[700px] pr-3 custom-scrollbar">
+                <div id="ridesList"
+                    class="xl:col-span-8 flex flex-col gap-4 overflow-y-auto max-h-[700px] pr-3 custom-scrollbar">
 
                     {% if rides %}
                     {% for trip, distance, score, amount in rides %}
-                    <div
-                        class="ride-card bg-white rounded-[1.5rem] p-6 text-[#191265] shadow-lg hover:shadow-2xl transition duration-300"
+                    <div class="ride-card bg-white rounded-[1.5rem] p-6 text-[#191265] shadow-lg hover:shadow-2xl transition duration-300"
                         data-vehicle="{{ trip.vehicletype|lower }}"
-                        data-helmet="{{ trip.helmet|default_if_none:''|lower }}"
-                        data-price="{{ amount }}"
+                        data-helmet="{{ trip.helmet|default_if_none:''|lower }}" data-price="{{ amount }}"
                         data-original-order="{{ forloop.counter0 }}">
                         <div class="flex justify-between items-center mb-4">
                             <div class="flex items-center gap-3">
@@ -250,7 +242,8 @@
                         </div>
 
                         <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="bg-indigo-50 text-indigo-700 text-xs px-3 py-1 rounded-full font-bold uppercase">
+                            <span
+                                class="bg-indigo-50 text-indigo-700 text-xs px-3 py-1 rounded-full font-bold uppercase">
                                 {{ trip.vehicletype }}
                             </span>
                             {% if trip.vehicletype|lower == "bike" %}
@@ -304,11 +297,13 @@
                     </div>
                     <div class="bg-white rounded-xl p-5 text-[#191265] shadow-inner">
                         <label class="flex items-center gap-3 cursor-pointer mb-4">
-                            <input type="radio" name="vehicle" value="bike" class="w-4 h-4 text-[#191265] focus:ring-[#191265]">
+                            <input type="radio" name="vehicle" value="bike"
+                                class="w-4 h-4 text-[#191265] focus:ring-[#191265]">
                             <span class="font-bold text-lg">Bikes / Scooters</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer mb-4">
-                            <input type="radio" name="vehicle" value="car" class="w-4 h-4 text-[#191265] focus:ring-[#191265]">
+                            <input type="radio" name="vehicle" value="car"
+                                class="w-4 h-4 text-[#191265] focus:ring-[#191265]">
                             <span class="font-bold text-lg">Cars</span>
                         </label>
                         <label class="flex items-center gap-3 cursor-pointer mb-5">
@@ -317,7 +312,8 @@
                             <span class="font-bold text-lg">Helmet Available</span>
                         </label>
 
-                        <label for="sortFilter" class="block text-xs font-bold uppercase tracking-[0.2em] text-gray-500 mb-2">
+                        <label for="sortFilter"
+                            class="block text-xs font-bold uppercase tracking-[0.2em] text-gray-500 mb-2">
                             Sort By
                         </label>
                         <select id="sortFilter"
@@ -337,14 +333,14 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-        window.DJANGO_VARS={
+    <script>
+        window.DJANGO_VARS = {
             ridesCount: parseInt("{{ rides|length|default:'0' }}", 10) || 0
         };
     </script>
 
     <script src="{% static 'hopin_app/js/rider.js' %}?v=20260323-2"></script>
-    
+
 </body>
 
 </html>
