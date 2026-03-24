@@ -57,30 +57,30 @@ def tripdatetimevalidation(request):
     now=timezone.localtime().time()
     if ridedate not in [today, today + timedelta(days=1)]:
         messages.error(request, "Rides can only be scheduled for Today or Tomorrow")
-        return redirect("driver")
+        return redirect("testdriver")
 
     #time validation: TO college (before 8:00AM)
     if direction=="to":
         if ridetime<time(7,00):
             messages.error(request, "Rides can only be scheduled from 7:00AM")
-            return redirect("driver")
+            return redirect("testdriver")
         elif ridetime>time(8,00):
             messages.error(request, "Rides must arrive at college at 8:00 AM")
-            return redirect("driver")
+            return redirect("testdriver")
         
         if ridedate==today and now>time(8,0):
             messages.error(request, "Cannot schedule today's 8:00 AM ride after it has passed")
-            return redirect("driver")
+            return redirect("testdriver")
         
     #time validation: FROM college (between 1:30PM and 8:00PM)
     elif direction=="from":
         if ridetime<time(13,30) or ridetime>time(20,00):
             messages.error(request, "Rides must be scheduled between 1:30PM and 8:00PM")
-            return redirect("driver")
+            return redirect("testdriver")
         
         if ridedate==today and ridetime<=now:
             messages.error(request, "Cannot schedule a ride in the past")
-            return redirect("driver")
+            return redirect("testdriver")
     return None
 
 #create new trip
@@ -113,11 +113,11 @@ def tripdetails(request):
 
 
             newtrip.save()
-            return redirect("driver")
+            return redirect("testdriver")
         else:
             print("Form not Valid")
             print(request.POST)
-            return redirect("driver")
+            return redirect("testdriver")
 
 #accept a ride request
 def acceptride(request):
@@ -126,7 +126,7 @@ def acceptride(request):
         currentrequest=riderequest.objects.get(id=request.POST.get("requestid"))
     except:
         messages.error(request, "Ride Request has been Withdrawn!!")
-        return redirect("driver")
+        return redirect("testdriver")
     currentride=currentrequest.trip
     rider=currentrequest.rider
     
@@ -143,10 +143,10 @@ def acceptride(request):
         riderequest.objects.filter(rider=rider,status="PENDING").exclude(id=currentrequest.id).delete()
 
         currentride.save()
-        return redirect("driver")
+        return redirect("testdriver")
     else:
         messages.error(request, "Ride Max Capacity has already been filled!")
-        return redirect("driver")
+        return redirect("testdriver")
 
 #reject a ride request
 def rejectride(request):
@@ -154,7 +154,7 @@ def rejectride(request):
     currentrequest=riderequest.objects.get(id=request.POST.get("requestid"))
     currentrequest.status="REJECTED"
     currentrequest.save()
-    return redirect("driver")
+    return redirect("testdriver")
 
 #delete a posted ride
 def deleteride(request):
@@ -167,11 +167,11 @@ def deleteride(request):
 
     if timeremaining<=timedelta(minutes=20):
         messages.error(request, "Cannot delete ride within 20 minutes of start time.")
-        return redirect("driver")
+        return redirect("testdriver")
 
     deleteride.delete()
     messages.success(request, "Your Ride has been Deleted!")
-    return redirect("driver")
+    return redirect("testdriver")
 
 
 def starttracking(request):
@@ -185,7 +185,7 @@ def starttracking(request):
 
 #driver page routing function
 @login_required
-def driverfunction(request):
+def testdriverfunction(request):
     cleanup(request)       #calling cleanup function to delete expired rides
     requests=None
     accepted=None
@@ -219,7 +219,7 @@ def driverfunction(request):
         notallowed=trip.objects.filter(usercredentials=request.user,status__in=["EMPTY","ACTIVE","ONGOING"]).exists()
         if notallowed:
             messages.error(request, "Cannot Create Two Rides at Once!!")
-            return redirect("driver")
+            return redirect("testdriver")
         return tripdetails(request)
     elif action=="accept":
         return acceptride(request)
@@ -240,7 +240,7 @@ def driverfunction(request):
     for currentrequest in acceptedrequests:
         currentrequest.routegeometry_json=json.dumps(currentrequest.trip.routegeometry or {})
 
-    return render(request, "driver.html",{"requests":pendingrequests,
+    return render(request, "testdriver.html",{"requests":pendingrequests,
                                               "accepted":acceptedrequests,
                                               "lasttrip": lasttrip,"startride":startride,
                                               "activetrips":activetrips,

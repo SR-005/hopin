@@ -1,4 +1,4 @@
-from ..models import userdetail, trip, riderequest, payment
+from ..models import userdetail, riderequest, payment
 from django.contrib.auth import get_user_model
 from dotenv import load_dotenv
 import os

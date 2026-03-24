@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import authview,payandrateview,driverview,riderview,trackingview,locationview,profileview
+from .views import authview,payandrateview,driverview,riderview,trackingview,locationview,profileview,testdriverview
 
 urlpatterns=[
     #Profile view functions
@@ -20,7 +20,9 @@ urlpatterns=[
 
 
     #driver view functions
-    path("testcreatetrip/", driverview.testdriverfunction, name="testdriver"),   #test driver
+    path("testcreatetrip/", testdriverview.testdriverfunction, name="testdriver"),
+    path("driver/", driverview.driverfunction, name="driver"),   #test driver
+    #path("driver/", driverview.driverfunction, name="driver"),   #driver
     path("driver/poll/", driverview.driverpoll, name="driverpoll"),
 
     #rider view functions

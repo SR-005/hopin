@@ -263,7 +263,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" id="submitBtn" class="w-full bg-[#191265] text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-blue-900 transition-all shadow-lg text-sm mt-2">Post Ride</button>
+                    <button type="submit" name="action" value="tripdetails" id="submitBtn" class="w-full bg-[#191265] text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-blue-900 transition-all shadow-lg text-sm mt-2">Post Ride</button>
                 </form>
             </div>
 
@@ -286,7 +286,7 @@
 
         <div class="w-full max-w-6xl flex flex-col gap-8">
             
-            {% if lasttrip %}
+            {% if lasttrip == None %}
                 <!-- Summary Card -->
                 <div class="bg-white rounded-[2.5rem] p-8 text-[#191265] shadow-2xl flex flex-col md:flex-row justify-between items-center gap-10">
                     <div class="flex flex-col gap-4">
