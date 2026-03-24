@@ -5,11 +5,11 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
+    dependencies=[
         ('hopin_app', '0001_initial'),
     ]
 
-    operations = [
+    operations=[
         migrations.AddField(
             model_name='trip',
             name='status',

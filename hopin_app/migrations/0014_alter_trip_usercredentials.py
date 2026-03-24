@@ -7,11 +7,11 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
+    dependencies=[
         ('hopin_app', '0013_alter_trip_availableseats_alter_trip_ridedate_and_more'),
     ]
 
-    operations = [
+    operations=[
         migrations.AlterField(
             model_name='trip',
             name='usercredentials',

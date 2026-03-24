@@ -5,11 +5,11 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
+    dependencies=[
         ('hopin_app', '0011_trip_ridedate_trip_ridetime'),
     ]
 
-    operations = [
+    operations=[
         migrations.AlterUniqueTogether(
             name='riderequest',
             unique_together={('trip', 'rider')},

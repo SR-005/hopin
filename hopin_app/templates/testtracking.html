@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <title>Live Tracking</title>
-
+    <h3 id="etaText">Calculating ETA...</h3>
     <style>
         #map{
             height: 500px;
@@ -14,6 +14,15 @@
     </style>
 </head>
 <body>
+
+    {# default message display snippet- as web popup #}
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+                alert("{{ message|escapejs }}");
+            </script>
+        {% endfor %}
+    {% endif %}
 
     <h1>Live Tracking</h1>
     <div id="map"></div>
@@ -30,28 +39,46 @@
         
         //csrf token for form submission
         function getCookie(name) {
-            let cookieValue = null;
+            let cookieValue=null;
             if (document.cookie && document.cookie !== "") {
-                const cookies = document.cookie.split(";");
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
+                const cookies=document.cookie.split(";");
+                for (let i=0; i < cookies.length; i++) {
+                    const cookie=cookies[i].trim();
                     if (cookie.substring(0, name.length + 1) === (name + "=")) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        cookieValue=decodeURIComponent(cookie.substring(name.length + 1));
                         break;
                     }
                 }
             }
             return cookieValue;
         }
-        const csrftoken = getCookie("csrftoken");
+        const csrftoken=getCookie("csrftoken");
 
         //ride request status check
+        let hasRideEnded=false;
+        let pickupInterval=null;
+        let trackingInterval=null;
+
+        function handleRideEnded() {
+            if (hasRideEnded) return;
+            hasRideEnded=true;
+            clearInterval(pickupInterval);
+            clearInterval(trackingInterval);
+            alert("Ride completed successfully");
+            window.location.href="/";
+        }
+
         function checkPickup() {
+            if (hasRideEnded) return;
             
             fetch("/fetchstatus/{{ requestid }}/")
             .then(response => response.json())
             .then(data => {
                 console.log(data.status)
+                if (["DROPPED", "DROPPEDNOTCONFIRMED", "NOTBOARDED"].includes(data.status)) {
+                    handleRideEnded();
+                    return;
+                }
                 if(data.status === "HALFCONFIRM") {
 
                     document.getElementById("confirmbutton").disabled=false;
@@ -65,91 +92,103 @@
             });
 
         }
-        setInterval(checkPickup, 3000);
+        pickupInterval=setInterval(checkPickup, 1000);
 
 
 
         //set location on map
-        const map = L.map("map").setView([10.0469, 76.3467], 15);
+        const map=L.map("map").setView([10.0469, 76.3467], 15);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {attribution: "&copy; OpenStreetMap contributors"}).addTo(map);
 
-        const driverMarker = L.marker([10.0469, 76.3467]).addTo(map).bindPopup("Driver");
-        const riderMarker = L.marker([{{ riderlatitude }}, {{ riderlongitude }}]).addTo(map).bindPopup("Rider");
-        let routeLine = null;
-        let routeCoords = [];
-        let remainingRouteLine = null;
-        let travelledRouteLine = null;
-
+        const driverMarker=L.marker([10.0469, 76.3467]).addTo(map).bindPopup("Driver");
+        const riderMarker=L.marker([{{ riderlatitude }}, {{ riderlongitude }}]).addTo(map).bindPopup("Rider");
+        let routeLine=null;
+        let routeCoords=[];
+        let remainingRouteLine=null;
+        let travelledRouteLine=null;
+        let lastETA=null;
+        
         function getDriverLocation(){
+            if (hasRideEnded) return;
 
-            fetch("/fetchtracking/{{ rideid }}/")
+            fetch("/fetchtracking/{{ rideid }}/?requestid={{ requestid }}")
             .then(res => res.json())
             .then(data => {
-                const lat = data.lat;
-                const lng = data.lng;
-                console.log(data);
-                
-                if(data.status === "COMPLETED"){
-                    clearInterval(trackingInterval);
-                    window.location.href = "/testrider";
+                if (data.redirect) {
+                    handleRideEnded();
                     return;
                 }
 
+                if(data.eta !== undefined){
+                    if(lastETA === null){
+                        lastETA=data.eta;
+                    } else {
+                        lastETA=0.7 * lastETA + 0.3 * data.eta;
+                    }
+
+                    document.getElementById("etaText").innerText =
+                        `Driver arrives in ${Math.round(lastETA)} min`;
+                }
+
+
+
+                const lat=data.lat;
+                const lng=data.lng;
                 driverMarker.setLatLng([lat, lng]);
 
                 if(routeCoords.length === 0 && data.route){
 
-                    const routeGeoJSON = JSON.parse(data.route);
-                    routeCoords = routeGeoJSON.coordinates.map(coord => [coord[1], coord[0]]);
+                    const routeGeoJSON = data.route;
+                    routeCoords=routeGeoJSON.coordinates.map(coord => [coord[1], coord[0]]);
 
-                    remainingRouteLine = L.polyline(routeCoords, {
+                    remainingRouteLine=L.polyline(routeCoords, {
                         color: "blue",
                         weight: 5
                     }).addTo(map);
 
                     map.fitBounds(remainingRouteLine.getBounds());
 
-                    const coords = routeGeoJSON.coordinates;
-                    const start = coords[0];
-                    const end = coords[coords.length - 1];
+                    const coords=routeGeoJSON.coordinates;
+                    const start=coords[0];
+                    const end=coords[coords.length - 1];
 
-                    const startLatLng = [start[1], start[0]];
-                    const endLatLng = [end[1], end[0]];
+                    const startLatLng=[start[1], start[0]];
+                    const endLatLng=[end[1], end[0]];
 
-                    const startMarker = L.marker(startLatLng)
+                    const startMarker=L.marker(startLatLng)
                         .addTo(map)
                         .bindPopup("Start");
 
-                    const endMarker = L.marker(endLatLng)
+                    const endMarker=L.marker(endLatLng)
                         .addTo(map)
                         .bindPopup("Destination");
             };
 
 
-        const driverPos = [lat, lng];
+        const driverPos=[lat, lng];
 
         // find closest point on route
-        let closestIndex = 0;
-        let minDist = Infinity;
+        let closestIndex=0;
+        let minDist=Infinity;
 
         routeCoords.forEach((point, i) => {
-            const dist = map.distance(driverPos, point);
+            const dist=map.distance(driverPos, point);
             if(dist < minDist){
-                minDist = dist;
-                closestIndex = i;
+                minDist=dist;
+                closestIndex=i;
             }
         });
 
         // split route
-        const travelled = routeCoords.slice(0, closestIndex);
-        const remaining = routeCoords.slice(closestIndex);
+        const travelled=routeCoords.slice(0, closestIndex);
+        const remaining=routeCoords.slice(closestIndex);
 
         // update remaining route (blue)
         if(remainingRouteLine){
             map.removeLayer(remainingRouteLine);
         }
 
-        remainingRouteLine = L.polyline(remaining, {
+        remainingRouteLine=L.polyline(remaining, {
             color: "blue",
             weight: 5
         }).addTo(map);
@@ -158,7 +197,9 @@
 
 
 
-        const trackingInterval = setInterval(getDriverLocation, 3000);
+        checkPickup();
+        getDriverLocation();
+        trackingInterval=setInterval(getDriverLocation, 1000);
     </script>
 </body>
 </html>

@@ -1,0 +1,24 @@
+{% comment %} Incoming Ride Request {% endcomment %}
+{% if requests %}
+<h1>Incoming Ride Requests</h1>
+    {% for request in requests %}
+
+            <p>{{ request.rider }}</p>
+            <div class="map" id="map-{{ request.id }}"
+                    style="height:200px; width:25%; margin-bottom:10px;"
+                    data-lat="{{ request.pickuplatitude }}"
+                    data-lng="{{ request.pickuplongitude }}"
+                    data-route="{{ request.routegeometry_json|escape }}">
+            </div>
+
+        <form method="POST" action="{% url 'testdriver' %}">
+            {% csrf_token %}
+            <input type="hidden" name="requestid" value="{{ request.id }}">
+
+            <button type="submit" name="action" value="accept">Accept</button>
+            <button type="submit" name="action" value="reject">Reject</button>
+
+        </form>
+
+    {% endfor %}
+{% endif %}

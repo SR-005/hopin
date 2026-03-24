@@ -25,193 +25,258 @@
         {% endfor %}
     {% endif %}
 
-    {% comment %} accepted rides {% endcomment %}
-    <h1>Accepted Rides</h1>
-    {% if accepted %}
-        {% for request in accepted %}
-        <form method="POST" action="{% url 'testdriver' %}">
-            {% csrf_token %}
 
-            <p>{{ request.rider }}</p>
-            <input type="hidden" name="tripid" id="tripid" value="{{ request.trip.id }}">
-            {% if startride %}
-            <button type="submit" name="action" value="startride">Start Ride</button>
-            {% else %}
-            <a href="{% url 'testrider' %}" <button type="submit" name="action" value="startride" disabled>Start
-                Ride</button>
-            </a>
-            {% endif %}
-        </form>
-        {% endfor %}
-        {% else %}
-    <p>No Accepted Rides</p>
-    {% endif %}
-
-    <h1 class="text-center">Create a trip</h1>
-    {% comment %} form div {% endcomment %}
-    <div class="d-flex justify-content-center mt-5">
-        <form method="POST" action="{% url 'testdriver' %}">
-            {% csrf_token %}
-
-            {% comment %} location {% endcomment %}
-            <div class="mb-2">
-                <label>Location: </label>
-                <input id="location-input" type="text" name="preferedlocation">
-                <div id="autocomplete-results" class="list-group position-absolute w-100 shadow" style="z-index: 1000;">
-                </div>
-                <input type="hidden" name="latitude" id="lat">
-                <input type="hidden" name="longitude" id="lng">
-            </div>
-            <div id="map" style="height:400px;" class="mb-3"></div>
-
-            {% comment %} route {% endcomment %}
-            <div class="mb-2">
-                <input type="hidden" name="routegeometry" id="routegeometry">
-            </div>
-
-            {% comment %} direction {% endcomment %}
-            <div class="mb-2">
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" value="to" name="prefereddirection" id="radioDefault1"
-                        checked>
-                    <label class="form-check-label" for="radioDefault1">To College</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" value="from" name="prefereddirection"
-                        id="radioDefault2">
-                    <label class="form-check-label" for="radioDefault2">From College</label>
-                </div>
-            </div>
-
-            {% comment %} Date {% endcomment %}
-            <label>Date</label>
-            <input type="date" name="ridedate" required>
-
-            {% comment %} Time {% endcomment %}
-            <label>Time</label>
-            <input type="time" id="ridetime" name="ridetime" required>
-
-            {% comment %} vehicle type {% endcomment %}
-            <div class="mb-2">
-                <label>Vehicle Type: </label>
-                <input type="text" name="vehicletype" value="{{ lasttrip.vehicletype }}">
-            </div>
-
-            {% comment %} available seats {% endcomment %}
-            <div class="mb-2">
-                <label>Available Seats: </label>
-                <input type="number" name="availableseats">
-            </div>
-
-            {% comment %} vehicle number {% endcomment %}
-            <div class="mb-2">
-                <label>Vehicle Number: </label>
-                <input type="text" name="vehiclenumber" value="{{ lasttrip.vehiclenumber }}">
-            </div>
-
-            {% comment %} vehicle model {% endcomment %}
-            <div class="mb-2">
-                <label>Vehicle Model: </label>
-                <input type="text" name="vehiclemodel" value="{{ lasttrip.vehiclemodel }}">
-            </div>
-
-            <button type="submit" name="action" value="tripdetails">Enter</button>
-        </form>
+    <div id="driver-state"{% if not requests %} hidden{% endif %}>
+        {% include "partials/driverincoming.html" %}
     </div>
+    
+    {% if activetrips %}
 
-    <h1>Active Rides</h1>
-    {% if lasttrip %}
+        {% comment %} Ongoing rides {% endcomment %}
+        {% if ongoing %}
+        <h1>Ongoing Rides</h1>
+            <form method="POST" action="{% url 'testdriver' %}">
+                {% csrf_token %}
+                <p>{{ ongoing.usercredentials }}</p>
+                <input type="hidden" name="tripid" id="tripid" value="{{ ongoing.id }}">
+                <button type="submit" name="action" value="startride">Resume Ride</button>
+                </form>
+            {% else %}
+        <p>No Ongoing Rides</p>
+        {% endif %}
+
+        {% comment %} Accepted Requests{% endcomment %}
+        {% if accepted %}
+            <h1>Accepted Rides</h1>
+            {% for request in accepted %}
+            <form method="POST" action="{% url 'testdriver' %}">
+                {% csrf_token %}
+
+                <p>{{ request.rider }}</p>
+                <input type="hidden" name="accepted_requestid" value="{{ request.id }}">
+                <input type="hidden" name="tripid" id="tripid" value="{{ request.trip.id }}">
+            
+            {% endfor %}
+
+            {% comment %} map for all riders {% endcomment %}
+            <div id="common-map" style="height:200px;width:25%;margin-bottom:10px;"></div>
+            <script>
+                const riders = [];
+
+                {% for request in accepted %}
+                    riders.push({
+                        lat: {{ request.pickuplatitude }},
+                        lng: {{ request.pickuplongitude }},
+                        name: "{{ request.rider.email }}"
+                    });
+                {% endfor %}
+
+                // Route (same for all since same trip)
+                const route = JSON.parse('{{ accepted.0.routegeometry_json|escapejs }}');
+                const tripId = {{ accepted.0.trip.id }};
+
+
+                document.addEventListener("DOMContentLoaded", function () {
+
+                    if (!route || riders.length === 0) return;
+
+                    const first = route.coordinates[0];
+                    const map = L.map('common-map').setView([first[1], first[0]], 13);
+
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19
+                    }).addTo(map);
+                    const latlngs = route.coordinates.map(coord => [coord[1], coord[0]]);
+
+                    const polyline = L.polyline(latlngs, {
+                        color: 'blue',
+                        weight: 5
+                    }).addTo(map);
+
+                    riders.forEach(r => {
+                        L.marker([r.lat, r.lng])
+                            .addTo(map)
+                            .bindPopup("Rider: " + r.name);
+                    });
+
+                    L.marker(latlngs[0]).addTo(map).bindPopup("Start");
+                    L.marker(latlngs[latlngs.length - 1]).addTo(map).bindPopup("Destination");
+
+                    map.fitBounds(polyline.getBounds());
+
+                    // 🚗 Driver marker (initial dummy)
+                    const driverMarker = L.marker(latlngs[0])
+                        .addTo(map)
+                        .bindPopup("Driver");
+
+                });
+            </script>
+
+                {% if startride %}
+                    <button type="submit" name="action" value="startride">Start Ride</button>
+                {% else %}
+                    <a href="{% url 'testrider' %}" <button type="submit" name="action" value="startride" disabled>Start Ride</button>
+                    </a>
+                {% endif %}
+                </form>
+
+            {% else %}
+        <p>No Accepted Rides</p>
+        {% endif %}
+
+
+        {% comment %} Active Ride {% endcomment %}
+        <h1>Active Rides</h1>
         <form method="POST" action="{% url 'testdriver' %}">
             {% csrf_token %}
 
-            <input type="hidden" name="tripid" id="tripid" value="{{ lasttrip.id }}">
-            <p>{{ lasttrip.preferedlocation }}</p>
-            <p>{{ lasttrip.prefereddirection }} College </p>
-            <p>Date: {{ lasttrip.ridedate }}</p>
-            <p>Time: {{ lasttrip.ridetime }}</p>
-            <p>Bike/Car: {{ lasttrip.vehicletype }}</p>
-            <p>Model: {{ lasttrip.vehiclename }}</p>
+            <input type="hidden" name="tripid" id="tripid" value="{{ activetrips.id }}">
+            <p>Location: {{ activetrips.preferedlocation }}</p>
+            <p>Date: {{ activetrips.prefereddirection }} College </p>
+            <p>Date: {{ activetrips.ridedate }}</p>
+            <p>Time: {{ activetrips.ridetime }}</p>
+            <p>Bike/Car: {{ activetrips.vehicletype }}</p>
+            {% if activetrips.vehicletype == "bike" %}
+                <p>Helmet Available: {{ activetrips.helmet }}</p>
+            {% endif %}
+            <p>Model: {{ activetrips.vehiclemodel }}</p>
+            <p>Price: {{ activetrips.price }}Rs</p>
             <button type="submit" name="action" value="delete">Delete Ride</button>
         </form>
         {% else %}
-    <p>No Actice Rides</p>
+            {% comment %} Create new ride {% endcomment %}
+            <h1 class="text-center">Create a trip</h1>
+            {% comment %} form div {% endcomment %}
+            <div class="d-flex justify-content-center mt-5">
+                <form method="POST" action="{% url 'testdriver' %}">
+                    {% csrf_token %}
+
+                    {% comment %} location {% endcomment %}
+                    <div class="mb-2">
+                        <label>Location: </label>
+                        <input id="location-input" type="text" name="preferedlocation" value="{{ lasttrip.preferedlocation|default:'' }}">
+                        <div id="autocomplete-results" class="list-group position-absolute w-100 shadow" style="z-index: 1000;">
+                        </div>
+                        <input type="hidden" name="latitude" id="lat" value="{{ lasttrip.latitude|default:'' }}">
+
+                        <input type="hidden" name="longitude" id="lng" value="{{ lasttrip.longitude|default:'' }}">
+                    </div>
+                    <div id="map" style="height:400px;" class="mb-3"></div>
+
+                    {% comment %} route {% endcomment %}
+                    <div class="mb-2">
+                        <input type="hidden" name="routegeometry" id="routegeometry" value="{{ lasttrip_routegeometry_json|default:''|escape }}">
+                    </div>
+
+                    {% comment %} direction {% endcomment %}
+                    <div class="mb-2">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" value="to" name="prefereddirection" {% if lasttrip.prefereddirection == "to" %}checked{% endif %}>
+                            <label>To College</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" value="from" name="prefereddirection" {% if lasttrip.prefereddirection == "from" %}checked{% endif %}>
+                            <label>From College</label>
+                        </div>
+                    </div>
+
+                    {% comment %} Date {% endcomment %}
+                    <label>Date</label>
+                    <input type="date" name="ridedate">
+
+                    {% comment %} Time {% endcomment %}
+                    <label>Time</label>
+                    <input type="time" id="ridetime" name="ridetime" value="{{ lasttrip.ridetime|time:'H:i'|default:'' }}">
+
+                    {% comment %} vehicle type {% endcomment %}
+                    <div class="mb-2">
+                        <label>Vehicle Type:</label><br>
+
+                        <input type="radio" name="vehicletype" value="car"
+                            {% if lasttrip.vehicletype == "car" %}checked{% endif %}
+                            onchange="toggleHelmetField()"> Car
+
+                        <input type="radio" name="vehicletype" value="bike"
+                            {% if lasttrip.vehicletype == "bike" %}checked{% endif %}
+                            onchange="toggleHelmetField()"> Bike
+                    </div>
+
+                    <div id="helmetField" class="mb-2" style="display: none;">
+                        <label>Helmet Available:</label><br>
+
+                        <input type="radio" name="helmet" value="yes"
+                            {% if lasttrip.helmet == "yes" %}checked{% endif %}> Yes
+
+                        <input type="radio" name="helmet" value="no"
+                            {% if lasttrip.helmet == "no" %}checked{% endif %}> No
+                    </div>
+
+                    {% comment %} available seats {% endcomment %}
+                    <div class="mb-2">
+                        <label>Available Seats: </label>
+                        <input type="number" name="availableseats">
+                    </div>
+
+                    {% comment %} vehicle number {% endcomment %}
+                    <div class="mb-2">
+                        <label>Vehicle Number: </label>
+                        <input type="text" name="vehiclenumber" value="{{ lasttrip.vehiclenumber }}">
+                    </div>
+
+                    {% comment %} vehicle model {% endcomment %}
+                    <div class="mb-2">
+                        <label>Vehicle Model: </label>
+                        <input type="text" name="vehiclemodel" value="{{ lasttrip.vehiclemodel }}">
+                    </div>
+
+                    <button type="submit" name="action" value="tripdetails">Enter</button>
+                </form>
+            </div>
     {% endif %}
 
-    <h1>Incoming Ride Requests</h1>
-
-    {% if requests %}
-    {% for request in requests %}
-
-    <form method="POST" action="{% url 'testdriver' %}">
-        {% csrf_token %}
-
-        <p>{{ request.rider }}</p>
-
-        <div id="map{{ request.id }}" style="height:200px;width:25%;margin-bottom:10px;"></div>
-
-        <script>
-        document.addEventListener("DOMContentLoaded", function(){
-
-            const route = {{ request.trip.routegeometry|safe }};
-
-            const riderLat = {{ request.pickuplatitude }};
-            const riderLng = {{ request.pickuplongitude }};
-
-            const first = route.coordinates[0];
-            const startLat = first[1];
-            const startLng = first[0];
-
-            const map = L.map('map{{ request.id }}').setView([startLat, startLng], 13);
-
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                maxZoom: 19
-            }).addTo(map);
-
-            // Convert GeoJSON coords
-            const latlngs = route.coordinates.map(coord => [coord[1], coord[0]]);
-
-            // Draw route
-            const polyline = L.polyline(latlngs, {
-                color: 'blue',
-                weight: 4
-            }).addTo(map);
-
-            // Start marker
-            L.marker(latlngs[0])
-                .addTo(map)
-                .bindPopup("Ride Start");
-
-            // Destination marker
-            const last = latlngs[latlngs.length - 1];
-            L.marker(last)
-                .addTo(map)
-                .bindPopup("Destination");
-
-            // Rider pickup marker
-            L.marker([riderLat, riderLng])
-                .addTo(map)
-                .bindPopup("Rider Pickup");
-
-            map.fitBounds(polyline.getBounds());
-
-        });
-        </script>
-
-        <input type="hidden" name="requestid" value="{{ request.id }}">
-
-        <button type="submit" name="action" value="accept">Accept</button>
-        <button type="submit" name="action" value="reject">Reject</button>
-
-    </form>
-
-    {% endfor %}
-    {% else %}
-    <p>No Incoming Request</p>
-    {% endif %}
 
     <script>
-        {% comment %} date manager {% endcomment %}
-        const dateInput = document.querySelector("input[name='ridedate']");
+
+        function showToast(message, type = "info") {
+            const toast = document.createElement("div");
+            toast.innerText = message;
+            toast.style.position = "fixed";
+            toast.style.top = "20px";
+            toast.style.right = "20px";
+            toast.style.zIndex = "9999";
+            toast.style.padding = "12px 16px";
+            toast.style.color = "#fff";
+            toast.style.borderRadius = "12px";
+            toast.style.boxShadow = "0 10px 25px rgba(0, 0, 0, 0.2)";
+            toast.style.maxWidth = "320px";
+            toast.style.fontSize = "14px";
+            toast.style.fontWeight = "600";
+            toast.style.backgroundColor =
+                type === "success" ? "#198754" :
+                type === "error" ? "#dc3545" :
+                "#0d6efd";
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+        //// ---------------- SAFE UI HELPERS ---------------- ////
+
+        function toggleHelmetField() {
+            const helmetField = document.getElementById("helmetField");
+            if (!helmetField) return;
+
+            const vehicleType = document.querySelector('input[name="vehicletype"]:checked');
+
+            helmetField.style.display =
+                (vehicleType && vehicleType.value === "bike") ? "block" : "none";
+        }
+
+        window.onload = toggleHelmetField;
+
+        //// ---------------- DATE HANDLING ---------------- ////
 
         const today = new Date();
         const tomorrow = new Date();
@@ -223,204 +288,543 @@
             return `${d.getFullYear()}-${month}-${day}`;
         }
 
-        dateInput.min = formatDate(today);
-        dateInput.max = formatDate(tomorrow);
+        const dateInput = document.querySelector("input[name='ridedate']");
+        if (dateInput) {
+            dateInput.min = formatDate(today);
+            dateInput.max = formatDate(tomorrow);
+        }
 
+        //// ---------------- TIME HANDLING ---------------- ////
 
-        {% comment %} time manager {% endcomment %}
         const directionRadios = document.querySelectorAll("input[name='prefereddirection']");
         const timeInput = document.getElementById("ridetime");
 
-        directionRadios.forEach(radio => {
-            radio.addEventListener("change", function () {
-
-                if (this.value === "to") {
-                    timeInput.value = "07:45";
-                }
-
-                else {
-                    timeInput.value = "13:30";
-                }
-
+        if (timeInput) {
+            directionRadios.forEach(radio => {
+                radio.addEventListener("change", function () {
+                    timeInput.value = (this.value === "to") ? "07:45" : "13:30";
+                });
             });
-        });
+        }
 
+        //// ---------------- CREATE TRIP MAP ---------------- ////
 
         const collegeLat = 10.0469;
         const collegeLng = 76.3467;
 
-        {% comment %} initilaizing map {% endcomment %}
-        const map = L.map('map').setView([10.8505, 76.2711], 8);
+        const mapElement = document.getElementById("map");
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+        if (mapElement) {
 
-        {% comment %} aisat default location {% endcomment %}
-        const collegeMarker = L.marker([collegeLat, collegeLng])
-            .addTo(map)
-            .bindPopup("AISAT Engineering College")
-            .openPopup();
+            const map = L.map('map').setView([10.8505, 76.2711], 8);
+            const latInput = document.getElementById("lat");
+            const lngInput = document.getElementById("lng");
+            const routeGeometryInput = document.getElementById("routegeometry");
+            const savedLat = parseFloat(latInput?.value);
+            const savedLng = parseFloat(lngInput?.value);
+            let savedRoute = null;
 
-        let marker = L.marker([10.8505, 76.2711], { draggable: true }).addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
 
-        {% comment %} drawing route on the map {% endcomment %}
-        function drawRoute(userLat, userLng) {
-            const direction = document.querySelector(
-                'input[name="prefereddirection"]:checked'
-            ).value;
+            const collegeMarker = L.marker([collegeLat, collegeLng])
+                .addTo(map)
+                .bindPopup("AISAT Engineering College");
 
-            let startLat, startLng, endLat, endLng;
+            let marker = L.marker([10.8505, 76.2711], { draggable: true }).addTo(map);
 
-            if (direction === "to") {
-                startLat = userLat;
-                startLng = userLng;
-                endLat = collegeLat;
-                endLng = collegeLng;
-            } else {
-                startLat = collegeLat;
-                startLng = collegeLng;
-                endLat = userLat;
-                endLng = userLng;
+            try {
+                savedRoute = routeGeometryInput?.value ? JSON.parse(routeGeometryInput.value) : null;
+            } catch (error) {
+                console.warn("Could not parse saved route geometry:", error);
             }
 
-            const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson&alternatives=true`;
+            function setHiddenCoordinates(lat, lng) {
+                if (latInput) latInput.value = lat;
+                if (lngInput) lngInput.value = lng;
+            }
 
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
+            function renderRoute(geometry, shouldFitBounds = true) {
+                if (!geometry?.coordinates?.length) return;
 
-                    if (!data.routes || data.routes.length === 0) return;
+                if (window.routeLayer) {
+                    map.removeLayer(window.routeLayer);
+                }
 
-                    if (window.routeLayers) {
-                        window.routeLayers.forEach(obj => map.removeLayer(obj.layer));
-                    }
+                window.routeLayer = L.geoJSON(geometry).addTo(map);
 
-                    window.routeLayers = [];
+                if (routeGeometryInput) {
+                    routeGeometryInput.value = JSON.stringify(geometry);
+                }
 
-                    data.routes.forEach((routeObj, index) => {
+                if (shouldFitBounds) {
+                    map.fitBounds(window.routeLayer.getBounds());
+                }
+            }
 
-                        const layer = L.geoJSON(routeObj.geometry, {
-                            style: {
-                                color: index === 0 ? "blue" : "gray",
-                                weight: 6,
-                                opacity: 0.8
-                            }
-                        }).addTo(map);
+            function drawRoute(userLat, userLng) {
+                const direction = document.querySelector(
+                    'input[name="prefereddirection"]:checked'
+                )?.value;
 
-                        const routeData = {
-                            layer: layer,
-                            geometry: routeObj.geometry
-                        };
+                if (!direction) return;
 
-                        if (index === 0) {
-                            document.getElementById("routegeometry").value =
-                                JSON.stringify(routeObj.geometry);
-                        }
+                let startLat, startLng, endLat, endLng;
 
-                        layer.on("click", function () {
+                if (direction === "to") {
+                    startLat = userLat;
+                    startLng = userLng;
+                    endLat = collegeLat;
+                    endLng = collegeLng;
+                } else {
+                    startLat = collegeLat;
+                    startLng = collegeLng;
+                    endLat = userLat;
+                    endLng = userLng;
+                }
 
-                            window.routeLayers.forEach(obj => {
-                                obj.layer.setStyle({ color: "gray" });
-                            });
+                const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
 
-                            layer.setStyle({ color: "blue" });
-
-                            document.getElementById("routegeometry").value =
-                                JSON.stringify(routeObj.geometry);
-                        });
-
-                        window.routeLayers.push(routeData);
+                fetch(url)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.routes?.length) return;
+                        renderRoute(data.routes[0].geometry);
                     });
+            }
 
+            marker.on('dragend', function () {
+                const pos = marker.getLatLng();
+                setHiddenCoordinates(pos.lat, pos.lng);
+                drawRoute(pos.lat, pos.lng);
+            });
+
+            map.on('click', function (e) {
+                marker.setLatLng(e.latlng);
+                setHiddenCoordinates(e.latlng.lat, e.latlng.lng);
+                drawRoute(e.latlng.lat, e.latlng.lng);
+            });
+
+            directionRadios.forEach(radio => {
+                radio.addEventListener("change", function () {
+                    const pos = marker.getLatLng();
+                    drawRoute(pos.lat, pos.lng);
                 });
+            });
+
+            if (!Number.isNaN(savedLat) && !Number.isNaN(savedLng)) {
+                marker.setLatLng([savedLat, savedLng]);
+                map.setView([savedLat, savedLng], 13);
+                setHiddenCoordinates(savedLat, savedLng);
+
+                if (savedRoute?.coordinates?.length) {
+                    renderRoute(savedRoute, false);
+                } else {
+                    drawRoute(savedLat, savedLng);
+                }
+            }
         }
 
-        {% comment %} map button actions {% endcomment %}
-        marker.on('dragend', function () {
-            const position = marker.getLatLng();
+        //// ---------------- INCOMING REQUEST MAPS ---------------- ////
 
-            document.getElementById('lat').value = position.lat;
-            document.getElementById('lng').value = position.lng;
+function initRequestMaps() {
+    document.querySelectorAll(".map").forEach(mapDiv => {
 
-            drawRoute(position.lat, position.lng);
-        });
+        if (!mapDiv.id.startsWith("map-")) return;
+        if (mapDiv.dataset.initialized === "true") return;
 
-        {% comment %} click only works when SHIFT is pressed!! {% endcomment %}
-        map.on('click', function (e) {
+        const routeRaw = mapDiv.dataset.route;
 
-            const lat = e.latlng.lat;
-            const lng = e.latlng.lng;
+        // 🔥 SAFETY CHECK 1
+        if (!routeRaw || routeRaw === "None") {
+            console.warn("No route data for:", mapDiv.id);
+            return;
+        }
 
-            marker.setLatLng([lat, lng]);
+        let route;
+        try {
+            route = JSON.parse(routeRaw);
+        } catch (e) {
+            console.error("JSON parse failed:", routeRaw);
+            return;
+        }
 
-            document.getElementById('lat').value = lat;
-            document.getElementById('lng').value = lng;
+        // 🔥 SAFETY CHECK 2
+        if (!route.coordinates || route.coordinates.length === 0) {
+            console.warn("Invalid route coordinates:", route);
+            return;
+        }
 
-            drawRoute(lat, lng);
-        });
+        const lat = parseFloat(mapDiv.dataset.lat);
+        const lng = parseFloat(mapDiv.dataset.lng);
 
-        document.querySelectorAll('input[name="prefereddirection"]').forEach(radio => {
-            radio.addEventListener("change", function () {
-                const position = marker.getLatLng();
-                drawRoute(position.lat, position.lng);
-            });
-        });
+        if (isNaN(lat) || isNaN(lng)) {
+            console.warn("Invalid lat/lng:", mapDiv.id);
+            return;
+        }
 
-        {% comment %} location suggession {% endcomment %}
-        const input = document.getElementById("location-input");
-        const resultsBox = document.getElementById("autocomplete-results");
+        const first = route.coordinates[0];
 
-        let debounceTimer;
+        if (mapDiv._leaflet_id) {
+            mapDiv._leaflet_id = null;
+            mapDiv.innerHTML = ""; // clear old map DOM
+        }
 
-        input.addEventListener("input", function () {
-            const query = input.value.trim();
-            clearTimeout(debounceTimer);
+        // Create new map
+        const map = L.map(mapDiv).setView([first[1], first[0]], 13);
 
-            if (query.length < 3) {
-                resultsBox.innerHTML = "";
-                return;
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+        const latlngs = route.coordinates.map(c => [c[1], c[0]]);
+
+        const polyline = L.polyline(latlngs).addTo(map);
+
+        L.marker(latlngs[0]).addTo(map).bindPopup("Driver Start");
+        L.marker(latlngs[latlngs.length - 1]).addTo(map).bindPopup("Destination");
+        L.marker([lat, lng]).addTo(map).bindPopup("Rider Pickup");
+
+        map.fitBounds(polyline.getBounds());
+
+        setTimeout(() => map.invalidateSize(), 100);
+
+        mapDiv.dataset.initialized = "true";
+    });
+}
+
+        //// ---------------- POLLING ---------------- ////
+
+        function getPendingRequestSignature() {
+            const requestIds = Array.from(
+                document.querySelectorAll('#driver-state input[name="requestid"]')
+            ).map(input => input.value);
+
+            return requestIds.join(",");
+        }
+
+        function startDriverPollingLegacy() {
+            setInterval(poll, 4000);
+        }
+        let initialized = false;
+        async function pollLegacy() {
+            try {
+                const res = await fetch("/driver/poll/");
+                const data = await res.json();
+
+                const newIds = data.pending_ids || [];
+
+                // 🔥 TOAST LOGIC (only after first load)
+                if (initialized) {
+
+                    // 🟢 NEW REQUEST
+                    if (newIds.length > prevPendingIds.length) {
+                        showToast("🚗 New ride request!", "info");
+                    }
+
+                    // 🔴 REQUEST CANCELLED
+                    if (newIds.length < prevPendingIds.length) {
+                        showToast("❌ A request was cancelled", "error");
+                    }
+                }
+
+                const nextSignature = newIds.join(",");
+                const currentSignature = getPendingRequestSignature();
+
+                if (nextSignature === currentSignature) {
+                    return;
+                }
+
+                const container = document.getElementById("driver-state");
+                container.innerHTML = data.html;
+
+                setTimeout(initRequestMaps, 50);
+
+                // 🔥 UPDATE STATE
+                prevPendingIds = newIds;
+                initialized = true;
+
+            } catch (error) {
+                console.error("Driver polling failed:", error);
+            }
+        }
+
+        let getDriverPendingRequestIds = () => Array.from(
+            document.querySelectorAll('#driver-state input[name="requestid"]')
+        ).map(input => input.value);
+
+        let getDriverAcceptedRequestIds = () => Array.from(
+            document.querySelectorAll('input[name="accepted_requestid"]')
+        ).map(input => input.value);
+
+        let getDriverAddedItems = (newArr, oldArr) =>
+            newArr.filter(id => !oldArr.includes(id));
+
+        let getDriverRemovedItems = (newArr, oldArr) =>
+            oldArr.filter(id => !newArr.includes(id));
+
+        function renderDriverState(html) {
+            const container = document.getElementById("driver-state");
+            if (!container) return;
+
+            const trimmedHtml = (html || "").trim();
+            container.innerHTML = trimmedHtml;
+            container.style.display = trimmedHtml ? "" : "none";
+
+            if (trimmedHtml) {
+                setTimeout(initRequestMaps, 50);
+            }
+        }
+
+        const driverToastStorageKey = "driver_toast_message";
+        const driverRequestActionStorageKey = "driver_request_actions";
+
+        function queueDriverToast(message, type = "info") {
+            sessionStorage.setItem(driverToastStorageKey, JSON.stringify({ message, type }));
+        }
+
+        function showQueuedDriverToast() {
+            try {
+                const rawValue = sessionStorage.getItem(driverToastStorageKey);
+                if (!rawValue) return;
+
+                const toastData = JSON.parse(rawValue);
+                sessionStorage.removeItem(driverToastStorageKey);
+
+                if (toastData?.message) {
+                    showToast(toastData.message, toastData.type || "info");
+                }
+            } catch (error) {
+                sessionStorage.removeItem(driverToastStorageKey);
+            }
+        }
+
+        function getDriverRequestActions() {
+            try {
+                const rawValue = sessionStorage.getItem(driverRequestActionStorageKey);
+                const parsedValue = rawValue ? JSON.parse(rawValue) : {};
+                return parsedValue && typeof parsedValue === "object" ? parsedValue : {};
+            } catch (error) {
+                return {};
+            }
+        }
+
+        function setDriverRequestActions(actions) {
+            sessionStorage.setItem(driverRequestActionStorageKey, JSON.stringify(actions));
+        }
+
+        function rememberDriverRequestAction(requestId, action) {
+            if (!requestId || !action) return;
+
+            const actions = getDriverRequestActions();
+            actions[String(requestId)] = action;
+            setDriverRequestActions(actions);
+        }
+
+        function consumeDriverRequestAction(requestId) {
+            const actions = getDriverRequestActions();
+            const key = String(requestId);
+            const action = actions[key];
+
+            if (action) {
+                delete actions[key];
+                setDriverRequestActions(actions);
             }
 
-            debounceTimer = setTimeout(() => {
-                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5&accept-language=en`)
-                    .then(response => response.json())
-                    .then(data => {
+            return action || null;
+        }
 
-                        resultsBox.innerHTML = "";
+        let driverPrevPendingIds = getDriverPendingRequestIds();
+        let driverPrevAcceptedIds = getDriverAcceptedRequestIds();
+        let driverPollingInitialized = false;
 
-                        data.forEach(place => {
-                            const item = document.createElement("a");
-                            item.className = "list-group-item list-group-item-action";
-                            item.textContent = place.display_name;
+        document.addEventListener("submit", function (event) {
+            const form = event.target;
+            if (!(form instanceof HTMLFormElement)) return;
+            if (!form.closest("#driver-state")) return;
 
-                            item.addEventListener("click", () => {
+            const submitter = event.submitter;
+            if (!submitter || submitter.name !== "action") return;
+            if (!["accept", "reject"].includes(submitter.value)) return;
 
-                                input.value = place.display_name;
-
-                                const lat = parseFloat(place.lat);
-                                const lon = parseFloat(place.lon);
-
-                                document.getElementById("lat").value = lat;
-                                document.getElementById("lng").value = lon;
-
-                                map.setView([lat, lon], 16);
-                                marker.setLatLng([lat, lon]);
-
-                                drawRoute(lat, lon);
-
-                                resultsBox.innerHTML = "";
-                            });
-
-                            resultsBox.appendChild(item);
-                        });
-                    });
-            }, 400);
+            const requestId = form.querySelector('input[name="requestid"]')?.value;
+            rememberDriverRequestAction(requestId, submitter.value);
         });
 
-        document.addEventListener("click", function (e) {
-            if (!input.contains(e.target)) {
-                resultsBox.innerHTML = "";
+        function startDriverPolling() {
+            poll();
+            setInterval(poll, 4000);
+        }
+
+        async function poll() {
+            try {
+                const res = await fetch("/driver/poll/");
+                const data = await res.json();
+
+                const newPendingIds = data.pending_ids || [];
+                const newAcceptedIds = data.accepted_ids || [];
+
+                if (driverPollingInitialized) {
+                    const addedPendingIds = getDriverAddedItems(newPendingIds, driverPrevPendingIds);
+                    const removedPendingIds = getDriverRemovedItems(newPendingIds, driverPrevPendingIds);
+                    const removedAcceptedIds = getDriverRemovedItems(newAcceptedIds, driverPrevAcceptedIds);
+
+                    if (addedPendingIds.length > 0) {
+                        showToast("New ride request!", "info");
+                    }
+
+                    if (removedPendingIds.length > 0) {
+                        showToast("A request was cancelled", "error");
+                    }
+
+                    if (newAcceptedIds.join(",") !== driverPrevAcceptedIds.join(",")) {
+                        if (removedAcceptedIds.length > 0) {
+                            queueDriverToast("An accepted rider cancelled the ride.", "error");
+                        }
+                        window.location.reload();
+                        return;
+                    }
+                }
+
+                const nextSignature = newPendingIds.join(",");
+                const currentSignature = getDriverPendingRequestIds().join(",");
+
+                if (nextSignature !== currentSignature) {
+                    renderDriverState(data.html);
+                }
+
+                driverPrevPendingIds = [...newPendingIds];
+                driverPrevAcceptedIds = [...newAcceptedIds];
+                driverPollingInitialized = true;
+            } catch (error) {
+                console.error("Driver polling failed:", error);
             }
+        }
+
+        //// ---------------- INIT ---------------- ////
+
+        document.addEventListener("DOMContentLoaded", function () {
+            showQueuedDriverToast();
+            renderDriverState(document.getElementById("driver-state")?.innerHTML || "");
+            initRequestMaps();
+            startDriverPolling();
         });
+
+        // Clean override for driver polling/toasts.
+        renderDriverState = function (html) {
+            const container = document.getElementById("driver-state");
+            if (!container) return;
+
+            container.innerHTML = (html || "").trim();
+
+            const hasPendingRequests = container.querySelector('input[name="requestid"]') !== null;
+            container.hidden = !hasPendingRequests;
+
+            if (hasPendingRequests) {
+                setTimeout(initRequestMaps, 50);
+            }
+        };
+
+        getDriverPendingRequestIds = function () {
+            return Array.from(
+                document.querySelectorAll('#driver-state input[name="requestid"]')
+            ).map(input => String(input.value));
+        };
+
+        getDriverAcceptedRequestIds = function () {
+            return Array.from(
+                document.querySelectorAll('input[name="accepted_requestid"]')
+            ).map(input => String(input.value));
+        };
+
+        getDriverAddedItems = function (newArr, oldArr) {
+            return newArr.filter(id => !oldArr.includes(id));
+        };
+
+        getDriverRemovedItems = function (newArr, oldArr) {
+            return oldArr.filter(id => !newArr.includes(id));
+        };
+
+        showQueuedDriverToast = function () {
+            try {
+                const rawValue = sessionStorage.getItem(driverToastStorageKey);
+                if (!rawValue) return;
+
+                const toastData = JSON.parse(rawValue);
+                sessionStorage.removeItem(driverToastStorageKey);
+
+                if (toastData?.message) {
+                    showToast(toastData.message, toastData.type || "info");
+                }
+            } catch (error) {
+                sessionStorage.removeItem(driverToastStorageKey);
+            }
+        };
+
+        driverPrevPendingIds = getDriverPendingRequestIds();
+        driverPrevAcceptedIds = getDriverAcceptedRequestIds();
+        driverPollingInitialized = false;
+
+        poll = async function () {
+            try {
+                const res = await fetch("/driver/poll/");
+                const contentType = res.headers.get("content-type") || "";
+
+                if (!res.ok || !contentType.includes("application/json")) {
+                    const responseText = await res.text();
+                    throw new Error(`Polling returned ${res.status}: ${responseText.slice(0, 120)}`);
+                }
+
+                const data = await res.json();
+                const newPendingIds = (data.pending_ids || []).map(String);
+                const newAcceptedIds = (data.accepted_ids || []).map(String);
+                const addedPendingIds = getDriverAddedItems(newPendingIds, driverPrevPendingIds);
+                const removedPendingIds = getDriverRemovedItems(newPendingIds, driverPrevPendingIds);
+                const removedAcceptedIds = getDriverRemovedItems(newAcceptedIds, driverPrevAcceptedIds);
+                const cancelledPendingIds = removedPendingIds.filter(id => !consumeDriverRequestAction(id));
+                const pendingChanged = newPendingIds.join(",") !== driverPrevPendingIds.join(",");
+                const acceptedChanged = newAcceptedIds.join(",") !== driverPrevAcceptedIds.join(",");
+
+                if (driverPollingInitialized) {
+                    if (addedPendingIds.length > 0) {
+                        showToast("New incoming ride request!", "info");
+                    }
+
+                    if (cancelledPendingIds.length > 0) {
+                        showToast("An incoming request was cancelled.", "error");
+                    }
+
+                    if (removedAcceptedIds.length > 0) {
+                        queueDriverToast("An accepted rider cancelled the ride.", "error");
+                        window.location.reload();
+                        return;
+                    }
+
+                    if (acceptedChanged) {
+                        window.location.reload();
+                        return;
+                    }
+                }
+
+                if (pendingChanged) {
+                    renderDriverState(data.html || "");
+                }
+
+                driverPrevPendingIds = [...newPendingIds];
+                driverPrevAcceptedIds = [...newAcceptedIds];
+                driverPollingInitialized = true;
+            } catch (error) {
+                console.error("Driver polling failed:", error);
+            }
+        };
+
+        startDriverPolling = function () {
+            if (window.__driverPollInterval) {
+                clearInterval(window.__driverPollInterval);
+            }
+
+            poll();
+            window.__driverPollInterval = setInterval(poll, 4000);
+        };
 
     </script>
 

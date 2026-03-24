@@ -5,14 +5,14 @@ from django.db import models
 #creating admin model
 from django.contrib.auth.models import BaseUserManager
 class UserManager(BaseUserManager):
-    use_in_migrations = True
+    use_in_migrations=True
 
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError("Email must be set")
 
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
+        email=self.normalize_email(email)
+        user=self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -34,12 +34,12 @@ class UserManager(BaseUserManager):
 from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
     username=None
-    email = models.EmailField(unique=True)
+    email=models.EmailField(unique=True)
 
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []        # no username required
+    USERNAME_FIELD="email"
+    REQUIRED_FIELDS=[]        # no username required
 
-    objects = UserManager() 
+    objects=UserManager() 
 
     def __str__(self):
         return self.email
@@ -48,17 +48,20 @@ class User(AbstractUser):
 class userdetail(models.Model):
     id=models.AutoField(primary_key=True)
     usercredentials=models.OneToOneField(User, on_delete=models.CASCADE, related_name="userdetails")
-    paymentpending = models.BooleanField(default="False")
+    phonenumber=models.CharField(max_length=15,null=True, blank=True)
+    averagerating=models.FloatField(null=True, blank=True)
+    verificationpending=models.BooleanField(default="False")
     
     def __str__(self):
         return self.usercredentials.email
     
 class trip(models.Model):
     id=models.AutoField(primary_key=True)
-    usercredentials=models.ForeignKey(User, on_delete=models.CASCADE, related_name="driver",unique=True)
+    usercredentials=models.ForeignKey(User, on_delete=models.CASCADE, related_name="driver")
     preferedlocation=models.CharField()                 #location suggession
     latitude=models.FloatField(null=False, blank=False)
     longitude=models.FloatField(null=False, blank=False)
+    distance=models.FloatField(default=7.9,null=False,blank=False)
     routegeometry=models.JSONField(null=True, blank=True)                         #route path (lat and long)
     prefereddirection=models.CharField(null=False, blank=False)                #direction suggession
     ridedate=models.DateField(null=False, blank=False)
@@ -67,10 +70,13 @@ class trip(models.Model):
     currentlongitude=models.FloatField(null=True, blank=True)           #used for live location tracking
     lastlocationupdate=models.DateTimeField(null=True, blank=True)
     vehicletype=models.CharField(null=False, blank=False)                      #car or bike
+    helmet=models.CharField(null=True, blank=True) 
     availableseats=models.IntegerField(null=False, blank=False)
     vehiclenumber=models.CharField(max_length=12,null=False, blank=False)       #KL 41 **** ****
     vehiclemodel=models.CharField(null=False, blank=False)                     #car or bike model name
+    price=models.FloatField(null=False,blank=False)
     status=models.CharField(default="EMPTY")
+    has_boarded=models.BooleanField(default=False)
     
     def __str__(self):
         return f"{self.usercredentials.email} : {self.status}"
@@ -80,12 +86,26 @@ class riderequest(models.Model):
     id=models.AutoField(primary_key=True)
     trip=models.ForeignKey(trip, on_delete=models.CASCADE, related_name="tripdetails")
     rider=models.ForeignKey(User, on_delete=models.CASCADE, related_name="riderdetails")
+    pickuplocation=models.CharField(max_length=150)
     pickuplatitude=models.FloatField(null=True, blank=True)
     pickuplongitude=models.FloatField(null=True, blank=True)
+    rating=models.IntegerField(null=True, blank=True)
+    price=models.FloatField(default=10,null=False,blank=False)
     status=models.CharField(default="PENDING")
 
     class Meta:
-        unique_together = ("trip", "rider")
+        unique_together=("trip", "rider")
 
     def __str__(self):
-        return f"{self.rider.email} → Ride {self.trip.usercredentials}"
+        return f"{self.rider.email} → Ride {self.trip.usercredentials} : {self.status}"
+    
+class payment(models.Model):
+    id=models.AutoField(primary_key=True)
+    requestdetails=models.OneToOneField(riderequest,on_delete=models.CASCADE, related_name="paymentdetails")
+    amount=models.FloatField()
+    status=models.CharField(default="PENDING")
+    orderid=models.CharField(null=True,blank=True)
+    paymentid=models.CharField(null=True,blank=True)
+
+    def __str__(self):
+        return f"{self.requestdetails} : {self.status}"

@@ -17,10 +17,10 @@ class signupForm(forms.ModelForm):
         return email
     
 class loginForm(forms.Form):
-    email = forms.EmailField()
+    email=forms.EmailField()
     password=forms.CharField(widget=forms.PasswordInput())
 
 class createtripForm(forms.ModelForm):
     class Meta:
         model=trip
-        fields=["preferedlocation","latitude","longitude","routegeometry","prefereddirection","ridedate","ridetime","vehicletype","availableseats","vehiclenumber","vehiclemodel"]
+        fields=["preferedlocation","latitude","longitude","routegeometry","prefereddirection","ridedate","ridetime","vehicletype","helmet","availableseats","vehiclenumber","vehiclemodel"]

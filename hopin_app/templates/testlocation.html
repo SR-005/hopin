@@ -3,72 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <title>Live Location</title>
 </head>
 <body>
+
+    {% if messages %}
+        {% for message in messages %}
+            <script>
+            alert("{{ message|escapejs }}");
+            </script>
+        {% endfor %}
+    {% endif %}
+
     <h1>Live Location</h1>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <div id="live-map" style="height: 500px; width: 100%; margin-bottom: 20px;"></div>
     <input type="hidden" name="rideid" id="rideid" value="{{ rideid }}">
 
-    <form method="POST" action="{% url 'testlocation' rideid %}">
-        {% csrf_token %}
-        <input type="hidden" name="tripid" id="tripid" value="{{ rideid }}">
-        <button type="submit" name="action" value="pickup">Pickup</button>
-    </form>
+    {% for rider in riders %}
+        {% if rider.status == "ACCEPTED" %}
+            <form method="POST" action="{% url 'testlocation' rideid %}">
+                {% csrf_token %}
+                <p>{{ rider }}</p>
+                <input type="hidden" name="tripid" id="tripid" value="{{ rideid }}">
+                <input type="hidden" name="requestid" id="requestid" value="{{ rider.id }}">
+                <button type="submit" name="action" value="pickup">Pickup</button>
+            </form>
+        {% endif %}
+    {% endfor %}
 
     <script>
-        //csrf token for form submission
         function getCookie(name) {
-            let cookieValue = null;
+            let cookieValue=null;
             if (document.cookie && document.cookie !== "") {
-                const cookies = document.cookie.split(";");
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
+                const cookies=document.cookie.split(";");
+                for (let i=0; i < cookies.length; i++) {
+                    const cookie=cookies[i].trim();
                     if (cookie.substring(0, name.length + 1) === (name + "=")) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        cookieValue=decodeURIComponent(cookie.substring(name.length + 1));
                         break;
                     }
                 }
             }
             return cookieValue;
         }
-        const csrftoken = getCookie("csrftoken");
 
-        //send location
-        navigator.geolocation.watchPosition(
-            sendLocation,
-            console.error,
-            {
-                enableHighAccuracy: true,
-                maximumAge: 0,
-                timeout: 5000
-            }
-        );
+        const csrftoken=getCookie("csrftoken");
+        const riders=[];
+        {% for rider in riders %}
+            riders.push({
+                lat: {{ rider.pickuplatitude }},
+                lng: {{ rider.pickuplongitude }},
+                name: "{{ rider.rider.email }}"
+            });
+        {% endfor %}
 
-        function sendLocation(position){
-            
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
+        const route={{ riders.0.trip.routegeometry|safe }};
+        const rideid="{{ rideid }}";
 
-            const rideid = "{{ rideid }}";
+        let map;
+        let driverMarker;
+        let latlngs=[];
+        let polyline;
+        let lastKnownPosition=null;
+        let hasRideEnded=false;
+        let isUpdatingLocation=false;
 
-            fetch(`/testlocation/${rideid}/`, {
+        function getClosestIndex(driverLat, driverLng, points) {
+            let minDist=Infinity;
+            let closestIndex=0;
+
+            points.forEach((point, index) => {
+                const d=Math.sqrt(
+                    Math.pow(point[0] - driverLat, 2) +
+                    Math.pow(point[1] - driverLng, 2)
+                );
+
+                if (d < minDist) {
+                    minDist=d;
+                    closestIndex=index;
+                }
+            });
+
+            return closestIndex;
+        }
+
+        function handleRideEnded() {
+            if (hasRideEnded) return;
+            hasRideEnded=true;
+            clearInterval(locationSyncInterval);
+            alert("Ride Completed!");
+            window.location.href="/";
+        }
+
+        function syncDriverLocation(lat, lng) {
+            if (hasRideEnded || isUpdatingLocation) return;
+            isUpdatingLocation=true;
+
+            fetch(`/updatelocation/${rideid}/`, {
                 method: "POST",
-                headers:{
-                    "Content-Type":"application/json",
+                headers: {
+                    "Content-Type": "application/json",
                     "X-CSRFToken": csrftoken
                 },
                 body: JSON.stringify({
                     latitude: lat,
                     longitude: lng
                 })
-            });
+            })
+                .then(res => res.json())
+                .then(data => {
+                    console.log("Driver:", data);
+
+                    if (data.status === "COMPLETED") {
+                        handleRideEnded();
+                    }
+                })
+                .catch(err => console.error(err))
+                .finally(() => {
+                    isUpdatingLocation=false;
+                });
         }
 
-        setInterval(function(){
+        document.addEventListener("DOMContentLoaded", function () {
+            if (!route) return;
 
-            navigator.geolocation.getCurrentPosition(sendLocation);
+            latlngs=route.coordinates.map(coord => [coord[1], coord[0]]);
 
-        }, 5000);
+            map=L.map("live-map").setView(latlngs[0], 13);
+
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                maxZoom: 19
+            }).addTo(map);
+
+            polyline=L.polyline(latlngs, {
+                color: "blue",
+                weight: 5
+            }).addTo(map);
+
+            L.marker(latlngs[0]).addTo(map).bindPopup("Start");
+            L.marker(latlngs[latlngs.length - 1]).addTo(map).bindPopup("Destination");
+
+            riders.forEach(r => {
+                L.marker([r.lat, r.lng])
+                    .addTo(map)
+                    .bindPopup("Rider: " + r.name);
+            });
+
+            driverMarker=L.marker(latlngs[0], {
+                icon: L.icon({
+                    iconUrl: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+                    iconSize: [32, 32]
+                })
+            }).addTo(map).bindPopup("Driver");
+
+            map.fitBounds(polyline.getBounds());
+        });
+
+        navigator.geolocation.watchPosition(
+            position => {
+                const lat=position.coords.latitude;
+                const lng=position.coords.longitude;
+                lastKnownPosition={ lat, lng };
+
+                if (driverMarker) {
+                    driverMarker.setLatLng([lat, lng]);
+
+                    const closestIndex=getClosestIndex(lat, lng, latlngs);
+
+                    if (closestIndex > 2) {
+                        latlngs=latlngs.slice(closestIndex - 1);
+                        polyline.setLatLngs(latlngs);
+                    }
+                }
+
+                syncDriverLocation(lat, lng);
+            },
+            console.error,
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 3000
+            }
+        );
+
+        navigator.geolocation.getCurrentPosition(
+            position => {
+                const lat=position.coords.latitude;
+                const lng=position.coords.longitude;
+                lastKnownPosition={ lat, lng };
+                syncDriverLocation(lat, lng);
+            },
+            console.error,
+            {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: 3000
+            }
+        );
+
+        const locationSyncInterval=setInterval(() => {
+            if (!lastKnownPosition || hasRideEnded) return;
+            syncDriverLocation(lastKnownPosition.lat, lastKnownPosition.lng);
+        }, 1000);
     </script>
 </body>
 </html>

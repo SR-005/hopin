@@ -13,24 +13,24 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR=Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-9dmgd_1183@enwz6#tpf4ottqcwfjv+j*eqtsbc2$!6s1v=y(u'
+SECRET_KEY='django-insecure-9dmgd_1183@enwz6#tpf4ottqcwfjv+j*eqtsbc2$!6s1v=y(u'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG=True
 
-ALLOWED_HOSTS = ["*"]
-CSRF_TRUSTED_ORIGINS = ["https://*.onrender.com"]
+ALLOWED_HOSTS=["*"]
+CSRF_TRUSTED_ORIGINS=["https://*.onrender.com"]
 
 # Application definition
 
-INSTALLED_APPS = [
+INSTALLED_APPS=[
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.sites',
@@ -47,26 +47,26 @@ INSTALLED_APPS = [
 ]
 
 SITE_ID=1
-LOGIN_REDIRECT_URL = '/'
-LOGOUT_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL='/'
+LOGOUT_REDIRECT_URL='/'
 
-ACCOUNT_LOGIN_METHODS = {'email'}
+ACCOUNT_LOGIN_METHODS={'email'}
 
-ACCOUNT_SIGNUP_FIELDS = [
+ACCOUNT_SIGNUP_FIELDS=[
     'email*',
     'password1*',
     'password2*',
 ]
 
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_USERNAME_REQUIRED=False
+ACCOUNT_USER_MODEL_USERNAME_FIELD=None
+ACCOUNT_EMAIL_REQUIRED=True
+ACCOUNT_EMAIL_VERIFICATION='none'
 
-SOCIALACCOUNT_ADAPTER = 'hopin_app.adapters.RestrictDomainSocialAdapter'  #used to config the restriction of emails through google auth
-SOCIALACCOUNT_LOGIN_ON_GET = True       #to skip permission screen
+SOCIALACCOUNT_ADAPTER='hopin_app.adapters.RestrictDomainSocialAdapter'  #used to config the restriction of emails through google auth
+SOCIALACCOUNT_LOGIN_ON_GET=True       #to skip permission screen
 
-MIDDLEWARE = [
+MIDDLEWARE=[
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -76,11 +76,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'hopin_app.middleware.PendingPaymentMiddleware',
 ]
 
-ROOT_URLCONF = 'hopin_config.urls'
+ROOT_URLCONF='hopin_config.urls'
 
-TEMPLATES = [
+TEMPLATES=[
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
@@ -95,7 +96,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'hopin_config.wsgi.application'
+WSGI_APPLICATION='hopin_config.wsgi.application'
 
 
 # Database
@@ -104,7 +105,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-DATABASES = {
+DATABASES={
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv("DBNAME"),
@@ -124,7 +125,7 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [
+AUTH_PASSWORD_VALIDATORS=[
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
     },
@@ -139,34 +140,52 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTHENTICATION_BACKENDS = [
+AUTHENTICATION_BACKENDS=[
     'django.contrib.auth.backends.ModelBackend',
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-AUTH_USER_MODEL = "hopin_app.User"
+AUTH_USER_MODEL="hopin_app.User"
 
+LOGIN_URL='/login/'
+
+LOGIN_REDIRECT_URL='/'
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE='en-us'
 
-TIME_ZONE = "Asia/Kolkata"
+TIME_ZONE="Asia/Kolkata"
 
-USE_I18N = True
+USE_I18N=True
 
-USE_TZ = True
+USE_TZ=True
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
-STATICFILES_DIRS = [
+STATIC_URL='static/'
+STATICFILES_DIRS=[
     BASE_DIR / "static",
 ]
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_ROOT=os.path.join(BASE_DIR, "staticfiles")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD='django.db.models.BigAutoField'
+
+
+EMAIL_USE_TLS = True
+EMAIL_HOST="smtp-relay.brevo.com"
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=os.environ.get("BREVO_USER")
+EMAIL_HOST_PASSWORD=os.environ.get("BREVO_PASS")
+DEFAULT_FROM_EMAIL="sreeramvg100@gmail.com"
+DEFAULT_FROM_NAME="Hop In"
+BREVO_API_URL="https://api.brevo.com/v3/smtp/email"
+BREVO_API_KEY=os.environ.get("BREVO_API_KEY")
+BREVO_API_TIMEOUT=10
+
+EMAIL_TIMEOUT = 5

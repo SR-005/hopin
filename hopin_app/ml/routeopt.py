@@ -4,44 +4,36 @@ import math
 sematicweight=0.6
 spacialweight=0.4
 
-#Haversine's Distance Function- Price Calculation
-def price(location1,location2):
-    distance=haversine(location1, location2)    #calculating distance between two locations (in km)
-    print(distance,"km")
-    price=round(distance*1.3)       #1.3 rupees per km
-    print("Price: ",price)
-    return price
-
-
-
 def segmentdistance(rider, startsegment, endsegment):
 
     # convert to simple cartesian approximation
-    riderx,ridery=rider
-    startx,starty=startsegment
-    endx,endy=endsegment
+    riderx, ridery=rider
+    startx, starty=startsegment
+    endx, endy=endsegment
 
-    startenddiffx = endx-startx
-    startenddiffy = endy-starty
+    startenddiffx=endx-startx
+    startenddiffy=endy-starty
 
     riderstartdiffx=riderx-startx
     riderstartdiffy=ridery-starty
 
     startendlen=(startenddiffx*startenddiffx)+(startenddiffy*startenddiffy)
 
-    #if starting of segment and ending of segmemt are is same point(you need to only compute with one)
-    if startendlen==0:
+    # if starting of segment and ending of segmemt are is same point(you need to only compute with one)
+    if startendlen == 0:
         return haversine(rider, startsegment)
 
-    projection=(riderstartdiffx*startenddiffx + riderstartdiffy*startenddiffy)/startendlen
+    projection=(riderstartdiffx*startenddiffx +
+                  riderstartdiffy*startenddiffy)/startendlen
     projection=max(0, min(1, projection))
 
-    closest=(startx + projection*startenddiffx, starty + projection*startenddiffy)
+    closest=(startx + projection*startenddiffx,
+               starty + projection*startenddiffy)
 
     return haversine(rider, closest)
 
 
-def routesegmentation(rider,routegeometry):
+def routesegmentation(rider, routegeometry):
 
     coords=routegeometry["coordinates"]
 
@@ -49,90 +41,152 @@ def routesegmentation(rider,routegeometry):
     minimumdistance=float("inf")
 
     for i in range(len(coords) - 1):
-        startsegment=(coords[i][1], coords[i][0])       #reversing [long,lat] to [lat,long] because haversine expects it like that  
-        endsegment=(coords[i+1][1], coords[i+1][0])     
+        # reversing [long,lat] to [lat,long] because haversine expects it like that
+        startsegment=(coords[i][1], coords[i][0])
+        endsegment=(coords[i+1][1], coords[i+1][0])
 
         distance=segmentdistance(rider, startsegment, endsegment)
 
-        if distance<minimumdistance:
+        if distance < minimumdistance:
             minimumdistance=distance
             bestindex=i
 
     return bestindex, minimumdistance
 
 
-def proximitycheck(riderlatitude,riderlongitude,ride):
+def proximitycheck(riderlatitude, riderlongitude, ride):
 
-    rider=(riderlatitude,riderlongitude)
+    rider=(riderlatitude, riderlongitude)
+    index, distance=routesegmentation(rider, ride.routegeometry)
 
-    index,distance=routesegmentation(rider, ride.routegeometry)
-
-    if distance>2.0:      #2km is the cutoff
-        return False
+    if distance > 2.0:  # 2km is the cutoff
+        return False, None
 
     totalsegments=len(ride.routegeometry["coordinates"]) - 1
 
     if ride.prefereddirection == "to":
-        return index<totalsegments
+        return index < totalsegments,index
     else:
-        return index>0
+        return index > 0,index
 
 
-#Haversine's Distance Function- Spacial Score Computation
-def haversinefunction(riderlatitude,riderlongitude,routegeometry):
+# Haversine's Distance Function- Spacial Score Computation
+def haversinefunction(riderlatitude, riderlongitude, routegeometry):
 
     coordinates=routegeometry["coordinates"]
     minimumdistance=float("inf")
 
-    for driverlongitude,driverlatitude in coordinates:
-        distance=haversine((riderlatitude,riderlongitude),
-                           (driverlatitude,driverlongitude),
-                           unit=Unit.KILOMETERS)
-        
-        if distance<minimumdistance:
+    for driverlongitude, driverlatitude in coordinates:
+        distance=haversine((riderlatitude, riderlongitude),
+                             (driverlatitude, driverlongitude),
+                             unit=Unit.KILOMETERS)
+
+        if distance < minimumdistance:
             minimumdistance=distance
 
     spatialscore=1/(1+minimumdistance)
-    return minimumdistance,spatialscore
+    return minimumdistance, spatialscore
 
-def finalscore(riderlatitude,riderlongitude,availabletrips):
+
+def routeoptimization(riderlatitude, riderlongitude, availabletrips):
 
     finallist=[]
-    print("riderlatitude",riderlatitude)
-    print("riderlongitude",riderlongitude)
-    print("availabletrips",availabletrips)
+    print("riderlatitude", riderlatitude)
+    print("riderlongitude", riderlongitude)
+    print("availabletrips", availabletrips)
 
     for trip in availabletrips:
-        if not proximitycheck(riderlatitude,riderlongitude,trip):
+        value,index=proximitycheck(riderlatitude, riderlongitude, trip)
+        if not value:
             continue
-         
-        distance,spacialscore=haversinefunction(riderlatitude,riderlongitude,trip.routegeometry)
+
+        distance, spacialscore=haversinefunction(
+            riderlatitude, riderlongitude, trip.routegeometry)
 
         finallist.append([
             trip,
             distance,
-            spacialscore
+            spacialscore,
+            index
         ])
 
-    ranked = sorted(finallist, key=lambda x: x[2], reverse=True)
-    #print("Ranked: ",ranked)
+    ranked=sorted(finallist, key=lambda x: x[2], reverse=True)
+    # print("Ranked: ",ranked)
 
     return ranked
 
-def rideend(currentlatitude,currentlongitude,route):
-    coordinates=route["coordinates"]
-    destination=coordinates[-1]
-    destinationlatitude=destination[1]
-    destinationlongitude=destination[0]
 
-    completionradius=0.05
-    distance=haversine((currentlatitude,currentlongitude),
-                           (destinationlatitude,destinationlongitude),
-                           unit=Unit.KILOMETERS)
-    
-    if distance>=completionradius:
-        print("Ride Ended")
-        status=True
+def speedcalculation(driverlocation, riderlocation):
+    distance=haversine(driverlocation, riderlocation, unit=Unit.KILOMETERS)
+    averagespeed=25
+    eta=(distance/averagespeed)*60
+    return eta
+
+
+def getriderdropofflocation(ride):
+    if ride.trip.prefereddirection=="to":
+        destination=ride.trip.routegeometry["coordinates"][-1]
+        return destination[1], destination[0]
+
+    return ride.pickuplatitude, ride.pickuplongitude
+
+
+def riderdropped(currentlatitude, currentlongitude, riders):
+    completionradius=5      #dropped off trigger radius: 5km
+    for ride in riders:
+        if ride.status=="FULLCONFIRM":
+            dropofflatitude, dropofflongitude=getriderdropofflocation(ride)
+            distance=haversine((currentlatitude, currentlongitude),(dropofflatitude, dropofflongitude),
+                                unit=Unit.KILOMETERS)
+
+            if distance<=completionradius:
+                ride.status="DROPPED"
+                ride.save()
+                print(f"Ride ended for {ride}")
+
+
+# Haversine's Distance Function- Price Calculation
+
+def routedistance(routegeometry,startindex,endindex):
+    coords=routegeometry["coordinates"]
+
+    if startindex>endindex:
+        startindex,endindex=endindex,startindex
+
+    totaldistance=0
+    for i in range(startindex,endindex):
+        point1=(coords[i][1],coords[i][0])
+        point2=(coords[i+1][1],coords[i+1][0])
+        totaldistance=totaldistance+haversine(point1,point2,unit=Unit.KILOMETERS)
+
+    return totaldistance
+
+def requestprice(currenttrip,pickupindex,location1):
+    totalrouteindex=len(currenttrip.routegeometry["coordinates"]) - 1
+    fulltripdistance=routedistance(currenttrip.routegeometry,0,totalrouteindex)
+
+    if currenttrip.prefereddirection=="to":
+        startindex=pickupindex
+        endindex=totalrouteindex
     else:
-        status=False
-    return status
+        startindex=0
+        endindex=pickupindex
+
+    distance=routedistance(currenttrip.routegeometry,startindex,endindex)
+    print(distance, "km")
+
+    if fulltripdistance <= 0:
+        return 0.0
+
+    price=(distance/fulltripdistance)*currenttrip.price  #proportional fare along the saved route
+    price=round(price,2)
+    print("Price: ", price)
+    return price
+
+def tripprice(routegeometry):
+    totalrouteindex=len(routegeometry["coordinates"]) - 1
+    distance=routedistance(routegeometry,0,totalrouteindex)
+    print(distance, "km")
+    price=round(distance*1.3, 2)  # 1.3 rupees per km
+    print("Price: ", price)
+    return distance, price
