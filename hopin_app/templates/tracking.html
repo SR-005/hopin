@@ -36,7 +36,7 @@
             <div class="flex items-center gap-4">
                 <span
                     class="text-white font-['Playfair_Display'] font-extrabold text-[18px] tracking-wide hidden sm:block">
-                    Rider
+                    {{ firstname }}
                 </span>
                 <button type="button" id="user-menu-button" data-dropdown-toggle="user-dropdown"
                     class="flex text-sm rounded-full focus:ring-4 focus:ring-gray-300">
@@ -142,7 +142,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        window.TRACKING_VARS={
+        window.TRACKING_VARS = {
             requestId: "{{ requestid|default_if_none:'' }}",
             rideId: "{{ rideid|default_if_none:'' }}",
             // The || ensures that if Django passes an empty string, it defaults to the college coordinates safely
