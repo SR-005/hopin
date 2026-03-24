@@ -2,6 +2,8 @@ from datetime import  time, datetime, timedelta, time
 from ..models import trip, riderequest
 from ..ml.routeopt import tripprice
 from django.contrib.auth import get_user_model
+from django.http import JsonResponse
+from django.template.loader import render_to_string
 
 import json
 from django.utils import timezone
@@ -10,11 +12,36 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from ..forms import createtripForm
 
-
-
 from .commonview import cleanup
-
 User=get_user_model()
+
+#driver html poll
+@login_required
+def driverpoll(request):
+    activetrips=trip.objects.filter(usercredentials=request.user,status__in=["ACTIVE", "EMPTY"]).first()
+    requests=list(riderequest.objects.filter(trip=activetrips,status="PENDING").select_related("trip", "rider"))
+    accepted=list(riderequest.objects.filter(trip=activetrips, status="ACCEPTED").select_related("trip", "rider"))
+    startride=True
+
+    for currentrequest in requests:
+        currentrequest.routegeometry_json=json.dumps(currentrequest.trip.routegeometry or {})
+
+    for currentrequest in accepted:
+        currentrequest.routegeometry_json=json.dumps(currentrequest.trip.routegeometry or {})
+
+    html=render_to_string("partials/driverincoming.html", {
+        "requests": requests,
+        "accepted": accepted,
+        "activetrips": activetrips
+    }, request=request)
+
+
+    return JsonResponse({
+        "html": html,
+        "pending_ids": [currentrequest.id for currentrequest in requests],
+        "accepted_ids": [currentrequest.id for currentrequest in accepted],
+    })
+
 
 
 #Trip time validation
@@ -202,8 +229,19 @@ def testdriverfunction(request):
     elif action=="startride":
         return starttracking(request)
 
-    return render(request, "testdriver.html",{"requests":riderequest.objects.filter(trip=activetrips,status="PENDING"),
-                                              "accepted":riderequest.objects.filter(trip=activetrips,status="ACCEPTED"),
+    pendingrequests=list(riderequest.objects.filter(trip=activetrips,status="PENDING").select_related("trip", "rider"))
+    acceptedrequests=list(riderequest.objects.filter(trip=activetrips,status="ACCEPTED").select_related("trip", "rider"))
+    lasttriproutegeometryjson=json.dumps(lasttrip.routegeometry) if lasttrip and lasttrip.routegeometry else ""
+
+    for currentrequest in pendingrequests:
+        currentrequest.routegeometry_json=json.dumps(currentrequest.trip.routegeometry or {})
+
+    for currentrequest in acceptedrequests:
+        currentrequest.routegeometry_json=json.dumps(currentrequest.trip.routegeometry or {})
+
+    return render(request, "testdriver.html",{"requests":pendingrequests,
+                                              "accepted":acceptedrequests,
                                               "lasttrip": lasttrip,"startride":startride,
                                               "activetrips":activetrips,
-                                              "ongoing":trip.objects.filter(usercredentials=request.user,status="ONGOING").order_by("-id").first()})
+                                              "ongoing":trip.objects.filter(usercredentials=request.user,status="ONGOING").order_by("-id").first(),
+                                              "lasttrip_routegeometry_json": lasttriproutegeometryjson})

@@ -58,6 +58,42 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 3000);
         }
 
+    const cancelledRequestStorageKey="rider_cancelled_request_ids";
+
+    function getCancelledRequestIds() {
+        try {
+            const rawValue=sessionStorage.getItem(cancelledRequestStorageKey);
+            const parsedValue=rawValue ? JSON.parse(rawValue) : [];
+            return Array.isArray(parsedValue) ? parsedValue.map(String) : [];
+        } catch (error) {
+            console.warn("Could not read cancelled request ids:", error);
+            return [];
+        }
+    }
+
+    function setCancelledRequestIds(requestIds) {
+        sessionStorage.setItem(
+            cancelledRequestStorageKey,
+            JSON.stringify(Array.from(new Set(requestIds.map(String))))
+        );
+    }
+
+    function rememberCancelledRequest(requestId) {
+        if (!requestId) return;
+
+        const requestIds=getCancelledRequestIds();
+        requestIds.push(String(requestId));
+        setCancelledRequestIds(requestIds);
+    }
+
+    function forgetCancelledRequests(requestIdsToRemove) {
+        if (!requestIdsToRemove.length) return;
+
+        const idsToRemove=new Set(requestIdsToRemove.map(String));
+        const remainingIds=getCancelledRequestIds().filter(id => !idsToRemove.has(id));
+        setCancelledRequestIds(remainingIds);
+    }
+
 
     function trimLocationLabel(label) {
         if (!label) return "";
@@ -427,6 +463,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
     window.clearFilters=clearRideFilters;
 
+    document.addEventListener("click", function (event) {
+        const cancelButton=event.target.closest('#rider-state button[name="action"][value="cancelrequest"]');
+        if (!cancelButton) return;
+
+        const form=cancelButton.closest("form");
+        const requestId=form?.querySelector('input[name="requestid"]')?.value;
+        rememberCancelledRequest(requestId);
+    });
+
+    document.addEventListener("submit", function (event) {
+        const form=event.target;
+        if (!(form instanceof HTMLFormElement)) return;
+        if (!form.closest("#rider-state")) return;
+
+        const submitter=event.submitter;
+        if (!submitter || submitter.name !== "action" || submitter.value !== "cancelrequest") return;
+
+        const requestId=form.querySelector('input[name="requestid"]')?.value;
+        rememberCancelledRequest(requestId);
+    });
+
     let prevAccepted = [];
     let prevPending = [];
     let initialized = false;
@@ -439,9 +496,10 @@ document.addEventListener("DOMContentLoaded", function () {
         return oldArr.filter(id => !newArr.includes(id));
     }
 
-    function startRiderPolling() {
+    function startRiderPollingLegacy() {
         const container = document.getElementById("rider-state");
         if (!container) return;
+        return;
 
         async function poll() {
             try {
@@ -495,6 +553,88 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // poll every 5 seconds
+        setInterval(poll, 5000);
+    }
+
+    let riderPollingAcceptedIds=[];
+    let riderPollingPendingIds=[];
+    let riderPollingInitialized=false;
+
+    function startRiderPolling() {
+        const container=document.getElementById("rider-state");
+        if (!container) return;
+
+        async function poll() {
+            try {
+                const res=await fetch("/rider/poll/");
+                const contentType=res.headers.get("content-type") || "";
+
+                if (!res.ok || !contentType.includes("application/json")) {
+                    const responseText=await res.text();
+                    throw new Error(`Polling returned ${res.status}: ${responseText.slice(0, 120)}`);
+                }
+
+                const data=await res.json();
+                const acceptedIds=data.accepted_ids || [];
+                const pendingIds=data.pending_ids || [];
+                const rejectedIds=data.rejected_ids || [];
+                const activeRequestIds=data.active_request_ids || [];
+                const cancelledRequestIds=getCancelledRequestIds();
+                const visibleRequestIds=[...acceptedIds, ...pendingIds, ...activeRequestIds].map(String);
+                const staleCancelledIds=cancelledRequestIds.filter(id => !visibleRequestIds.includes(String(id)));
+
+                if (staleCancelledIds.length > 0) {
+                    forgetCancelledRequests(staleCancelledIds);
+                }
+
+                if (riderPollingInitialized) {
+                    const newlyAccepted=getNewItems(acceptedIds, riderPollingAcceptedIds);
+                    const removedPending=getRemovedItems(pendingIds, riderPollingPendingIds);
+                    const removedAccepted=getRemovedItems(acceptedIds, riderPollingAcceptedIds);
+                    const driverDeletedPendingRequests=removedPending.filter(id =>
+                        !rejectedIds.includes(id) &&
+                        !activeRequestIds.includes(id) &&
+                        !cancelledRequestIds.includes(String(id))
+                    );
+                    const driverDeletedAcceptedRequests=removedAccepted.filter(id =>
+                        !rejectedIds.includes(id) &&
+                        !activeRequestIds.includes(id) &&
+                        !cancelledRequestIds.includes(String(id))
+                    );
+                    const selfCancelledRequests=[...removedPending, ...removedAccepted].filter(id =>
+                        cancelledRequestIds.includes(String(id))
+                    );
+                    const actuallyRejected=removedPending.filter(id => rejectedIds.includes(id));
+
+                    if (newlyAccepted.length > 0) {
+                        showToast("Your ride was accepted!", "success");
+                    }
+
+                    if (actuallyRejected.length > 0) {
+                        showToast("A driver rejected your request", "error");
+                    }
+
+                    if (driverDeletedPendingRequests.length > 0 || driverDeletedAcceptedRequests.length > 0) {
+                        showToast("The driver deleted the ride, so your request was removed.", "error");
+                    }
+
+                    if (selfCancelledRequests.length > 0) {
+                        forgetCancelledRequests(selfCancelledRequests);
+                    }
+                }
+
+                riderPollingInitialized=true;
+                riderPollingAcceptedIds=[...acceptedIds];
+                riderPollingPendingIds=[...pendingIds];
+
+                if (data.html) {
+                    container.innerHTML=data.html;
+                }
+            } catch (err) {
+                console.error("Polling error:", err);
+            }
+        }
+
         setInterval(poll, 5000);
     }
 
