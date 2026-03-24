@@ -19,7 +19,7 @@ urlpatterns=[
 
     #driver view functions
     path("testcreatetrip/", driverview.testdriverfunction, name="testdriver"),   #test driver
-
+    path("driver/poll/", driverview.driverpoll, name="driverpoll"),
 
     #rider view functions
     #path("testrider/", riderview.testriderfunction, name="testrider"),   #test rider
