@@ -1,0 +1,701 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hop In - Create Your Ride</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Flowbite -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Bricolage+Grotesque:wght@700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #191265;
+        }
+        .font-playfair { font-family: 'Playfair Display', serif; }
+        .font-bricolage { font-family: 'Bricolage Grotesque', sans-serif; }
+        
+        .custom-input {
+            background-color: #3B3B7A;
+            border: none;
+            color: white;
+            border-radius: 0.75rem;
+            padding: 0.65rem 1rem;
+            width: 100%;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+        .custom-input:focus {
+            outline: 2px solid #ffffff40;
+            background-color: #45458a;
+        }
+        .custom-input:disabled {
+            background-color: #2a2a5a;
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .custom-input::placeholder { color: #A0A0C0; }
+        
+        /* Specific Select Element Styling to match inputs */
+        select.custom-input option {
+            background-color: #191265;
+            color: white;
+        }
+        
+        .autocomplete-results {
+            position: absolute;
+            z-index: 1000;
+            background: white;
+            width: 100%;
+            border-radius: 0.5rem;
+            margin-top: 0.25rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            color: #191265;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .autocomplete-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .autocomplete-item:last-child { border-bottom: none; }
+        .autocomplete-item:hover { background-color: #f3f4f6; color: #3B3B7A; }
+        
+        #map { border-radius: 1.5rem; }
+
+        /* Direction Buttons Styles */
+        .direction-btn {
+            background-color: #4E5875;
+            color: white;
+        }
+        .direction-btn-active {
+            background-color: #191265 !important;
+            color: white !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+
+        .custom-checkbox:checked {
+            background-color: #191265;
+            border-color: #191265;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
+    </style>
+</head>
+<body class="text-white overflow-x-hidden">
+
+    <!-- Modern Toast Notifications -->
+    {% if messages %}
+        <div id="toast-container" class="fixed top-20 right-5 z-[1000] flex flex-col gap-2">
+            {% for message in messages %}
+                <div class="flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800" role="alert">
+                    <div class="ms-3 text-sm font-bold text-[#191265]">{{ message }}</div>
+                    <button type="button" class="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8" onclick="this.parentElement.remove()">
+                        <span class="sr-only">Close</span>
+                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                        </svg>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Section 1: Hero -->
+    <section class="min-h-screen bg-white flex flex-col relative overflow-hidden">
+        <nav class="w-full flex items-center px-6 lg:px-12 py-6 absolute top-0 left-0 z-50">
+            <div class="flex items-center w-1/4">
+                <a href="{% url 'landing' %}">
+                    <img src="{% static 'hopin_app/images/logo1.png' %}" class="h-14" alt="Hop In Logo" onerror="this.src='https://placehold.co/150x50?text=LOGO'">
+                </a>
+            </div>
+
+            <ul class="hidden md:flex space-x-16 font-['Playfair_Display'] tracking-widest font-extrabold text-[18px] absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+                <li><a href="{% url 'landing' %}" class="text-[#191265] hover:opacity-70 transition-opacity">Home</a></li>
+                <li><a href="#active-trip-section" class="text-[#191265] hover:opacity-70 transition-opacity">History</a></li>
+                <li><a href="#" class="text-[#191265] hover:opacity-70 transition-opacity">Contact</a></li>
+            </ul>
+
+            <div class="flex justify-end items-center gap-6 w-1/4 ml-auto" id="auth-container">
+                <div class="flex items-center gap-4">
+                    <span class="text-[#191265] font-['Playfair_Display'] font-extrabold text-[18px] tracking-wide hidden sm:block">
+                        {{ request.user.first_name|default:"Sreeram" }}
+                    </span>
+                    <button type="button" id="user-menu-button" data-dropdown-toggle="user-dropdown" class="flex text-sm rounded-full focus:ring-4 focus:ring-gray-300">
+                        <div class="w-12 h-12 rounded-full border-2 border-[#191265] shadow-md bg-gray-100 flex items-center justify-center text-[#191265] overflow-hidden">
+                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                <path fill-rule="evenodd" d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </button>
+                    <div id="user-dropdown" class="hidden z-50 my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow w-44">
+                        <div class="px-4 py-3">
+                            <span class="block font-['Playfair_Display'] font-extrabold text-[#191265]">{{ request.user.first_name }}</span>
+                            <span class="block text-sm text-[#191265] truncate">{{ request.user.email }}</span>
+                        </div>
+                        <ul class="py-2 text-sm text-gray-700">
+                            <li><a href="#" class="block px-4 py-2 hover:bg-gray-200">Profile</a></li>
+                            <li><a href="{% url 'logout' %}" class="block px-4 py-2 hover:bg-red-100 text-red-600">Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="flex-1 flex flex-col md:flex-row items-center justify-between px-8 md:px-24 relative py-8 mt-16">
+            <div class="max-w-xl z-10">
+                <h1 class="text-[#191265] text-5xl md:text-7xl font-extrabold leading-tight mb-4 font-inter">Got Empty Seats!?</h1>
+                <p class="text-[#191265] text-2xl md:text-3xl font-medium opacity-90 font-inter">Start earning with them, right now!!</p>
+                <button id="scroll-to-form" class="mt-12 bg-[#191265] text-white px-10 py-4 rounded-2xl font-bold hover:bg-blue-900 transition-all shadow-xl">Create Now</button>
+            </div>
+            <div class="w-full md:w-[60%] relative flex justify-center">
+                <div class="relative w-full max-w-2xl">
+                    <img src="{% static 'hopin_app/images/car.png' %}" alt="Driver Illustration" class="w-full h-auto object-contain" onerror="this.src='https://placehold.co/800x600?text=HERO+ILLUSTRATION'">
+                </div>
+            </div>
+        </div>
+        <div class="h-24 w-full bg-[#191265] absolute bottom-0 left-0"></div>
+    </section>
+
+    <!-- Section 2: Create Ride Section -->
+    <section id="create-ride-section" class="min-h-screen bg-[#191265] py-12 px-6 md:px-16 flex flex-col justify-center">
+        <h2 class="text-white text-3xl md:text-4xl font-black uppercase tracking-tighter mb-6 text-center md:text-left font-bricolage">Create Your Ride</h2>
+
+        <div class="bg-white rounded-[2rem] p-4 md:p-6 lg:p-8 flex flex-col lg:flex-row gap-6 shadow-2xl">
+            <!-- Form Left Side -->
+            <div class="w-full lg:w-[45%] flex flex-col">
+                <h3 class="text-[#191265] text-xl font-extrabold mb-4">Trip Details Timings</h3>
+                <form id="rideForm" action="{% url 'testdriver' %}" method="POST" class="space-y-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="tripdetails">
+                    <!-- Initializes empty, forcing user to pick a direction -->
+                    <input type="hidden" id="prefereddirection" name="prefereddirection" value="">
+                    
+                    <!-- Real dynamic values updated by Leaflet script -->
+                    <input type="hidden" id="lat" name="latitude" value="">
+                    <input type="hidden" id="lng" name="longitude" value="">
+                    <textarea id="routegeometry" name="routegeometry" style="display:none;"></textarea>
+                    
+                    <div class="space-y-3">
+                        <div class="space-y-1">
+                            <label class="text-[#191265] font-bold text-[10px] uppercase tracking-wider ml-1">Direction</label>
+                            <div class="flex gap-4">
+                                <button type="button" id="toCollege" class="direction-btn flex-1 py-2 rounded-xl font-bold transition-all text-xs">To College</button>
+                                <button type="button" id="fromCollege" class="direction-btn flex-1 py-2 rounded-xl font-bold transition-all text-xs">From College</button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="text-[#191265] font-bold text-[10px] uppercase tracking-wider ml-1">Location Details</label>
+                            <!-- Flex-col allows us to dynamically swap the visual order of Pickup/Dropoff using flex order -->
+                            <div class="flex flex-col gap-2" id="location-fields-wrapper">
+                                <div class="relative" id="input-1-container" style="order: 1;">
+                                    <input type="text" id="location-input" name="preferedlocation" placeholder="Select direction first..." class="custom-input" autocomplete="off" disabled required>
+                                    <div id="autocomplete-results" class="autocomplete-results hidden"></div>
+                                </div>
+                                <div class="relative" id="input-2-container" style="order: 2;">
+                                    <input type="text" id="destination-dummy" placeholder="Destination" class="custom-input" value="AISAT Engineering College" disabled>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-[#191265] font-bold text-[10px] uppercase tracking-wider ml-1">Date</label>
+                            <input type="date" name="ridedate" class="custom-input" required>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[#191265] font-bold text-[10px] uppercase tracking-wider ml-1">Time</label>
+                            <input type="time" id="ridetime" name="ridetime" class="custom-input" required>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="space-y-1 flex-1">
+                            <label class="text-[#191265] font-bold text-[10px] uppercase tracking-wider ml-1">Vehicle Type</label>
+                            <select name="vehicletype" id="vehicletype" class="custom-input" required>
+                                <option value="car" {% if lasttrip.vehicletype == 'car' %}selected{% endif %}>Car</option>
+                                <option value="bike" {% if lasttrip.vehicletype == 'bike' %}selected{% endif %}>Bike</option>
+                                <option value="scooter" {% if lasttrip.vehicletype == 'scooter' %}selected{% endif %}>Scooter</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1 flex-1">
+                            <label class="text-[#191265] font-bold text-[10px] uppercase tracking-wider ml-1">Seats Available</label>
+                            <input type="number" name="availableseats" value="1" min="1" max="6" class="custom-input" required>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-[#191265] font-bold text-[10px] uppercase tracking-wider ml-1">Vehicle No.</label>
+                            <input type="text" name="vehiclenumber" value="{{ lasttrip.vehiclenumber|default:'' }}" placeholder="KL-XX-XX-XXXX" class="custom-input" required>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[#191265] font-bold text-[10px] uppercase tracking-wider ml-1">Vehicle Model</label>
+                            <input type="text" name="vehiclemodel" value="{{ lasttrip.vehiclemodel|default:'' }}" placeholder="Swift / Dio" class="custom-input" required>
+                        </div>
+                    </div>
+
+                    <!-- Helmet option dynamically toggled based on Vehicle Type -->
+                    <div id="helmet-container" class="flex items-center justify-between hidden">
+                        <div class="flex items-center gap-2 py-1 ml-1 text-[#191265]">
+                            <input type="checkbox" id="helmet" name="helmet" class="w-4 h-4 rounded focus:ring-[#191265] custom-checkbox">
+                            <label for="helmet" class="font-bold text-[11px] uppercase cursor-pointer">Helmet Available for Pillion</label>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full bg-[#191265] text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-blue-900 transition-all shadow-lg text-sm mt-2">Post Ride</button>
+                </form>
+            </div>
+
+            <!-- Map Right Side - Now Interactive -->
+            <div class="w-full lg:w-[55%] h-[400px] lg:h-auto min-h-[400px] rounded-[1.5rem] overflow-hidden relative border-4 border-[#191265]/5">
+                <!-- Overlay to block map until direction is selected -->
+                <div id="map-overlay" class="absolute inset-0 bg-white/40 z-[1000] flex items-center justify-center backdrop-blur-[2px] transition-all">
+                    <div class="bg-[#191265] text-white px-6 py-3 rounded-2xl font-bold shadow-xl text-sm">
+                        Select a Direction to Unlock Map
+                    </div>
+                </div>
+                <div id="map" class="w-full h-full z-0"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: Active Trip Management -->
+    <section id="active-trip-section" class="min-h-screen bg-[#191265] py-16 px-6 md:px-16 flex flex-col items-center">
+        <h2 class="text-white text-3xl md:text-5xl font-black uppercase tracking-tighter mb-12 w-full max-w-6xl font-bricolage">Active Ride Management</h2>
+
+        <div class="w-full max-w-6xl flex flex-col gap-8">
+            
+            {% if lasttrip %}
+                <!-- Summary Card -->
+                <div class="bg-white rounded-[2.5rem] p-8 text-[#191265] shadow-2xl flex flex-col md:flex-row justify-between items-center gap-10">
+                    <div class="flex flex-col gap-4">
+                        <div class="flex items-center gap-4">
+                            <div class="w-16 h-16 bg-[#191265] rounded-full flex items-center justify-center text-white">
+                                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                            </div>
+                            <div>
+                                <p class="text-xs uppercase font-black text-gray-400">Current Route</p>
+                                <h4 class="text-3xl font-black capitalize">{{ lasttrip.prefereddirection }} College</h4>
+                            </div>
+                        </div>
+                        <p class="font-black text-xl">{{ lasttrip.preferedlocation }}</p>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-[2rem] p-6 flex flex-col gap-2 min-w-[250px] shadow-inner">
+                        <p class="font-black text-gray-800">📅 {{ lasttrip.ridedate }}</p>
+                        <p class="font-black text-gray-800">⏰ {{ lasttrip.ridetime }}</p>
+                        <p class="font-black text-gray-800 capitalize">🚗 {{ lasttrip.vehicletype }} ({{ lasttrip.vehiclemodel|default:"No model info" }})</p>
+                    </div>
+
+                    <div class="flex flex-col gap-3 w-full md:w-auto">
+                        <form class="async-form" action="{% url 'testdriver' %}" method="POST"> {% csrf_token %}
+                            <input type="hidden" name="tripid" value="{{ lasttrip.id }}">
+                            <input type="hidden" name="action" value="delete">
+                            <button type="submit" class="w-full bg-red-500 text-white px-8 py-3 rounded-xl font-black uppercase hover:bg-red-700 shadow-lg text-xs">Delete Trip</button>
+                        </form>
+                        {% if accepted %}
+                            <a href="{% url 'testlocation' %}" class="w-full">
+                                <button class="w-full bg-green-500 text-white px-8 py-3 rounded-xl font-black uppercase hover:bg-green-700 shadow-lg text-xs">Start Ride</button>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Incoming Requests -->
+                    <div class="bg-[#231A76] rounded-[2.5rem] p-8 shadow-2xl flex flex-col">
+                        <h3 class="text-white text-2xl font-black uppercase mb-6 flex justify-between items-center">
+                            Incoming Requests 
+                            <span class="bg-white text-[#191265] text-xs px-2 py-1 rounded-full">
+                                {% if requests %}{{ requests|length }}{% else %}0{% endif %}
+                            </span>
+                        </h3>
+                        <div class="flex flex-col gap-4 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
+                            {% if requests %}
+                                {% for req in requests %}
+                                <div class="bg-white rounded-[1.5rem] p-4 flex gap-4 text-[#191265] shadow-md border-2 border-[#191265] hover:-translate-y-1 transition-transform">
+                                    <div class="flex-1 flex flex-col justify-between">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <img src="https://ui-avatars.com/api/?name={{ req.rider }}&background=191265&color=fff&bold=true" class="w-10 h-10 rounded-full shadow-sm">
+                                            <p class="font-extrabold text-lg">{{ req.rider }}</p>
+                                        </div>
+                                        <div class="mb-3 flex flex-col gap-0.5">
+                                            <div class="text-sm font-bold"><span class="text-black">From:</span> <span class="font-medium text-gray-700 ml-1">{{ req.pickup_location|default:"Aluva" }}</span></div>
+                                            <div class="text-sm font-bold"><span class="text-black">Contact:</span> <span class="font-medium text-gray-700 ml-1">{{ req.rider.phone|default:"+91 xxxxxxxxxx" }}</span></div>
+                                        </div>
+                                        <!-- Actions handled dynamically to force quick refresh -->
+                                        <div class="flex gap-2"> 
+                                            <form class="async-form w-1/2" action="{% url 'testdriver' %}" method="POST">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="requestid" value="{{ req.id }}">
+                                                <input type="hidden" name="action" value="reject">
+                                                <button type="submit" class="w-full bg-[#ff8a8a] text-white px-4 py-1.5 rounded-lg font-bold text-xs tracking-wider uppercase hover:bg-red-400 shadow-sm transition-colors text-center">REJECT</button>
+                                            </form>
+                                            <form class="async-form w-1/2" action="{% url 'testdriver' %}" method="POST">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="requestid" value="{{ req.id }}">
+                                                <input type="hidden" name="action" value="accept">
+                                                <button type="submit" class="w-full bg-[#8ccb90] text-white px-4 py-1.5 rounded-lg font-bold text-xs tracking-wider uppercase hover:bg-green-500 shadow-sm transition-colors text-center">ACCEPT</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <div class="w-[120px] sm:w-[150px] shrink-0 rounded-xl overflow-hidden relative border-2 border-[#191265]/10 bg-[url('https://a.tile.openstreetmap.org/13/5798/3875.png')] bg-cover bg-center">
+                                        <svg class="w-8 h-8 text-blue-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <!-- Empty State when there are no requests -->
+                                <div class="bg-white/10 rounded-[1.5rem] p-6 flex items-center justify-center text-white/70 border border-white/20">
+                                    <p class="font-bold text-sm uppercase tracking-wider">No pending requests yet</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Confirmed Passengers -->
+                    <div class="bg-[#231A76] rounded-[2.5rem] p-8 shadow-2xl flex flex-col">
+                        <h3 class="text-white text-2xl font-black uppercase mb-6">
+                            Confirmed Passengers
+                            <span class="bg-green-400 text-[#191265] text-xs px-2 py-1 rounded-full ml-2">
+                                {% if accepted %}{{ accepted|length }}{% else %}0{% endif %}
+                            </span>
+                        </h3>
+                        <div class="flex flex-col gap-4 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
+                            {% if accepted %}
+                                {% for req in accepted %}
+                                <div class="bg-white rounded-[1.5rem] p-4 flex gap-4 text-[#191265] shadow-md border-2 border-green-500 hover:-translate-y-1 transition-transform">
+                                    <div class="flex-1 flex flex-col justify-between">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <img src="https://ui-avatars.com/api/?name={{ req.rider }}&background=191265&color=fff&bold=true" class="w-10 h-10 rounded-full shadow-sm">
+                                            <p class="font-extrabold text-lg">{{ req.rider }}</p>
+                                        </div>
+                                        <div class="mb-3 flex flex-col gap-0.5">
+                                            <div class="text-sm font-bold"><span class="text-black">From:</span> <span class="font-medium text-gray-700 ml-1">{{ req.pickup_location|default:"Aluva" }}</span></div>
+                                            <div class="text-sm font-bold"><span class="text-black">Contact:</span> <span class="font-medium text-gray-700 ml-1">{{ req.rider.phone|default:"+91 xxxxxxxxxx" }}</span></div>
+                                        </div>
+                                        <div class="bg-[#8ccb90] text-white px-4 py-1.5 rounded-lg font-bold text-xs tracking-wider uppercase text-center w-max shadow-sm">
+                                            CONFIRMED
+                                        </div>
+                                    </div>
+                                    <div class="w-[120px] sm:w-[150px] shrink-0 rounded-xl overflow-hidden relative border-2 border-green-500/20 bg-[url('https://a.tile.openstreetmap.org/13/5798/3875.png')] bg-cover bg-center">
+                                        <svg class="w-8 h-8 text-blue-600 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <!-- Empty State when there are no confirmed passengers -->
+                                <div class="bg-white/10 rounded-[1.5rem] p-6 flex items-center justify-center text-white/70 border border-white/20">
+                                    <p class="font-bold text-sm uppercase tracking-wider">No passengers confirmed yet</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            
+            {% else %}
+                <!-- Empty State (No Active Trips) -->
+                <div class="bg-white/5 border border-white/10 rounded-[2.5rem] p-16 flex flex-col items-center justify-center text-center shadow-xl w-full">
+                    <svg class="w-20 h-20 text-white/30 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <h3 class="text-3xl font-black text-white mb-3 uppercase tracking-wide font-bricolage">No Active Rides</h3>
+                    <p class="text-white/60 font-medium text-lg max-w-lg">You don't have any ongoing trips at the moment. Fill out the form above to start sharing your journey!</p>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- SCROLL LOGIC ---
+            {% if lasttrip %}
+                setTimeout(() => { 
+                    const section = document.getElementById('active-trip-section');
+                    if(section) section.scrollIntoView({ behavior: 'smooth' }); 
+                }, 600);
+            {% endif %}
+
+            // --- UI FORM VARIABLES ---
+            const locInput = document.getElementById('location-input');
+            const destDummy = document.getElementById('destination-dummy');
+            const inputContainer1 = document.getElementById('input-1-container');
+            const inputContainer2 = document.getElementById('input-2-container');
+            
+            const autocompleteResults = document.getElementById('autocomplete-results');
+            const toBtn = document.getElementById('toCollege');
+            const fromBtn = document.getElementById('fromCollege');
+            const directionInput = document.getElementById('prefereddirection');
+            const timeInput = document.getElementById("ridetime");
+            
+            // --- MAP & LOCATION LOGIC ---
+            const collegeLat = 10.0469; 
+            const collegeLng = 76.3467;
+            const collegeName = "AISAT Engineering College";
+            
+            // Initialize Map
+            const map = L.map('map').setView([collegeLat, collegeLng], 12);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            // Fixed College Marker
+            const collegeIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div style="background-color:#191265; width:15px; height:15px; border-radius:50%; border:3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>`,
+                iconSize: [15, 15],
+                iconAnchor: [7, 7]
+            });
+            L.marker([collegeLat, collegeLng], {icon: collegeIcon}).addTo(map).bindPopup(collegeName);
+
+            let userMarker;
+            let routeLine;
+
+            // Function to update map and hidden inputs
+            async function updateLocationData(lat, lng, addressString = null) {
+                document.getElementById('lat').value = lat;
+                document.getElementById('lng').value = lng;
+                
+                // Initialize or move the draggable marker
+                if (!userMarker) {
+                    userMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
+                    
+                    // Add dragend event so map updates when pin is moved manually
+                    userMarker.on('dragend', function(e) {
+                        const position = e.target.getLatLng();
+                        updateLocationData(position.lat, position.lng);
+                    });
+                } else {
+                    userMarker.setLatLng([lat, lng]);
+                }
+
+                // Determine routing coordinates based on preferred direction
+                const dir = directionInput.value;
+                const startCoords = dir === 'to' ? `${lng},${lat}` : `${collegeLng},${collegeLat}`;
+                const endCoords = dir === 'to' ? `${collegeLng},${collegeLat}` : `${lng},${lat}`;
+
+                try {
+                    // Fetch real driving route from OSRM
+                    const routeRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${startCoords};${endCoords}?overview=full&geometries=geojson`);
+                    const routeData = await routeRes.json();
+
+                    if (routeData.code === 'Ok') {
+                        const geoJSON = routeData.routes[0].geometry;
+                        
+                        // Save true route geometry to the backend
+                        document.getElementById('routegeometry').value = JSON.stringify(geoJSON);
+
+                        // Draw the true route line
+                        if (routeLine) map.removeLayer(routeLine);
+                        routeLine = L.geoJSON(geoJSON, {
+                            style: { color: '#191265', weight: 4, opacity: 0.8 }
+                        }).addTo(map);
+                        
+                        // Fit map to show full route
+                        map.fitBounds(routeLine.getBounds(), {padding: [30, 30]});
+                    }
+                } catch(e) {
+                    console.error("Routing error, falling back to straight line:", e);
+                    // Fallback to basic straight line route if OSRM is down
+                    const fallbackGeoJSON = {"type": "LineString", "coordinates": [[lng, lat], [collegeLng, collegeLat]]};
+                    document.getElementById('routegeometry').value = JSON.stringify(fallbackGeoJSON);
+                    
+                    if (routeLine) map.removeLayer(routeLine);
+                    routeLine = L.polyline([[lat, lng], [collegeLat, collegeLng]], {color: '#191265', weight: 4, dashArray: '5, 10'}).addTo(map);
+                    map.fitBounds(routeLine.getBounds(), {padding: [30, 30]});
+                }
+
+                // Reverse Geocode if no address string is provided (e.g., when Pin dragged or Map clicked)
+                if (!addressString) {
+                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            const address = data.address.road || data.address.suburb || data.address.village || data.display_name.split(',')[0];
+                            locInput.value = address;
+                        });
+                } else {
+                    locInput.value = addressString;
+                }
+            }
+
+            // Handle Map Clicks
+            map.on('click', function(e) {
+                if(!directionInput.value) return; // Ignore clicks if direction not picked
+                if(!locInput.disabled) {
+                    updateLocationData(e.latlng.lat, e.latlng.lng);
+                }
+            });
+
+            // --- AUTOCOMPLETE LOGIC ---
+            let autocompleteTimeout = null;
+
+            locInput.addEventListener('input', function(e) {
+                clearTimeout(autocompleteTimeout);
+                const query = e.target.value;
+                
+                if (query.length < 3) {
+                    autocompleteResults.innerHTML = '';
+                    autocompleteResults.classList.add('hidden');
+                    return;
+                }
+
+                // Debounce search by 500ms to avoid spamming the free API
+                autocompleteTimeout = setTimeout(() => {
+                    // Searching restricted to India country code to keep it relevant
+                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`)
+                        .then(res => res.json())
+                        .then(data => {
+                            autocompleteResults.innerHTML = '';
+                            if (data.length > 0) {
+                                autocompleteResults.classList.remove('hidden');
+                                data.forEach(item => {
+                                    const div = document.createElement('div');
+                                    div.className = 'autocomplete-item';
+                                    div.innerText = item.display_name;
+                                    
+                                    // When user clicks a search result
+                                    div.onclick = function() {
+                                        autocompleteResults.classList.add('hidden');
+                                        updateLocationData(parseFloat(item.lat), parseFloat(item.lon), item.display_name.split(',')[0]);
+                                    };
+                                    autocompleteResults.appendChild(div);
+                                });
+                            } else {
+                                autocompleteResults.classList.add('hidden');
+                            }
+                        });
+                }, 500); 
+            });
+
+            // Hide autocomplete if clicked outside
+            document.addEventListener('click', function(e) {
+                if (e.target !== locInput && e.target !== autocompleteResults) {
+                    autocompleteResults.classList.add('hidden');
+                }
+            });
+
+            // --- VEHICLE & DIRECTION TOGGLES ---
+            const vehicleSelect = document.getElementById('vehicletype');
+            const helmetContainer = document.getElementById('helmet-container');
+            const helmetCheckbox = document.getElementById('helmet');
+
+            function toggleHelmetVisibility() {
+                if (vehicleSelect.value === 'bike' || vehicleSelect.value === 'scooter') {
+                    helmetContainer.classList.remove('hidden');
+                } else {
+                    helmetContainer.classList.add('hidden');
+                    helmetCheckbox.checked = false; // Uncheck it automatically if car is selected
+                }
+            }
+
+            vehicleSelect.addEventListener('change', toggleHelmetVisibility);
+            toggleHelmetVisibility(); // Run on initialization
+
+            function setDirection(dir) {
+                directionInput.value = dir;
+                locInput.disabled = false; // Enable the input
+                
+                const mapOverlay = document.getElementById('map-overlay');
+                if (mapOverlay) mapOverlay.classList.add('hidden'); // Reveal Map
+                
+                if(dir === 'to') {
+                    toBtn.classList.add('direction-btn-active'); 
+                    fromBtn.classList.remove('direction-btn-active');
+                    timeInput.value = "07:45";
+                    
+                    // Visually Top: Editable Field (Pickup)
+                    inputContainer1.style.order = 1;
+                    locInput.placeholder = "Search Pickup Point...";
+                    
+                    // Visually Bottom: Locked Field (Drop-off College)
+                    inputContainer2.style.order = 2;
+                    destDummy.value = "Drop-off: " + collegeName;
+
+                } else {
+                    fromBtn.classList.add('direction-btn-active'); 
+                    toBtn.classList.remove('direction-btn-active');
+                    timeInput.value = "16:30";
+                    
+                    // Visually Top: Locked Field (Pickup College)
+                    inputContainer2.style.order = 1;
+                    destDummy.value = "Pickup: " + collegeName;
+                    
+                    // Visually Bottom: Editable Field (Drop-off)
+                    inputContainer1.style.order = 2;
+                    locInput.placeholder = "Search Drop-off Point...";
+                }
+
+                // Clear input if it contained the prompt
+                if(locInput.value === "Select direction first...") locInput.value = "";
+
+                // If a marker already exists on the map, recalculate the route for the new direction
+                if (userMarker) {
+                    const pos = userMarker.getLatLng();
+                    updateLocationData(pos.lat, pos.lng, locInput.value);
+                }
+            }
+            
+            toBtn.onclick = () => setDirection('to');
+            fromBtn.onclick = () => setDirection('from');
+
+            // --- FORMS SUBMIT INTERCEPTOR (Fixes the Refresh Issue) ---
+            // Grabs all forms (Main creation, Delete Trip, Accept, Reject requests)
+            const allForms = document.querySelectorAll('form');
+            
+            allForms.forEach(form => {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault(); // Stop standard redirect/refresh mechanism
+                    
+                    const submitBtn = this.querySelector('button[type="submit"]');
+                    const originalText = submitBtn ? submitBtn.innerText : '';
+                    if(submitBtn) {
+                        submitBtn.innerText = "Processing...";
+                        submitBtn.disabled = true;
+                    }
+
+                    try {
+                        // Submit form payload asynchronously 
+                        await fetch(this.action, {
+                            method: this.method,
+                            body: new FormData(this)
+                        });
+                        
+                        // Force a pristine, un-cached page reload from server
+                        // This prevents any "Confirm Form Resubmission" warnings and loads new DB data instantly.
+                        window.location.href = window.location.pathname; 
+
+                    } catch (error) {
+                        console.error('Submission error:', error);
+                        // Fallback refresh on error
+                        window.location.href = window.location.pathname;
+                    }
+                });
+            });
+
+            // Smooth Scroll from hero
+            document.getElementById('scroll-to-form').onclick = () => document.getElementById('create-ride-section').scrollIntoView({ behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
