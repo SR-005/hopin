@@ -103,23 +103,18 @@
 
         <div class="stat">
             <span>Total Rides Given</span>
-            <span>{{ driver.total_rides|default:"0" }}</span>
-        </div>
-
-        <div class="stat">
-            <span>Seats Offered</span>
-            <span>{{ driver.total_seats|default:"0" }}</span>
+            <span>{{ counttrips|default:"0" }}</span>
         </div>
 
         <div class="stat">
             <span>Reliability Score</span>
-            <span>{{ driver.reliability|default:"0.0" }}</span>
+            <span>{{ counttrips|default:"0.0" }}</span>
         </div>
 
-        <div class="stat">
-            <span>Active Rides</span>
-            <span>{{ driver.active_rides|default:"0" }}</span>
-        </div>
+        <h3>Previous Trip Details</h3>
+        {% for trips in completedtrips %}
+            <p>{{ trips }}</p>
+        {% endfor %}
     </div>
 
     <!-- RIDER SECTION -->
@@ -128,29 +123,13 @@
 
         <div class="stat">
             <span>Total Rides Taken</span>
-            <span>{{ rider.total_rides|default:"0" }}</span>
+            <span>{{ countrides|default:"None" }}</span>
         </div>
 
-        <div class="stat">
-            <span>Pending Payments</span>
-            <span>{{ rider.pending_payments|default:"0" }}</span>
-        </div>
-
-        <div class="stat">
-            <span>Completed Payments</span>
-            <span>{{ rider.completed_payments|default:"0" }}</span>
-        </div>
-
-        <div class="stat">
-            <span>Ongoing Ride</span>
-            <span>
-                {% if rider.ongoing %}
-                    Yes
-                {% else %}
-                    No
-                {% endif %}
-            </span>
-        </div>
+        <h3>Previous Ride Details</h3>
+        {% for rides in droppedrides %}
+            <p>{{ rides }}</p>
+        {% endfor %}
     </div>
 
 </div>

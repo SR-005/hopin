@@ -1,4 +1,4 @@
-from ..models import userdetail, riderequest, payment
+from ..models import userdetail, riderequest, payment,trip
 from django.contrib.auth import get_user_model
 from dotenv import load_dotenv
 import os
@@ -9,18 +9,10 @@ from django.shortcuts import render, redirect
 User=get_user_model()
 
 def testprofilefunction(request):
-    context = {
-        "driver": {
-            "total_rides": 12,
-            "total_seats": 30,
-            "reliability": 4.7,
-            "active_rides": 1,
-        },
-        "rider": {
-            "total_rides": 18,
-            "pending_payments": 1,
-            "completed_payments": 17,
-            "ongoing": True,
-        }
-    }
-    return render(request, "testprofile.html", context)
+    user=request.user
+    completedtrips=trip.objects.filter(usercredentials=user,status="COMPLETED")
+    counttrips=len(completedtrips)
+    droppedrides=riderequest.objects.filter(rider=user,status="DROPPED")
+    countrides=len(droppedrides)
+    return render(request, "testprofile.html", {"completedtrips":completedtrips,"droppedrides":droppedrides,"counttrips":counttrips,
+                                                "countrides":countrides})
