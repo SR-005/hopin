@@ -293,106 +293,101 @@
         <div class="w-full max-w-6xl flex flex-col gap-8">
             
             {% if lasttrip %}
-                <div class="bg-white rounded-[1.5rem] p-5 sm:p-6 shadow-xl w-full max-w-5xl flex flex-col gap-5 sm:gap-6 text-[#191265] border border-gray-100">
+                <div class="bg-white rounded-[1.5rem] p-4 sm:p-5 shadow-xl w-full max-w-5xl mx-auto flex flex-col gap-4 text-[#191265] border border-gray-100">
                     
                     <div class="flex justify-between items-center gap-4">
                         <div class="flex items-center gap-3 shrink-0">
-                            <div class="w-9 h-9 rounded-full bg-[#191265] text-white flex items-center justify-center font-bold text-base shadow-sm">
+                            <div class="w-8 h-8 rounded-full bg-[#191265] text-white flex items-center justify-center font-bold text-sm shadow-sm">
                                 {{ request.user.email|make_list|first|upper }}
                             </div>
-                            <h4 class="font-extrabold text-base sm:text-lg font-bricolage tracking-wide">{{ request.user.email }}</h4>
+                            <h4 class="font-extrabold text-sm sm:text-base font-bricolage tracking-wide">{{ request.user.email }}</h4>
                         </div>
                         
-                        <div class="bg-gray-50 text-[#191265] px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-sm sm:text-base font-black tracking-widest uppercase border border-gray-200 shadow-sm whitespace-nowrap">
-                            <span class="opacity-70 mr-1 hidden sm:inline">🕒</span>{{ lasttrip.ridedate|date:"M d" }} • {{ lasttrip.ridetime|time:"H:i" }}
+                        <div class="bg-gray-50 text-[#191265] flex items-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-black tracking-widest uppercase border border-gray-200 shadow-sm whitespace-nowrap">
+                            <svg class="w-4 h-4 mr-1.5 opacity-70 hidden sm:block shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                            <span>{{ lasttrip.ridedate|date:"M d" }} • {{ lasttrip.ridetime|time:"H:i" }}</span>
                         </div>
                     </div>
 
-                    <div class="flex flex-row items-center justify-between border border-gray-100 rounded-xl py-3 px-3 sm:px-4 w-full gap-4 sm:gap-6 shadow-sm bg-gray-50/30">
+                    <div class="flex flex-row items-center justify-between border border-gray-100 rounded-xl py-3 px-3 sm:px-4 w-full gap-3 sm:gap-4 shadow-sm bg-gray-50/30">
                         
-                        <div class="flex items-center justify-between flex-1 sm:pr-6 border-r border-gray-100 gap-2 sm:gap-4">
-                            
+                        <div class="flex items-center justify-between flex-1 sm:pr-4 border-r border-gray-100 gap-2 sm:gap-3">
                             <div class="flex flex-col text-left shrink-0">
-                                <span class="font-black text-lg sm:text-xl leading-none">START</span>
-                                <span class="text-[10px] sm:text-xs text-gray-500 font-bold truncate mt-0.5 max-w-[70px] sm:max-w-[120px]">
+                                <span class="font-black text-base sm:text-lg leading-none">START</span>
+                                <span class="text-[12px] text-gray-500 font-bold truncate mt-0.5 max-w-[70px] sm:max-w-[100px]">
                                     {% if lasttrip.prefereddirection == 'to' %}{{ lasttrip.preferedlocation }}{% else %}AISAT{% endif %}
                                 </span>
                             </div>
 
-                            <div class="flex-1 flex items-center min-w-[40px] px-2 sm:px-4">
-                                <div class="w-2 h-2 rotate-45 bg-[#191265] shrink-0"></div>
+                            <div class="flex-1 flex items-center min-w-[30px] px-1 sm:px-2">
+                                <div class="w-1.5 h-1.5 rotate-45 bg-[#191265] shrink-0"></div>
                                 <div class="w-full h-[2px] bg-[#191265] rounded-full mx-0.5"></div>
-                                <svg class="w-4 h-4 text-[#191265] shrink-0 -ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                                <svg class="w-3.5 h-3.5 text-[#191265] shrink-0 -ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
                             </div>
 
                             <div class="flex flex-col text-right shrink-0">
-                                <span class="font-black text-lg sm:text-xl leading-none">END</span>
-                                <span class="text-[10px] sm:text-xs text-gray-500 font-bold truncate mt-0.5 max-w-[70px] sm:max-w-[120px]">
+                                <span class="font-black text-base sm:text-lg leading-none">END</span>
+                                <span class="text-[12px] text-gray-500 font-bold truncate mt-0.5 max-w-[70px] sm:max-w-[100px]">
                                     {% if lasttrip.prefereddirection == 'from' %}{{ lasttrip.preferedlocation }}{% else %}AISAT{% endif %}
                                 </span>
                             </div>
                         </div>
                         
-                        <div class="w-20 h-12 sm:w-32 sm:h-16 flex justify-center items-center shrink-0">
+                        <div class="w-24 h-16 sm:w-32 sm:h-20 flex justify-center items-center shrink-0">
                             {% if lasttrip.vehicletype == 'car' %}
-                                <img src="https://cdn-icons-png.flaticon.com/512/3201/3201831.png" alt="Car" class="w-full h-full object-contain opacity-90 drop-shadow-sm">
+                                <img src="{% static 'hopin_app/images/car2.png' %}" alt="Car" class="w-full h-full object-contain opacity-90 drop-shadow-sm">
                             {% elif lasttrip.vehicletype == 'bike' %}
-                                <img src="https://cdn-icons-png.flaticon.com/512/2972/2972185.png" alt="Bike" class="w-full h-full object-contain opacity-90 drop-shadow-sm">
+                                <img src="{% static 'hopin_app/images/bike.png' %}"  alt="Bike" class="w-full h-full object-contain opacity-90 drop-shadow-sm">
                             {% else %}
-                                <img src="https://cdn-icons-png.flaticon.com/512/3757/3757314.png" alt="Scooter" class="w-full h-full object-contain opacity-90 drop-shadow-sm">
+                                <img src="{% static 'hopin_app/images/bike.png' %}" alt="Scooter" class="w-full h-full object-contain opacity-90 drop-shadow-sm">
                             {% endif %}
                         </div>
                     </div>
 
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-5 w-full">
-                        
-                        <div class="flex flex-col gap-3 w-full sm:flex-1">
-                            
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 w-full">
+                        <div class="flex flex-col gap-2.5 w-full sm:flex-1">
                             <div class="flex flex-col gap-0.5">
-                                <h5 class="text-[11px] font-black text-gray-400 uppercase tracking-widest">Vehicle Details</h5>
-                                <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-sm sm:text-base font-bold text-[#191265]">
+                                <h5 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Vehicle Details</h5>
+                                <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm font-bold text-[#191265]">
                                     {% if lasttrip.vehiclemodel %}
-                                        <span class="capitalize">{{ lasttrip.vehiclemodel }}</span>
-                                        <span class="text-gray-300 font-normal">•</span>
+                                        <span class="capitalize">{{ lasttrip.vehiclemodel }}</span><span class="text-gray-300 font-normal">•</span>
                                     {% endif %}
-                                    
                                     {% if lasttrip.vehiclenumber %}
-                                        <span class="uppercase">{{ lasttrip.vehiclenumber }}</span>
-                                        <span class="text-gray-300 font-normal">•</span>
+                                        <span class="uppercase">{{ lasttrip.vehiclenumber }}</span><span class="text-gray-300 font-normal">•</span>
                                     {% endif %}
-                                    
                                     <span>{{ lasttrip.availableseats }} SEAT{% if lasttrip.availableseats|add:"0" > 1 %}S{% endif %}</span>
                                 </div>
                             </div>
 
                             <div class="flex flex-wrap items-center justify-start gap-2">
-                                <span class="bg-[#191265]/5 text-[#191265] px-3 py-1.5 rounded-md text-[10px] sm:text-[11px] font-black tracking-widest uppercase border border-[#191265]/10">{{ lasttrip.vehicletype }}</span>
+                                <span class="bg-[#191265]/5 text-[#191265] px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-black tracking-widest uppercase border border-[#191265]/10">{{ lasttrip.vehicletype }}</span>
                                 {% if lasttrip.helmet == 'on' %}
-                                    <span class="bg-[#8ccb90]/10 text-[#2b7130] px-3 py-1.5 rounded-md text-[10px] sm:text-[11px] font-black tracking-widest uppercase border border-[#8ccb90]/30">+HELMET</span>
+                                    <span class="bg-[#8ccb90]/10 text-[#2b7130] px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-black tracking-widest uppercase border border-[#8ccb90]/30">+HELMET</span>
                                 {% endif %}
                             </div>
                         </div>
 
-                        <div class="flex w-full sm:w-auto gap-2 shrink-0 mt-1 sm:mt-0">
+                        <div class="flex w-full sm:w-auto gap-3 shrink-0 mt-2 sm:mt-0">
                             <form class="w-full sm:w-auto m-0" action="{% url 'driver' %}" method="POST"> {% csrf_token %}
                                 <input type="hidden" name="tripid" value="{{ lasttrip.id }}">
                                 <input type="hidden" name="action" value="delete">
-                                <button type="submit" class="w-full bg-white border border-red-500 text-red-500 px-5 py-1.5 rounded-xl font-bold hover:bg-red-50 transition-colors text-xs shadow-sm uppercase tracking-wide">Delete</button>
+                                <button type="submit" class="w-full sm:w-32 bg-white border-2 border-red-500 text-red-500 px-6 py-2.5 rounded-xl font-bold hover:bg-red-50 transition-colors text-sm shadow-sm uppercase tracking-wide">Delete</button>
                             </form>
                             {% if accepted %}
                                 <form action="{% url 'driver' %}" method="POST" class="w-full sm:w-auto m-0">
                                     {% csrf_token %}
                                     <input type="hidden" name="tripid" value="{{ lasttrip.id }}">
                                     <input type="hidden" name="action" value="startride">
-                                    <button type="submit" class="w-full bg-[#191265] text-white px-6 py-1.5 rounded-xl font-bold hover:bg-blue-900 transition-colors shadow-md text-xs uppercase tracking-wide">Start Ride</button>
+                                    <button type="submit" class="w-full sm:w-40 bg-[#191265] text-white px-8 py-2.5 rounded-xl font-bold hover:bg-blue-900 transition-colors shadow-md text-sm uppercase tracking-wide">Start Ride</button>
                                 </form>
                             {% endif %}
                         </div>
                     </div>
-
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6 w-full">
                     <!-- Incoming Requests -->
                     <div class="bg-[#231A76] rounded-[2.5rem] p-8 shadow-2xl flex flex-col">
                         <h3 class="text-white text-2xl font-black uppercase mb-6 flex justify-between items-center">
@@ -500,7 +495,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // --- SCROLL LOGIC ---
+            
+            // --- SCROLL LOGIC & BUTTON LINKS ---
             {% if lasttrip %}
                 setTimeout(() => { 
                     const section = document.getElementById('active-trip-section');
@@ -508,257 +504,228 @@
                 }, 600);
             {% endif %}
 
+            const scrollToFormBtn = document.getElementById('scroll-to-form');
+            if (scrollToFormBtn) {
+                scrollToFormBtn.onclick = () => {
+                    const formSection = document.getElementById('create-ride-section');
+                    if (formSection) formSection.scrollIntoView({ behavior: 'smooth' });
+                };
+            }
+
+            const scrollToActiveBtn = document.getElementById('scroll-to-active');
+            if (scrollToActiveBtn) {
+                scrollToActiveBtn.onclick = () => {
+                    const activeSection = document.getElementById('active-trip-section');
+                    if (activeSection) activeSection.scrollIntoView({ behavior: 'smooth' });
+                };
+            }
+
             // --- UI FORM VARIABLES ---
             const locInput = document.getElementById('location-input');
             const destDummy = document.getElementById('destination-dummy');
-            const inputContainer1 = document.getElementById('input-1-container');
-            const inputContainer2 = document.getElementById('input-2-container');
             
-            const autocompleteResults = document.getElementById('autocomplete-results');
-            const toBtn = document.getElementById('toCollege');
-            const fromBtn = document.getElementById('fromCollege');
-            const directionInput = document.getElementById('prefereddirection');
-            const timeInput = document.getElementById("ridetime");
-            
-            // --- MAP & LOCATION LOGIC ---
-            const collegeLat = 10.0469; 
-            const collegeLng = 76.3467;
-            const collegeName = "AISAT Engineering College";
-            
-            // Initialize Map
-            const map = L.map('map').setView([collegeLat, collegeLng], 12);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap'
-            }).addTo(map);
-
-            // Fixed College Marker
-            const collegeIcon = L.divIcon({
-                className: 'custom-div-icon',
-                html: `<div style="background-color:#191265; width:15px; height:15px; border-radius:50%; border:3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>`,
-                iconSize: [15, 15],
-                iconAnchor: [7, 7]
-            });
-            L.marker([collegeLat, collegeLng], {icon: collegeIcon}).addTo(map).bindPopup(collegeName);
-
-            let userMarker;
-            let routeLine;
-
-            // Function to update map and hidden inputs
-            async function updateLocationData(lat, lng, addressString = null) {
-                document.getElementById('lat').value = lat;
-                document.getElementById('lng').value = lng;
+            // CRITICAL FIX: Only run Map & Form logic if the form actually exists on the page!
+            if (locInput) {
+                const inputContainer1 = document.getElementById('input-1-container');
+                const inputContainer2 = document.getElementById('input-2-container');
+                const autocompleteResults = document.getElementById('autocomplete-results');
+                const toBtn = document.getElementById('toCollege');
+                const fromBtn = document.getElementById('fromCollege');
+                const directionInput = document.getElementById('prefereddirection');
+                const timeInput = document.getElementById("ridetime");
                 
-                // Initialize or move the draggable marker
-                if (!userMarker) {
-                    userMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
+                // --- MAP & LOCATION LOGIC ---
+                const collegeLat = 10.0469; 
+                const collegeLng = 76.3467;
+                const collegeName = "AISAT Engineering College";
+                
+                // Initialize Map
+                const map = L.map('map').setView([collegeLat, collegeLng], 12);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap'
+                }).addTo(map);
+
+                // Fixed College Marker
+                const collegeIcon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: `<div style="background-color:#191265; width:15px; height:15px; border-radius:50%; border:3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>`,
+                    iconSize: [15, 15],
+                    iconAnchor: [7, 7]
+                });
+                L.marker([collegeLat, collegeLng], {icon: collegeIcon}).addTo(map).bindPopup(collegeName);
+
+                let userMarker;
+                let routeLine;
+
+                async function updateLocationData(lat, lng, addressString = null) {
+                    document.getElementById('lat').value = lat;
+                    document.getElementById('lng').value = lng;
                     
-                    // Add dragend event so map updates when pin is moved manually
-                    userMarker.on('dragend', function(e) {
-                        const position = e.target.getLatLng();
-                        updateLocationData(position.lat, position.lng);
-                    });
-                } else {
-                    userMarker.setLatLng([lat, lng]);
-                }
+                    if (!userMarker) {
+                        userMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
+                        userMarker.on('dragend', function(e) {
+                            const position = e.target.getLatLng();
+                            updateLocationData(position.lat, position.lng);
+                        });
+                    } else {
+                        userMarker.setLatLng([lat, lng]);
+                    }
 
-                // Determine routing coordinates based on preferred direction
-                const dir = directionInput.value;
-                const startCoords = dir === 'to' ? `${lng},${lat}` : `${collegeLng},${collegeLat}`;
-                const endCoords = dir === 'to' ? `${collegeLng},${collegeLat}` : `${lng},${lat}`;
+                    const dir = directionInput.value;
+                    const startCoords = dir === 'to' ? `${lng},${lat}` : `${collegeLng},${collegeLat}`;
+                    const endCoords = dir === 'to' ? `${collegeLng},${collegeLat}` : `${lng},${lat}`;
 
-                try {
-                    // Fetch real driving route from OSRM
-                    const routeRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${startCoords};${endCoords}?overview=full&geometries=geojson`);
-                    const routeData = await routeRes.json();
+                    try {
+                        const routeRes = await fetch(`https://router.project-osrm.org/route/v1/driving/${startCoords};${endCoords}?overview=full&geometries=geojson`);
+                        const routeData = await routeRes.json();
 
-                    if (routeData.code === 'Ok') {
-                        const geoJSON = routeData.routes[0].geometry;
-                        
-                        // Save true route geometry to the backend
-                        document.getElementById('routegeometry').value = JSON.stringify(geoJSON);
-
-                        // Draw the true route line
+                        if (routeData.code === 'Ok') {
+                            const geoJSON = routeData.routes[0].geometry;
+                            document.getElementById('routegeometry').value = JSON.stringify(geoJSON);
+                            if (routeLine) map.removeLayer(routeLine);
+                            routeLine = L.geoJSON(geoJSON, {
+                                style: { color: '#191265', weight: 4, opacity: 0.8 }
+                            }).addTo(map);
+                            map.fitBounds(routeLine.getBounds(), {padding: [30, 30]});
+                        }
+                    } catch(e) {
+                        console.error("Routing error, falling back to straight line:", e);
+                        const fallbackGeoJSON = {"type": "LineString", "coordinates": [[lng, lat], [collegeLng, collegeLat]]};
+                        document.getElementById('routegeometry').value = JSON.stringify(fallbackGeoJSON);
                         if (routeLine) map.removeLayer(routeLine);
-                        routeLine = L.geoJSON(geoJSON, {
-                            style: { color: '#191265', weight: 4, opacity: 0.8 }
-                        }).addTo(map);
-                        
-                        // Fit map to show full route
+                        routeLine = L.polyline([[lat, lng], [collegeLat, collegeLng]], {color: '#191265', weight: 4, dashArray: '5, 10'}).addTo(map);
                         map.fitBounds(routeLine.getBounds(), {padding: [30, 30]});
                     }
-                } catch(e) {
-                    console.error("Routing error, falling back to straight line:", e);
-                    // Fallback to basic straight line route if OSRM is down
-                    const fallbackGeoJSON = {"type": "LineString", "coordinates": [[lng, lat], [collegeLng, collegeLat]]};
-                    document.getElementById('routegeometry').value = JSON.stringify(fallbackGeoJSON);
+
+                    if (!addressString) {
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                            .then(res => res.json())
+                            .then(data => {
+                                const address = data.address.road || data.address.suburb || data.address.village || data.display_name.split(',')[0];
+                                locInput.value = address;
+                            });
+                    } else {
+                        locInput.value = addressString;
+                    }
+                }
+
+                map.on('click', function(e) {
+                    if(!directionInput.value) return; 
+                    if(!locInput.disabled) {
+                        updateLocationData(e.latlng.lat, e.latlng.lng);
+                    }
+                });
+
+                let autocompleteTimeout = null;
+                locInput.addEventListener('input', function(e) {
+                    clearTimeout(autocompleteTimeout);
+                    const query = e.target.value;
                     
-                    if (routeLine) map.removeLayer(routeLine);
-                    routeLine = L.polyline([[lat, lng], [collegeLat, collegeLng]], {color: '#191265', weight: 4, dashArray: '5, 10'}).addTo(map);
-                    map.fitBounds(routeLine.getBounds(), {padding: [30, 30]});
+                    if (query.length < 3) {
+                        autocompleteResults.innerHTML = '';
+                        autocompleteResults.classList.add('hidden');
+                        return;
+                    }
+
+                    autocompleteTimeout = setTimeout(() => {
+                        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`)
+                            .then(res => res.json())
+                            .then(data => {
+                                autocompleteResults.innerHTML = '';
+                                if (data.length > 0) {
+                                    autocompleteResults.classList.remove('hidden');
+                                    data.forEach(item => {
+                                        const div = document.createElement('div');
+                                        div.className = 'autocomplete-item';
+                                        div.innerText = item.display_name;
+                                        
+                                        div.onclick = function() {
+                                            autocompleteResults.classList.add('hidden');
+                                            updateLocationData(parseFloat(item.lat), parseFloat(item.lon), item.display_name.split(',')[0]);
+                                        };
+                                        autocompleteResults.appendChild(div);
+                                    });
+                                } else {
+                                    autocompleteResults.classList.add('hidden');
+                                }
+                            });
+                    }, 500); 
+                });
+
+                document.addEventListener('click', function(e) {
+                    if (e.target !== locInput && e.target !== autocompleteResults) {
+                        autocompleteResults.classList.add('hidden');
+                    }
+                });
+
+                const vehicleSelect = document.getElementById('vehicletype');
+                const helmetContainer = document.getElementById('helmet-container');
+                const helmetCheckbox = document.getElementById('helmet');
+
+                function toggleHelmetVisibility() {
+                    if (vehicleSelect.value === 'bike' || vehicleSelect.value === 'scooter') {
+                        helmetContainer.classList.remove('hidden');
+                    } else {
+                        helmetContainer.classList.add('hidden');
+                        helmetCheckbox.checked = false; 
+                    }
                 }
 
-                // Reverse Geocode if no address string is provided (e.g., when Pin dragged or Map clicked)
-                if (!addressString) {
-                    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
-                        .then(res => res.json())
-                        .then(data => {
-                            const address = data.address.road || data.address.suburb || data.address.village || data.display_name.split(',')[0];
-                            locInput.value = address;
-                        });
-                } else {
-                    locInput.value = addressString;
+                vehicleSelect.addEventListener('change', toggleHelmetVisibility);
+                toggleHelmetVisibility(); 
+
+                function setDirection(dir) {
+                    directionInput.value = dir;
+                    locInput.disabled = false; 
+                    
+                    const mapOverlay = document.getElementById('map-overlay');
+                    if (mapOverlay) mapOverlay.classList.add('hidden'); 
+                    
+                    if(dir === 'to') {
+                        toBtn.classList.add('direction-btn-active'); 
+                        fromBtn.classList.remove('direction-btn-active');
+                        timeInput.value = "07:45";
+                        
+                        inputContainer1.style.order = 1;
+                        locInput.placeholder = "Search Pickup Point...";
+                        
+                        inputContainer2.style.order = 2;
+                        destDummy.value = "Drop-off: " + collegeName;
+
+                    } else {
+                        fromBtn.classList.add('direction-btn-active'); 
+                        toBtn.classList.remove('direction-btn-active');
+                        timeInput.value = "16:30";
+                        
+                        inputContainer2.style.order = 1;
+                        destDummy.value = "Pickup: " + collegeName;
+                        
+                        inputContainer1.style.order = 2;
+                        locInput.placeholder = "Search Drop-off Point...";
+                    }
+
+                    if(locInput.value === "Select direction first...") locInput.value = "";
+
+                    if (userMarker) {
+                        const pos = userMarker.getLatLng();
+                        updateLocationData(pos.lat, pos.lng, locInput.value);
+                    }
                 }
-            }
-
-            // Handle Map Clicks
-            map.on('click', function(e) {
-                if(!directionInput.value) return; // Ignore clicks if direction not picked
-                if(!locInput.disabled) {
-                    updateLocationData(e.latlng.lat, e.latlng.lng);
-                }
-            });
-
-            // --- AUTOCOMPLETE LOGIC ---
-            let autocompleteTimeout = null;
-
-            locInput.addEventListener('input', function(e) {
-                clearTimeout(autocompleteTimeout);
-                const query = e.target.value;
                 
-                if (query.length < 3) {
-                    autocompleteResults.innerHTML = '';
-                    autocompleteResults.classList.add('hidden');
-                    return;
-                }
-
-                // Debounce search by 500ms to avoid spamming the free API
-                autocompleteTimeout = setTimeout(() => {
-                    // Searching restricted to India country code to keep it relevant
-                    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`)
-                        .then(res => res.json())
-                        .then(data => {
-                            autocompleteResults.innerHTML = '';
-                            if (data.length > 0) {
-                                autocompleteResults.classList.remove('hidden');
-                                data.forEach(item => {
-                                    const div = document.createElement('div');
-                                    div.className = 'autocomplete-item';
-                                    div.innerText = item.display_name;
-                                    
-                                    // When user clicks a search result
-                                    div.onclick = function() {
-                                        autocompleteResults.classList.add('hidden');
-                                        updateLocationData(parseFloat(item.lat), parseFloat(item.lon), item.display_name.split(',')[0]);
-                                    };
-                                    autocompleteResults.appendChild(div);
-                                });
-                            } else {
-                                autocompleteResults.classList.add('hidden');
-                            }
-                        });
-                }, 500); 
-            });
-
-            // Hide autocomplete if clicked outside
-            document.addEventListener('click', function(e) {
-                if (e.target !== locInput && e.target !== autocompleteResults) {
-                    autocompleteResults.classList.add('hidden');
-                }
-            });
-
-            // --- VEHICLE & DIRECTION TOGGLES ---
-            const vehicleSelect = document.getElementById('vehicletype');
-            const helmetContainer = document.getElementById('helmet-container');
-            const helmetCheckbox = document.getElementById('helmet');
-
-            function toggleHelmetVisibility() {
-                if (vehicleSelect.value === 'bike' || vehicleSelect.value === 'scooter') {
-                    helmetContainer.classList.remove('hidden');
-                } else {
-                    helmetContainer.classList.add('hidden');
-                    helmetCheckbox.checked = false; // Uncheck it automatically if car is selected
-                }
-            }
-
-            vehicleSelect.addEventListener('change', toggleHelmetVisibility);
-            toggleHelmetVisibility(); // Run on initialization
-
-            function setDirection(dir) {
-                directionInput.value = dir;
-                locInput.disabled = false; // Enable the input
+                toBtn.onclick = () => setDirection('to');
+                fromBtn.onclick = () => setDirection('from');
                 
-                const mapOverlay = document.getElementById('map-overlay');
-                if (mapOverlay) mapOverlay.classList.add('hidden'); // Reveal Map
-                
-                if(dir === 'to') {
-                    toBtn.classList.add('direction-btn-active'); 
-                    fromBtn.classList.remove('direction-btn-active');
-                    timeInput.value = "07:45";
-                    
-                    // Visually Top: Editable Field (Pickup)
-                    inputContainer1.style.order = 1;
-                    locInput.placeholder = "Search Pickup Point...";
-                    
-                    // Visually Bottom: Locked Field (Drop-off College)
-                    inputContainer2.style.order = 2;
-                    destDummy.value = "Drop-off: " + collegeName;
+            } // <--- THIS BRACKET IS WHAT WAS CAUSING THE ISSUE!
 
-                } else {
-                    fromBtn.classList.add('direction-btn-active'); 
-                    toBtn.classList.remove('direction-btn-active');
-                    timeInput.value = "16:30";
-                    
-                    // Visually Top: Locked Field (Pickup College)
-                    inputContainer2.style.order = 1;
-                    destDummy.value = "Pickup: " + collegeName;
-                    
-                    // Visually Bottom: Editable Field (Drop-off)
-                    inputContainer1.style.order = 2;
-                    locInput.placeholder = "Search Drop-off Point...";
-                }
-
-                // Clear input if it contained the prompt
-                if(locInput.value === "Select direction first...") locInput.value = "";
-
-                // If a marker already exists on the map, recalculate the route for the new direction
-                if (userMarker) {
-                    const pos = userMarker.getLatLng();
-                    updateLocationData(pos.lat, pos.lng, locInput.value);
-                }
-            }
-            
-            toBtn.onclick = () => setDirection('to');
-            fromBtn.onclick = () => setDirection('from');
-
-           
-
-            // Smooth Scroll from hero
-            // Smooth Scroll from hero (Dynamic based on active trips)
-                const scrollToFormBtn = document.getElementById('scroll-to-form');
-                if (scrollToFormBtn) {
-                    scrollToFormBtn.onclick = () => document.getElementById('create-ride-section').scrollIntoView({ behavior: 'smooth' });
-                }
-
-                const scrollToActiveBtn = document.getElementById('scroll-to-active');
-                if (scrollToActiveBtn) {
-                    scrollToActiveBtn.onclick = () => document.getElementById('active-trip-section').scrollIntoView({ behavior: 'smooth' });
-                }
-        
+            // --- MINIMAPS LOGIC (Always runs) ---
             setTimeout(() => {
                 const minimapContainers = document.querySelectorAll('.minimap-container');
-
                 minimapContainers.forEach(container => {
-                    // Safety check: Prevent Leaflet from crashing if it tries to draw twice
                     if (container._leaflet_id) return; 
-
-                    // Grab the coordinates saved in the HTML
                     const lat = parseFloat(container.getAttribute('data-lat'));
                     const lng = parseFloat(container.getAttribute('data-lng'));
 
-                    // Check if coordinates exist
                     if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
-                        
-                        // Initialize the map
                         const mmap = L.map(container.id, {
                             zoomControl: false,       
                             dragging: false,          
@@ -769,10 +736,8 @@
                             attributionControl: false 
                         }).setView([lat, lng], 15.5);
 
-                        // Add the map tiles
                         L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(mmap);
 
-                        // Add the rider dot
                         L.circleMarker([lat, lng], {
                             radius: 8,
                             fillColor: "#191265",
@@ -782,13 +747,11 @@
                             fillOpacity: 1
                         }).addTo(mmap);
                         
-                        // Final force-resize after tiles load
                         setTimeout(() => {
                             mmap.invalidateSize();
                         }, 300);
                         
                     } else {
-                        // Fallback UI if rider has no location data
                         container.innerHTML = `
                             <div class="w-full h-full bg-gray-100 flex flex-col items-center justify-center text-gray-400">
                                 <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -796,9 +759,7 @@
                             </div>`;
                     }
                 });
-            }, 150); // 150ms delay to let the DOM settle
-        
-        
+            }, 150); 
         });
     </script>
 </body>
