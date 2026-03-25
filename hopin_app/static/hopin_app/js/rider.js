@@ -1,69 +1,69 @@
 
 document.addEventListener("DOMContentLoaded", function () {
-    
-    const ridesCount=window.DJANGO_VARS.ridesCount;
-    const collegeLat=10.0469;
-    const collegeLng=76.3467;
-    const collegeName="AISAT Engineering College";
-    const maxLocationLength=100;
 
-    let direction="to"; // Default direction
-    let userLat=null;
-    let userLng=null;
-    let routeLayer=null;
+    const ridesCount = window.DJANGO_VARS.ridesCount;
+    const collegeLat = 10.0469;
+    const collegeLng = 76.3467;
+    const collegeName = "AISAT Engineering College";
+    const maxLocationLength = 100;
+
+    let direction = "to"; // Default direction
+    let userLat = null;
+    let userLng = null;
+    let routeLayer = null;
 
     // DOM Elements
-    const pickupInput=document.getElementById("pickup");
-    const destinationInput=document.getElementById("destination");
-    const directionHidden=document.getElementById("direction-input");
-    const locationHidden=document.getElementById("location-input");
-    const latHidden=document.getElementById("lat-input");
-    const lngHidden=document.getElementById("lng-input");
+    const pickupInput = document.getElementById("pickup");
+    const destinationInput = document.getElementById("destination");
+    const directionHidden = document.getElementById("direction-input");
+    const locationHidden = document.getElementById("location-input");
+    const latHidden = document.getElementById("lat-input");
+    const lngHidden = document.getElementById("lng-input");
 
-    const toBtn=document.getElementById("toCollege");
-    const fromBtn=document.getElementById("fromCollege");
-    const timeInput=document.getElementById("rideTime");
-    const dateInput=document.getElementById("rideDate");
-    const searchForm=document.getElementById("searchForm");
+    const toBtn = document.getElementById("toCollege");
+    const fromBtn = document.getElementById("fromCollege");
+    const timeInput = document.getElementById("rideTime");
+    const dateInput = document.getElementById("rideDate");
+    const searchForm = document.getElementById("searchForm");
 
-    const pickupResults=document.getElementById("pickup-results");
-    const destinationResults=document.getElementById("destination-results");
-    const ridesList=document.getElementById("ridesList");
-    const rideCards=ridesList ? Array.from(ridesList.querySelectorAll(".ride-card")) : [];
-    const vehicleRadios=Array.from(document.querySelectorAll('input[name="vehicle"]'));
-    const helmetFilter=document.getElementById("helmetFilter");
-    const helmetFilterLabel=helmetFilter ? helmetFilter.closest("label") : null;
-    const sortFilter=document.getElementById("sortFilter");
-    const filteredEmptyState=document.getElementById("filteredEmptyState");
-    const ridesCountLabel=document.getElementById("ridesCountLabel");
+    const pickupResults = document.getElementById("pickup-results");
+    const destinationResults = document.getElementById("destination-results");
+    const ridesList = document.getElementById("ridesList");
+    const rideCards = ridesList ? Array.from(ridesList.querySelectorAll(".ride-card")) : [];
+    const vehicleRadios = Array.from(document.querySelectorAll('input[name="vehicle"]'));
+    const helmetFilter = document.getElementById("helmetFilter");
+    const helmetFilterLabel = helmetFilter ? helmetFilter.closest("label") : null;
+    const sortFilter = document.getElementById("sortFilter");
+    const filteredEmptyState = document.getElementById("filteredEmptyState");
+    const ridesCountLabel = document.getElementById("ridesCountLabel");
 
     //TOAST
     function showToast(message, type = "info") {
-            const toast = document.createElement("div");
+        const toast = document.createElement("div");
 
-            const colors = {
-                success: "bg-green-600",
-                error: "bg-red-600",
-                info: "bg-blue-600"
-            };
+        const colors = {
+            success: "bg-green-600",
+            error: "bg-red-600",
+            info: "bg-blue-600"
+        };
 
-            toast.className = `${colors[type]} text-white px-4 py-3 rounded-xl shadow-lg fixed top-5 right-5 z-50`;
+        toast.className = `${colors[type]} text-white px-4 py-3 rounded-xl shadow-lg fixed top-5 right-5 z-50`;
 
-            toast.innerText = message;
+        toast.innerText = message;
 
-            document.body.appendChild(toast);
+        document.body.appendChild(toast);
 
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
-        }
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
 
-    const cancelledRequestStorageKey="rider_cancelled_request_ids";
+    const cancelledRequestStorageKey = "rider_cancelled_request_ids";
 
     function getCancelledRequestIds() {
         try {
-            const rawValue=sessionStorage.getItem(cancelledRequestStorageKey);
-            const parsedValue=rawValue ? JSON.parse(rawValue) : [];
+            const rawValue = sessionStorage.getItem(cancelledRequestStorageKey);
+            const parsedValue = rawValue ? JSON.parse(rawValue) : [];
             return Array.isArray(parsedValue) ? parsedValue.map(String) : [];
         } catch (error) {
             console.warn("Could not read cancelled request ids:", error);
@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function rememberCancelledRequest(requestId) {
         if (!requestId) return;
 
-        const requestIds=getCancelledRequestIds();
+        const requestIds = getCancelledRequestIds();
         requestIds.push(String(requestId));
         setCancelledRequestIds(requestIds);
     }
@@ -89,21 +89,21 @@ document.addEventListener("DOMContentLoaded", function () {
     function forgetCancelledRequests(requestIdsToRemove) {
         if (!requestIdsToRemove.length) return;
 
-        const idsToRemove=new Set(requestIdsToRemove.map(String));
-        const remainingIds=getCancelledRequestIds().filter(id => !idsToRemove.has(id));
+        const idsToRemove = new Set(requestIdsToRemove.map(String));
+        const remainingIds = getCancelledRequestIds().filter(id => !idsToRemove.has(id));
         setCancelledRequestIds(remainingIds);
     }
 
 
     function trimLocationLabel(label) {
         if (!label) return "";
-        const normalized=label.replace(/\s+/g, " ").trim();
+        const normalized = label.replace(/\s+/g, " ").trim();
         return normalized.slice(0, maxLocationLength);
     }
 
     function buildShortLocationLabel(place) {
-        const address=place?.address || {};
-        const nameParts=[
+        const address = place?.address || {};
+        const nameParts = [
             place?.name,
             address.road,
             address.neighbourhood,
@@ -115,9 +115,9 @@ document.addEventListener("DOMContentLoaded", function () {
             address.city
         ].filter(Boolean);
 
-        const primaryName=nameParts[0] || "";
-        const locality=address.city || address.town || address.village || address.suburb || address.state_district || address.state || "";
-        const shortLabel=locality && primaryName && locality !== primaryName
+        const primaryName = nameParts[0] || "";
+        const locality = address.city || address.town || address.village || address.suburb || address.state_district || address.state || "";
+        const shortLabel = locality && primaryName && locality !== primaryName
             ? `${primaryName}, ${locality}`
             : (primaryName || locality || place?.display_name || "");
 
@@ -125,37 +125,37 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function setSelectedLocation(placeName, isPickup) {
-        const safePlaceName=trimLocationLabel(placeName);
+        const safePlaceName = trimLocationLabel(placeName);
         if (isPickup) {
-            pickupInput.value=safePlaceName;
+            pickupInput.value = safePlaceName;
         } else {
-            destinationInput.value=safePlaceName;
+            destinationInput.value = safePlaceName;
         }
 
-        if (locationHidden) locationHidden.value=safePlaceName;
+        if (locationHidden) locationHidden.value = safePlaceName;
     }
 
     /* ---------------- DATE SETUP (Today & Tomorrow Only) ---------------- */
-    const today=new Date();
-    const tomorrow=new Date();
+    const today = new Date();
+    const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
 
     function formatDate(d) {
-        let month=(d.getMonth() + 1).toString().padStart(2, '0');
-        let day=d.getDate().toString().padStart(2, '0');
+        let month = (d.getMonth() + 1).toString().padStart(2, '0');
+        let day = d.getDate().toString().padStart(2, '0');
         return `${d.getFullYear()}-${month}-${day}`;
     }
 
     if (dateInput) {
-        dateInput.min=formatDate(today);
-        dateInput.max=formatDate(tomorrow);
-        if (!dateInput.value) dateInput.value=formatDate(today);
+        dateInput.min = formatDate(today);
+        dateInput.max = formatDate(tomorrow);
+        if (!dateInput.value) dateInput.value = formatDate(today);
     }
 
     /* ---------------- MAP SETUP ---------------- */
-    const map=L.map("map").setView([collegeLat, collegeLng], 12);
+    const map = L.map("map").setView([collegeLat, collegeLng], 12);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
-    const marker=L.marker([collegeLat, collegeLng], { draggable: true }).addTo(map);
+    const marker = L.marker([collegeLat, collegeLng], { draggable: true }).addTo(map);
     L.marker([collegeLat, collegeLng]).addTo(map).bindPopup("College").openPopup();
 
     // Fix for map tiles not loading fully inside Flexbox containers
@@ -163,42 +163,42 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /* ---------------- DIRECTION TOGGLE LOGIC ---------------- */
     function setDirection(dir) {
-        direction=dir;
-        if (directionHidden) directionHidden.value=dir;
+        direction = dir;
+        if (directionHidden) directionHidden.value = dir;
 
         if (dir === "to") {
             // Enforce #191265 text on both buttons
-            toBtn.className="flex-1 bg-white py-3 rounded-xl text-[#191265] font-bold shadow-inner transition";
-            fromBtn.className="flex-1 bg-white/40 hover:bg-white/60 py-3 rounded-xl text-[#191265] font-bold transition";
+            toBtn.className = "flex-1 bg-white py-3 rounded-xl text-[#191265] font-bold shadow-inner transition";
+            fromBtn.className = "flex-1 bg-white/40 hover:bg-white/60 py-3 rounded-xl text-[#191265] font-bold transition";
 
             // Destination is College (Locked, Solid Color)
-            destinationInput.value=collegeName;
-            destinationInput.readOnly=true;
-            destinationInput.className="w-full bg-gray-400 rounded-xl p-3 font-semibold text-[#191265] cursor-not-allowed";
+            destinationInput.value = collegeName;
+            destinationInput.readOnly = true;
+            destinationInput.className = "w-full bg-gray-400 rounded-xl p-3 font-semibold text-[#191265] cursor-not-allowed";
 
             // Pickup is Open
-            pickupInput.readOnly=false;
-            pickupInput.className="w-full bg-gray-300 rounded-xl p-3 font-semibold text-[#191265]";
-            if (pickupInput.value === collegeName) pickupInput.value="";
+            pickupInput.readOnly = false;
+            pickupInput.className = "w-full bg-gray-300 rounded-xl p-3 font-semibold text-[#191265]";
+            if (pickupInput.value === collegeName) pickupInput.value = "";
 
-            if (timeInput) timeInput.value="07:45"; // 7:45 AM
+            if (timeInput) timeInput.value = "07:45"; // 7:45 AM
 
         } else {
             // Enforce #191265 text on both buttons
-            fromBtn.className="flex-1 bg-white py-3 rounded-xl text-[#191265] font-bold shadow-inner transition";
-            toBtn.className="flex-1 bg-white/40 hover:bg-white/60 py-3 rounded-xl text-[#191265] font-bold transition";
+            fromBtn.className = "flex-1 bg-white py-3 rounded-xl text-[#191265] font-bold shadow-inner transition";
+            toBtn.className = "flex-1 bg-white/40 hover:bg-white/60 py-3 rounded-xl text-[#191265] font-bold transition";
 
             // Pickup is College (Locked, Solid Color)
-            pickupInput.value=collegeName;
-            pickupInput.readOnly=true;
-            pickupInput.className="w-full bg-gray-400 rounded-xl p-3 font-semibold text-[#191265] cursor-not-allowed";
+            pickupInput.value = collegeName;
+            pickupInput.readOnly = true;
+            pickupInput.className = "w-full bg-gray-400 rounded-xl p-3 font-semibold text-[#191265] cursor-not-allowed";
 
             // Destination is Open
-            destinationInput.readOnly=false;
-            destinationInput.className="w-full bg-gray-300 rounded-xl p-3 font-semibold text-[#191265]";
-            if (destinationInput.value === collegeName) destinationInput.value="";
+            destinationInput.readOnly = false;
+            destinationInput.className = "w-full bg-gray-300 rounded-xl p-3 font-semibold text-[#191265]";
+            if (destinationInput.value === collegeName) destinationInput.value = "";
 
-            if (timeInput) timeInput.value="13:30"; // 1:30 PM
+            if (timeInput) timeInput.value = "13:30"; // 1:30 PM
         }
     }
     // Bind buttons
@@ -210,16 +210,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /* ---------------- MAP MARKER DRAG & CLICK ---------------- */
     function updateCoordinates(lat, lng) {
-        userLat=lat;
-        userLng=lng;
-        if (latHidden) latHidden.value=lat;
-        if (lngHidden) lngHidden.value=lng;
+        userLat = lat;
+        userLng = lng;
+        if (latHidden) latHidden.value = lat;
+        if (lngHidden) lngHidden.value = lng;
         marker.setLatLng([lat, lng]);
 
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
             .then(res => res.json())
             .then(data => {
-                const placeName=buildShortLocationLabel(data);
+                const placeName = buildShortLocationLabel(data);
                 setSelectedLocation(placeName, direction === "to");
             });
     }
@@ -232,27 +232,27 @@ document.addEventListener("DOMContentLoaded", function () {
         fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`)
             .then(res => res.json())
             .then(data => {
-                resultsBox.innerHTML="";
+                resultsBox.innerHTML = "";
                 data.forEach(place => {
-                    const item=document.createElement("div");
-                    item.className="p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-0 text-black";
-                    const shortPlaceName=buildShortLocationLabel(place);
-                    item.textContent=shortPlaceName;
+                    const item = document.createElement("div");
+                    item.className = "p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-0 text-black";
+                    const shortPlaceName = buildShortLocationLabel(place);
+                    item.textContent = shortPlaceName;
 
-                    item.onclick=function () {
-                        const lat=parseFloat(place.lat);
-                        const lon=parseFloat(place.lon);
+                    item.onclick = function () {
+                        const lat = parseFloat(place.lat);
+                        const lon = parseFloat(place.lon);
 
                         setSelectedLocation(shortPlaceName, isPickup);
 
-                        if (latHidden) latHidden.value=lat;
-                        if (lngHidden) lngHidden.value=lon;
-                        userLat=lat;
-                        userLng=lon;
+                        if (latHidden) latHidden.value = lat;
+                        if (lngHidden) lngHidden.value = lon;
+                        userLat = lat;
+                        userLng = lon;
 
                         map.setView([lat, lon], 15);
                         marker.setLatLng([lat, lon]);
-                        resultsBox.innerHTML="";
+                        resultsBox.innerHTML = "";
                     };
                     resultsBox.appendChild(item);
                 });
@@ -264,9 +264,9 @@ document.addEventListener("DOMContentLoaded", function () {
         pickupInput.addEventListener("input", function () {
             if (direction === "from") return;
             clearTimeout(timeout);
-            timeout=setTimeout(() => {
+            timeout = setTimeout(() => {
                 if (this.value.length >= 3) searchLocation(this.value, pickupResults, true);
-                else pickupResults.innerHTML="";
+                else pickupResults.innerHTML = "";
             }, 400);
         });
     }
@@ -275,20 +275,20 @@ document.addEventListener("DOMContentLoaded", function () {
         destinationInput.addEventListener("input", function () {
             if (direction === "to") return;
             clearTimeout(timeout);
-            timeout=setTimeout(() => {
+            timeout = setTimeout(() => {
                 if (this.value.length >= 3) searchLocation(this.value, destinationResults, false);
-                else destinationResults.innerHTML="";
+                else destinationResults.innerHTML = "";
             }, 400);
         });
     }
 
     document.addEventListener("click", function (e) {
-        if (pickupInput && !pickupInput.contains(e.target)) pickupResults.innerHTML="";
-        if (destinationInput && !destinationInput.contains(e.target)) destinationResults.innerHTML="";
+        if (pickupInput && !pickupInput.contains(e.target)) pickupResults.innerHTML = "";
+        if (destinationInput && !destinationInput.contains(e.target)) destinationResults.innerHTML = "";
     });
 
     /* ---------------- ROUTE DRAWING ON MAP ---------------- */
-    const mapSubmitBtn=document.getElementById("mapSubmit");
+    const mapSubmitBtn = document.getElementById("mapSubmit");
     if (mapSubmitBtn) {
         mapSubmitBtn.addEventListener("click", function () {
             if (!userLat || !userLng) {
@@ -298,20 +298,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
             let startLat, startLng, endLat, endLng;
             if (direction === "to") {
-                startLat=userLat; startLng=userLng;
-                endLat=collegeLat; endLng=collegeLng;
+                startLat = userLat; startLng = userLng;
+                endLat = collegeLat; endLng = collegeLng;
             } else {
-                startLat=collegeLat; startLng=collegeLng;
-                endLat=userLat; endLng=userLng;
+                startLat = collegeLat; startLng = collegeLng;
+                endLat = userLat; endLng = userLng;
             }
 
-            const url=`https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
+            const url = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson`;
 
             fetch(url)
                 .then(res => res.json())
                 .then(data => {
                     if (routeLayer) map.removeLayer(routeLayer);
-                    routeLayer=L.geoJSON(data.routes[0].geometry, {
+                    routeLayer = L.geoJSON(data.routes[0].geometry, {
                         style: { color: "blue", weight: 5 }
                     }).addTo(map);
                     map.fitBounds(routeLayer.getBounds());
@@ -320,17 +320,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     /* ---------------- FORM SUBMIT HANDLER ---------------- */
-    if (pickupInput) pickupInput.maxLength=maxLocationLength;
-    if (destinationInput) destinationInput.maxLength=maxLocationLength;
+    if (pickupInput) pickupInput.maxLength = maxLocationLength;
+    if (destinationInput) destinationInput.maxLength = maxLocationLength;
 
     if (searchForm) {
         searchForm.addEventListener("submit", function (e) {
             if (direction === 'to') {
-                if (locationHidden) locationHidden.value=trimLocationLabel(pickupInput.value);
-                pickupInput.value=trimLocationLabel(pickupInput.value);
+                if (locationHidden) locationHidden.value = trimLocationLabel(pickupInput.value);
+                pickupInput.value = trimLocationLabel(pickupInput.value);
             } else {
-                if (locationHidden) locationHidden.value=trimLocationLabel(destinationInput.value);
-                destinationInput.value=trimLocationLabel(destinationInput.value);
+                if (locationHidden) locationHidden.value = trimLocationLabel(destinationInput.value);
+                destinationInput.value = trimLocationLabel(destinationInput.value);
             }
 
             if (!latHidden.value || !lngHidden.value) {
@@ -342,14 +342,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /* ---------------- AUTO-SCROLL IF RIDES EXIST ---------------- */
     if (ridesCount > 0) {
-        const resultsSection=document.getElementById("search-results");
+        const resultsSection = document.getElementById("search-results");
         if (resultsSection) resultsSection.scrollIntoView({ behavior: "smooth" });
     }
 
     /* ---------------- RESULT FILTERS & SORT ---------------- */
     function updateResultsCount(count) {
         if (!ridesCountLabel) return;
-        ridesCountLabel.textContent=`${count} Ride${count === 1 ? "" : "s"} Available`;
+        ridesCountLabel.textContent = `${count} Ride${count === 1 ? "" : "s"} Available`;
     }
 
     function reorderRideCards(cards) {
@@ -359,12 +359,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function getSelectedVehicle() {
-        const selectedRadio=vehicleRadios.find(radio => radio.checked);
+        const selectedRadio = vehicleRadios.find(radio => radio.checked);
         return selectedRadio ? selectedRadio.value : "";
     }
 
     function sortRideCards(cards, sortValue) {
-        const sortedCards=[...cards];
+        const sortedCards = [...cards];
 
         if (sortValue === "price-asc") {
             sortedCards.sort((a, b) => parseFloat(a.dataset.price || "0") - parseFloat(b.dataset.price || "0"));
@@ -380,14 +380,14 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateHelmetFilterState() {
         if (!helmetFilter) return;
 
-        const selectedVehicle=getSelectedVehicle();
-        const shouldDisableHelmet=selectedVehicle === "car";
+        const selectedVehicle = getSelectedVehicle();
+        const shouldDisableHelmet = selectedVehicle === "car";
 
         if (shouldDisableHelmet) {
-            helmetFilter.checked=false;
+            helmetFilter.checked = false;
         }
 
-        helmetFilter.disabled=shouldDisableHelmet;
+        helmetFilter.disabled = shouldDisableHelmet;
 
         if (helmetFilterLabel) {
             helmetFilterLabel.classList.toggle("opacity-50", shouldDisableHelmet);
@@ -398,19 +398,19 @@ document.addEventListener("DOMContentLoaded", function () {
     function applyRideFilters() {
         if (!rideCards.length) return;
 
-        const selectedVehicle=getSelectedVehicle();
-        const requiresHelmet=helmetFilter ? helmetFilter.checked : false;
-        const sortValue=sortFilter ? sortFilter.value : "optimized";
-        const sortedCards=sortRideCards(rideCards, sortValue);
+        const selectedVehicle = getSelectedVehicle();
+        const requiresHelmet = helmetFilter ? helmetFilter.checked : false;
+        const sortValue = sortFilter ? sortFilter.value : "optimized";
+        const sortedCards = sortRideCards(rideCards, sortValue);
 
-        let visibleCount=0;
+        let visibleCount = 0;
 
         sortedCards.forEach(card => {
-            const cardVehicle=(card.dataset.vehicle || "").toLowerCase();
-            const cardHelmet=(card.dataset.helmet || "").toLowerCase();
-            const matchesVehicle=!selectedVehicle || cardVehicle === selectedVehicle;
-            const matchesHelmet=!requiresHelmet || (cardVehicle === "bike" && cardHelmet === "yes");
-            const shouldShow=matchesVehicle && matchesHelmet;
+            const cardVehicle = (card.dataset.vehicle || "").toLowerCase();
+            const cardHelmet = (card.dataset.helmet || "").toLowerCase();
+            const matchesVehicle = !selectedVehicle || cardVehicle === selectedVehicle;
+            const matchesHelmet = !requiresHelmet || (cardVehicle === "bike" && cardHelmet === "yes");
+            const shouldShow = matchesVehicle && matchesHelmet;
 
             card.classList.toggle("hidden", !shouldShow);
             if (shouldShow) visibleCount += 1;
@@ -426,15 +426,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function clearRideFilters() {
         vehicleRadios.forEach(radio => {
-            radio.checked=false;
+            radio.checked = false;
         });
 
         if (helmetFilter) {
-            helmetFilter.checked=false;
+            helmetFilter.checked = false;
         }
 
         if (sortFilter) {
-            sortFilter.value="optimized";
+            sortFilter.value = "optimized";
         }
 
         updateHelmetFilterState();
@@ -461,26 +461,26 @@ document.addEventListener("DOMContentLoaded", function () {
         applyRideFilters();
     }
 
-    window.clearFilters=clearRideFilters;
+    window.clearFilters = clearRideFilters;
 
     document.addEventListener("click", function (event) {
-        const cancelButton=event.target.closest('#rider-state button[name="action"][value="cancelrequest"]');
+        const cancelButton = event.target.closest('#rider-state button[name="action"][value="cancelrequest"]');
         if (!cancelButton) return;
 
-        const form=cancelButton.closest("form");
-        const requestId=form?.querySelector('input[name="requestid"]')?.value;
+        const form = cancelButton.closest("form");
+        const requestId = form?.querySelector('input[name="requestid"]')?.value;
         rememberCancelledRequest(requestId);
     });
 
     document.addEventListener("submit", function (event) {
-        const form=event.target;
+        const form = event.target;
         if (!(form instanceof HTMLFormElement)) return;
         if (!form.closest("#rider-state")) return;
 
-        const submitter=event.submitter;
+        const submitter = event.submitter;
         if (!submitter || submitter.name !== "action" || submitter.value !== "cancelrequest") return;
 
-        const requestId=form.querySelector('input[name="requestid"]')?.value;
+        const requestId = form.querySelector('input[name="requestid"]')?.value;
         rememberCancelledRequest(requestId);
     });
 
@@ -556,55 +556,55 @@ document.addEventListener("DOMContentLoaded", function () {
         setInterval(poll, 5000);
     }
 
-    let riderPollingAcceptedIds=[];
-    let riderPollingPendingIds=[];
-    let riderPollingInitialized=false;
+    let riderPollingAcceptedIds = [];
+    let riderPollingPendingIds = [];
+    let riderPollingInitialized = false;
 
     function startRiderPolling() {
-        const container=document.getElementById("rider-state");
+        const container = document.getElementById("rider-state");
         if (!container) return;
 
         async function poll() {
             try {
-                const res=await fetch("/rider/poll/");
-                const contentType=res.headers.get("content-type") || "";
+                const res = await fetch("/rider/poll/");
+                const contentType = res.headers.get("content-type") || "";
 
                 if (!res.ok || !contentType.includes("application/json")) {
-                    const responseText=await res.text();
+                    const responseText = await res.text();
                     throw new Error(`Polling returned ${res.status}: ${responseText.slice(0, 120)}`);
                 }
 
-                const data=await res.json();
-                const acceptedIds=data.accepted_ids || [];
-                const pendingIds=data.pending_ids || [];
-                const rejectedIds=data.rejected_ids || [];
-                const activeRequestIds=data.active_request_ids || [];
-                const cancelledRequestIds=getCancelledRequestIds();
-                const visibleRequestIds=[...acceptedIds, ...pendingIds, ...activeRequestIds].map(String);
-                const staleCancelledIds=cancelledRequestIds.filter(id => !visibleRequestIds.includes(String(id)));
+                const data = await res.json();
+                const acceptedIds = data.accepted_ids || [];
+                const pendingIds = data.pending_ids || [];
+                const rejectedIds = data.rejected_ids || [];
+                const activeRequestIds = data.active_request_ids || [];
+                const cancelledRequestIds = getCancelledRequestIds();
+                const visibleRequestIds = [...acceptedIds, ...pendingIds, ...activeRequestIds].map(String);
+                const staleCancelledIds = cancelledRequestIds.filter(id => !visibleRequestIds.includes(String(id)));
 
                 if (staleCancelledIds.length > 0) {
                     forgetCancelledRequests(staleCancelledIds);
                 }
 
                 if (riderPollingInitialized) {
-                    const newlyAccepted=getNewItems(acceptedIds, riderPollingAcceptedIds);
-                    const removedPending=getRemovedItems(pendingIds, riderPollingPendingIds);
-                    const removedAccepted=getRemovedItems(acceptedIds, riderPollingAcceptedIds);
-                    const driverDeletedPendingRequests=removedPending.filter(id =>
+                    const newlyAccepted = getNewItems(acceptedIds, riderPollingAcceptedIds);
+                    const removedPending = getRemovedItems(pendingIds, riderPollingPendingIds);
+                    const removedAccepted = getRemovedItems(acceptedIds, riderPollingAcceptedIds);
+                    const driverDeletedPendingRequests = removedPending.filter(id =>
                         !rejectedIds.includes(id) &&
                         !activeRequestIds.includes(id) &&
                         !cancelledRequestIds.includes(String(id))
                     );
-                    const driverDeletedAcceptedRequests=removedAccepted.filter(id =>
+                    const driverDeletedAcceptedRequests = removedAccepted.filter(id =>
                         !rejectedIds.includes(id) &&
                         !activeRequestIds.includes(id) &&
                         !cancelledRequestIds.includes(String(id))
                     );
-                    const selfCancelledRequests=[...removedPending, ...removedAccepted].filter(id =>
+                    const selfCancelledRequests = [...removedPending, ...removedAccepted].filter(id =>
                         cancelledRequestIds.includes(String(id))
                     );
-                    const actuallyRejected=removedPending.filter(id => rejectedIds.includes(id));
+                    const actuallyRejected = removedPending.filter(id => rejectedIds.includes(id));
 
                     if (newlyAccepted.length > 0) {
                         showToast("Your ride was accepted!", "success");
@@ -623,12 +623,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 }
 
-                riderPollingInitialized=true;
-                riderPollingAcceptedIds=[...acceptedIds];
-                riderPollingPendingIds=[...pendingIds];
+                riderPollingInitialized = true;
+                riderPollingAcceptedIds = [...acceptedIds];
+                riderPollingPendingIds = [...pendingIds];
 
                 if (data.html) {
-                    container.innerHTML=data.html;
+                    container.innerHTML = data.html;
                 }
             } catch (err) {
                 console.error("Polling error:", err);
@@ -640,4 +640,82 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // start after DOM ready
     startRiderPolling();
+});
+let popupMap = null;
+let routeLayer = null;
+let mapMarkers = []; // Track markers to clear them later
+
+function showRoutePopup(sLat, sLng, eLat, eLng) {
+    // Debugging: check if coordinates are reaching the function
+    console.log("Routing from:", sLat, sLng, "to", eLat, eLng);
+
+    if (!sLat || !sLng || !eLat || !eLng) {
+        alert("Location coordinates are missing for this ride.");
+        return;
+    }
+
+    const modal = document.getElementById('mapModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    if (!popupMap) {
+        popupMap = L.map('popupMap').setView([sLat, sLng], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(popupMap);
+    }
+
+    setTimeout(() => {
+        popupMap.invalidateSize();
+
+        // 1. Clear old layers and markers
+        if (routeLayer) popupMap.removeLayer(routeLayer);
+        mapMarkers.forEach(m => popupMap.removeLayer(m));
+        mapMarkers = [];
+
+        // 2. Fetch Route
+        const url = `https://router.project-osrm.org/route/v1/driving/${sLng},${sLat};${eLng},${eLat}?overview=full&geometries=geojson`;
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.routes || data.routes.length === 0) {
+                    console.error("No route found");
+                    return;
+                }
+
+                routeLayer = L.geoJSON(data.routes[0].geometry, {
+                    style: { color: '#191265', weight: 6, opacity: 0.8 }
+                }).addTo(popupMap);
+
+                // 3. Add and track new markers
+                const startMarker = L.marker([sLat, sLng]).addTo(popupMap).bindPopup("Start");
+                const endMarker = L.marker([eLat, eLng]).addTo(popupMap).bindPopup("End");
+                mapMarkers.push(startMarker, endMarker);
+
+                // 4. Fit map
+                popupMap.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
+            })
+            .catch(err => console.error("OSRM Fetch Error:", err));
+    }, 300);
+}
+function closeMapPopup() {
+    const modal = document.getElementById('mapModal');
+    if (modal) {
+        // Force hide
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+
+        // Optional: Stop the map from processing once closed
+        if (popupMap) {
+            popupMap.stop();
+        }
+    }
+}
+
+// Ensure the ESC key also closes the map for better UX
+document.addEventListener('keydown', function (e) {
+    if (e.key === "Escape") {
+        closeMapPopup();
+    }
 });
