@@ -1,4 +1,4 @@
-from datetime import  time, datetime, timedelta, time
+from datetime import datetime, timedelta, time
 from ..models import trip, riderequest
 from ..ml.routeopt import tripprice
 from django.contrib.auth import get_user_model
@@ -181,11 +181,21 @@ def starttracking(request):
 
     ride.status="ONGOING"
     ride.save()
+    
+    # Send driver straight to the live dashboard
     return redirect("testlocation", rideid=rideid)
+
 
 #driver page routing function
 @login_required
 def driverfunction(request):
+    
+    # --- FAILSAFE: AUTO-REDIRECT IF RIDE IS ALREADY ONGOING ---
+    # If the user has an ongoing ride, intercept them instantly and force them to the dashboard
+    ongoing_trip = trip.objects.filter(usercredentials=request.user, status="ONGOING").first()
+    if ongoing_trip:
+        return redirect("testlocation", rideid=ongoing_trip.id)
+    
     cleanup(request)       #calling cleanup function to delete expired rides
     requests=None
     accepted=None
@@ -203,7 +213,6 @@ def driverfunction(request):
     except Exception as e:
         print(e)
 
-    # --- THIS IS THE CRITICAL FIX ---
     # Only process actions if the form was actually submitted
     if request.method == "POST":
         action = request.POST.get("action")
@@ -239,14 +248,13 @@ def driverfunction(request):
     for currentrequest in acceptedrequests:
         currentrequest.routegeometry_json=json.dumps(currentrequest.trip.routegeometry or {})
 
-    # NOTE: I changed "lasttrip" in the context to "activetrips" for the UI to display the CURRENT active ride, not the past one.
-    ongoing_trip = trip.objects.filter(usercredentials=request.user,status="ONGOING").order_by("-id").first()
-    current_display_trip = activetrips if activetrips else ongoing_trip
+    # We use "activetrips" here so the driver only sees trips they are currently planning/setting up
+    current_display_trip = activetrips 
     
     return render(request, "driver.html",{
         "requests":pendingrequests,
         "accepted":acceptedrequests,
-        "lasttrip": current_display_trip, # This guarantees the UI knows you have a ride!
+        "lasttrip": current_display_trip,
         "startride":startride,
         "activetrips":activetrips,
         "ongoing":ongoing_trip,
