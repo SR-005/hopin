@@ -156,7 +156,7 @@ def signupfunction(request):
             # create_user is a Django Built in function to create a User to User Model
             newuser=User.objects.create_user(email=useremail, password=userpassword)
             newuser.first_name=firstname.upper()+" "+lastname.upper()
-            newuser.last_name=None
+            newuser.last_name=" "
             newuser.save()
             messages.success(request, "Account has been successfully created.")
 

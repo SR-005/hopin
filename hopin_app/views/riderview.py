@@ -478,6 +478,8 @@ def riderfunction(request):
     latitude=None
     longitude=None
     preferredtrips=None
+    username=request.user.first_name
+    print("Username: ",username)
 
     allrequest=riderequest.objects.filter(rider=request.user)
     requests=riderequest.objects.filter(rider=request.user, status="PENDING")
@@ -507,5 +509,5 @@ def riderfunction(request):
         elif action=="seemore":
             return seemore(request)
 
-    return render(request, "rider.html", {"rides": rides, "requests": requests, "accepted": accepted, "requestedrides": requestedrides,
+    return render(request, "rider.html", {"rides": rides, "name":username,"requests": requests, "accepted": accepted, "requestedrides": requestedrides,
                                           "pastrides": pastrides, "preferredtrips": preferredtrips, "riderlatitude": latitude, "riderlongitude": longitude})
