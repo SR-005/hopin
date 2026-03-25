@@ -471,41 +471,43 @@ def seemore(request):
 @login_required
 def riderfunction(request):
     cleanup(request)  # calling cleanup function to delete expired rides
-    rides = None
-    requests = None
-    accepted = None
-    requestedrides = None
-    latitude = None
-    longitude = None
-    preferredtrips = None
+    rides=None
+    requests=None
+    accepted=None
+    requestedrides=None
+    latitude=None
+    longitude=None
+    preferredtrips=None
+    username=request.user.first_name
+    print("Username: ",username)
 
-    allrequest = riderequest.objects.filter(rider=request.user)
-    requests = riderequest.objects.filter(rider=request.user, status="PENDING")
-    accepted = riderequest.objects.filter(
+    allrequest=riderequest.objects.filter(rider=request.user)
+    requests=riderequest.objects.filter(rider=request.user, status="PENDING")
+    accepted=riderequest.objects.filter(
         rider=request.user, status="ACCEPTED")
-    pastrides = riderequest.objects.filter(
+    pastrides=riderequest.objects.filter(
         rider=request.user, status="DROPPED", paymentdetails__status="PAID")
 
     preferredtrips = rebookable(pastrides)
     requestedrides = ongoingrequest(allrequest)
     print("Prefered Trips: ", preferredtrips)
-    if request.method == "POST":
-        action = request.POST.get("action")
+    if request.method=="POST":
+        action=request.POST.get("action")
 
-        if action == "riderdetails":
+        if action=="riderdetails":
             rides, latitude, longitude = riderdetails(request)
 
-        if action == "bookagain":
+        if action=="bookagain":
             return requestrideagain(request, pastrides)
 
-        elif action == "requestride":
+        elif action=="requestride":
             return requestride(request)
 
-        elif action == "cancelrequest":
+        elif action=="cancelrequest":
             return cancelrequest(request)
 
-        elif action == "seemore":
+        elif action=="seemore":
             return seemore(request)
 
-    return render(request, "rider.html", {"rides": rides, "requests": requests, "accepted": accepted, "requestedrides": requestedrides,
+    return render(request, "rider.html", {"rides": rides, "name":username,"requests": requests, "accepted": accepted, "requestedrides": requestedrides,
                                           "pastrides": pastrides, "preferredtrips": preferredtrips, "riderlatitude": latitude, "riderlongitude": longitude})

@@ -3,6 +3,7 @@ import math
 
 sematicweight=0.6
 spacialweight=0.4
+DESTINATION_RADIUS_KM=0.25
 
 def segmentdistance(rider, startsegment, endsegment):
 
@@ -125,28 +126,52 @@ def speedcalculation(driverlocation, riderlocation):
 
 def getriderdropofflocation(ride):
     if ride.trip.prefereddirection=="to":
-        destination=ride.trip.routegeometry["coordinates"][-1]
-        return destination[1], destination[0]
+        return gettripdestination(ride.trip)
 
     return ride.pickuplatitude, ride.pickuplongitude
 
 
+def gettripdestination(currenttrip):
+    coordinates=(currenttrip.routegeometry or {}).get("coordinates", [])
+    if not coordinates:
+        return None, None
+
+    destination=coordinates[-1]
+    return destination[1], destination[0]
+
+
+def tripdestinationreached(currenttrip, currentlatitude, currentlongitude, completionradius=DESTINATION_RADIUS_KM):
+    if currentlatitude is None or currentlongitude is None:
+        return False
+
+    destinationlatitude, destinationlongitude=gettripdestination(currenttrip)
+    if destinationlatitude is None or destinationlongitude is None:
+        return False
+
+    distance=haversine(
+        (currentlatitude, currentlongitude),
+        (destinationlatitude, destinationlongitude),
+        unit=Unit.KILOMETERS
+    )
+    return distance<=completionradius
+
+
 def riderdropped(currentlatitude, currentlongitude, riders):
-    completionradius=5      #dropped off trigger radius: 5km
     for ride in riders:
         if ride.status=="FULLCONFIRM":
             dropofflatitude, dropofflongitude=getriderdropofflocation(ride)
+            if dropofflatitude is None or dropofflongitude is None:
+                continue
             distance=haversine((currentlatitude, currentlongitude),(dropofflatitude, dropofflongitude),
                                 unit=Unit.KILOMETERS)
 
-            if distance<=completionradius:
+            if distance<=DESTINATION_RADIUS_KM:
                 ride.status="DROPPED"
                 ride.save()
                 print(f"Ride ended for {ride}")
 
 
 # Haversine's Distance Function- Price Calculation
-
 def routedistance(routegeometry,startindex,endindex):
     coords=routegeometry["coordinates"]
 
