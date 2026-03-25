@@ -112,13 +112,6 @@ def landingfunction(request):
         print("User is not Logged in or Logged Out")
         status="false"
 
-    if request.method=="POST":
-        action=request.POST.get("action")
-        if action=="paypending":
-            paymentid=request.POST.get("paymentid")
-            return redirect("testpay",paymentid=paymentid)
-    
-
     
     return render(request, "landing.html", {"status":status,"user":user,"firstname":firstname,"pending":pendingpayment})
 

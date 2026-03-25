@@ -14,7 +14,7 @@ class PendingPaymentMiddleware:
                     return self.get_response(request)
                 
                 allowed_paths=["/login/","/signup/","/logout/","/verifypayment/","/testpay/","/fetchtracking/","/fetchstatus/"
-                               ,"/testlocation/","/testtracking/","/updatelocation/"]
+                               ,"/testlocation/","/testtracking/","/updatelocation/","/testprofile"]
 
                 if not any(request.path.startswith(p) for p in allowed_paths):
                     return HttpResponse("Complete pending payment first", status=403)

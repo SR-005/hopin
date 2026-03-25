@@ -166,7 +166,7 @@
             <img src="/static/images/bike-icon.png" class="w-14 opacity-70" alt="bike">
 
             <div class="flex items-center gap-2 mt-auto">
-                <form method="POST" action="{% url 'rider' %}" class="m-0 flex items-center gap-2">
+                <form method="POST" action="{% url 'testrider' %}" class="m-0 flex items-center gap-2">
                     {% csrf_token %}
                     <input type="hidden" name="requestid" value="{{ request.id }}">
 
