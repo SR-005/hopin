@@ -21,12 +21,10 @@ def otpgenerator():
 def sendotptomail(request):
     user=request.user
     email=user.email
-    phonenumber=request.POST.get("phone")
 
     otp=otpgenerator()
     request.session['otp']=otp
     request.session['otptime']=timezone.now().timestamp()
-    request.session['phonenumber']=phonenumber
     request.session['otpsent']=True
 
     try:
@@ -54,7 +52,7 @@ def verifyotp(request):
     
     if userotp==request.session.get('otp'):
         userprofile=userdetail.objects.get(usercredentials=request.user)
-        userprofile.phonenumber=request.session.get('phonenumber')
+        userprofile.phonenumber=request.POST.get("phone")
         userprofile.verificationpending=True
         userprofile.save()
 
