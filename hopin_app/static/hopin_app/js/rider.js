@@ -502,6 +502,10 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
 
         async function poll() {
+            if (window.isMapViewing === true) {
+                console.log("Polling skipped because map is currently open.");
+                return;
+            }
             try {
                 const res = await fetch("/rider/poll/");
                 const contentType = res.headers.get("content-type") || "";
@@ -565,6 +569,11 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!container) return;
 
         async function poll() {
+            if (typeof isMapViewing !== 'undefined' && isMapViewing) return;
+            if (window.isMapViewing === true) {
+                console.log("Polling paused because map is open");
+                return;
+            }
             try {
                 const res = await fetch("/rider/poll/");
                 const contentType = res.headers.get("content-type") || "";
@@ -641,13 +650,15 @@ document.addEventListener("DOMContentLoaded", function () {
     // start after DOM ready
     startRiderPolling();
 });
+// Use window. to make it 100% global
+window.isMapViewing = false;
 let popupMap = null;
 let routeLayer = null;
-let mapMarkers = []; // Track markers to clear them later
+let mapMarkers = [];
 
 function showRoutePopup(sLat, sLng, eLat, eLng) {
-    // Debugging: check if coordinates are reaching the function
-    console.log("Routing from:", sLat, sLng, "to", eLat, eLng);
+    window.isMapViewing = true; // LOCK: Stop background polling
+    console.log("Map opened! Polling locked.");
 
     if (!sLat || !sLng || !eLat || !eLng) {
         alert("Location coordinates are missing for this ride.");
@@ -668,52 +679,46 @@ function showRoutePopup(sLat, sLng, eLat, eLng) {
     setTimeout(() => {
         popupMap.invalidateSize();
 
-        // 1. Clear old layers and markers
         if (routeLayer) popupMap.removeLayer(routeLayer);
         mapMarkers.forEach(m => popupMap.removeLayer(m));
         mapMarkers = [];
 
-        // 2. Fetch Route
         const url = `https://router.project-osrm.org/route/v1/driving/${sLng},${sLat};${eLng},${eLat}?overview=full&geometries=geojson`;
 
         fetch(url)
             .then(res => res.json())
             .then(data => {
-                if (!data.routes || data.routes.length === 0) {
-                    console.error("No route found");
-                    return;
-                }
+                if (!data.routes || data.routes.length === 0) return;
 
                 routeLayer = L.geoJSON(data.routes[0].geometry, {
                     style: { color: '#191265', weight: 6, opacity: 0.8 }
                 }).addTo(popupMap);
 
-                // 3. Add and track new markers
                 const startMarker = L.marker([sLat, sLng]).addTo(popupMap).bindPopup("Start");
                 const endMarker = L.marker([eLat, eLng]).addTo(popupMap).bindPopup("End");
                 mapMarkers.push(startMarker, endMarker);
 
-                // 4. Fit map
                 popupMap.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
             })
             .catch(err => console.error("OSRM Fetch Error:", err));
     }, 300);
 }
+
 function closeMapPopup() {
+    window.isMapViewing = false; // UNLOCK: Resume background polling!
+    console.log("Map closed! Polling resumed.");
+
     const modal = document.getElementById('mapModal');
     if (modal) {
-        // Force hide
         modal.classList.add('hidden');
         modal.classList.remove('flex');
 
-        // Optional: Stop the map from processing once closed
         if (popupMap) {
             popupMap.stop();
         }
     }
 }
 
-// Ensure the ESC key also closes the map for better UX
 document.addEventListener('keydown', function (e) {
     if (e.key === "Escape") {
         closeMapPopup();
