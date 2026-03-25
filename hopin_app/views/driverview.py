@@ -29,7 +29,7 @@ def driverpoll(request):
     for currentrequest in accepted:
         currentrequest.routegeometry_json=json.dumps(currentrequest.trip.routegeometry or {})
 
-    html=render_to_string("partials/driverincoming.html", {
+    html=render_to_string("partials/driverrequests.html", {
         "requests": requests,
         "accepted": accepted,
         "activetrips": activetrips

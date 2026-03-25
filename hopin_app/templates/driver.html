@@ -387,97 +387,8 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6 w-full">
-                    <!-- Incoming Requests -->
-                    <div class="bg-[#231A76] rounded-[2.5rem] p-8 shadow-2xl flex flex-col">
-                        <h3 class="text-white text-2xl font-black uppercase mb-6 flex justify-between items-center">
-                            Incoming Requests 
-                            <span class="bg-white text-[#191265] text-xs px-2 py-1 rounded-full">
-                                {% if requests %}{{ requests|length }}{% else %}0{% endif %}
-                            </span>
-                        </h3>
-                        <div class="flex flex-col gap-4 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
-                            {% if requests %}
-                                {% for req in requests %}
-                                <div class="bg-white rounded-[1.5rem] p-4 flex gap-4 text-[#191265] shadow-md border-2 border-[#191265] hover:-translate-y-1 transition-transform">
-                                    <div class="flex-1 flex flex-col justify-between">
-                                        <div class="flex items-center gap-3 mb-2">
-                                            <img src="https://ui-avatars.com/api/?name={{ req.rider.first_name|default:req.rider.email }}&background=191265&color=fff&bold=true" class="w-10 h-10 rounded-full shadow-sm">
-                                            <p class="font-extrabold text-lg truncate max-w-[150px]">{{ req.rider.first_name|default:req.rider.email }}</p>
-                                        </div>
-                                        <div class="mb-3 flex flex-col gap-0.5">
-                                            <div class="text-sm font-bold"><span class="text-black">From:</span> <span class="font-medium text-gray-700 ml-1">{{ req.pickuplocation|default:"Not specified" }}</span></div>
-                                            <div class="text-sm font-bold"><span class="text-black">Contact:</span> <span class="font-medium text-gray-700 ml-1">{{ req.rider.userdetails.phonenumber|default:"N/A" }}</span></div>
-                                        </div>
-                                        <div class="flex gap-2"> 
-                                            <form class="async-form w-1/2" action="{% url 'driver' %}" method="POST">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="requestid" value="{{ req.id }}">
-                                                <input type="hidden" name="action" value="reject">
-                                                <button type="submit" class="w-full bg-[#ff8a8a] text-white px-4 py-1.5 rounded-lg font-bold text-xs tracking-wider uppercase hover:bg-red-400 shadow-sm transition-colors text-center">REJECT</button>
-                                            </form>
-                                            <form class="async-form w-1/2" action="{% url 'driver' %}" method="POST">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="requestid" value="{{ req.id }}">
-                                                <input type="hidden" name="action" value="accept">
-                                                <button type="submit" class="w-full bg-[#8ccb90] text-white px-4 py-1.5 rounded-lg font-bold text-xs tracking-wider uppercase hover:bg-green-500 shadow-sm transition-colors text-center">ACCEPT</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                    <div id="minimap-req-{{ req.id }}" class="minimap-container w-[120px] sm:w-[150px] h-[120px] sm:h-[150px] shrink-0 rounded-xl overflow-hidden relative border-2 border-[#191265]/10 z-0" 
-                                        data-lat="{{ req.pickuplatitude }}" 
-                                        data-lng="{{ req.pickuplongitude }}">
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            {% else %}
-                                <!-- Empty State when there are no requests -->
-                                <div class="bg-white/10 rounded-[1.5rem] p-6 flex items-center justify-center text-white/70 border border-white/20">
-                                    <p class="font-bold text-sm uppercase tracking-wider">No pending requests yet</p>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Confirmed Passengers -->
-                    <div class="bg-[#231A76] rounded-[2.5rem] p-8 shadow-2xl flex flex-col">
-                        <h3 class="text-white text-2xl font-black uppercase mb-6">
-                            Confirmed Passengers
-                            <span class="bg-green-400 text-[#191265] text-xs px-2 py-1 rounded-full ml-2">
-                                {% if accepted %}{{ accepted|length }}{% else %}0{% endif %}
-                            </span>
-                        </h3>
-                        <div class="flex flex-col gap-4 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
-                            {% if accepted %}
-                                {% for req in accepted %}
-                                <div class="bg-white rounded-[1.5rem] p-4 flex gap-4 text-[#191265] shadow-md border-2 border-green-500 hover:-translate-y-1 transition-transform">
-                                    <div class="flex-1 flex flex-col justify-between">
-                                        <div class="flex items-center gap-3 mb-2">
-                                            <img src="https://ui-avatars.com/api/?name={{ req.rider.first_name|default:req.rider.email }}&background=191265&color=fff&bold=true" class="w-10 h-10 rounded-full shadow-sm">
-                                            <p class="font-extrabold text-lg truncate max-w-[150px]">{{ req.rider.first_name|default:req.rider.email }}</p>
-                                        </div>
-                                        <div class="mb-3 flex flex-col gap-0.5">
-                                            <div class="text-sm font-bold"><span class="text-black">From:</span> <span class="font-medium text-gray-700 ml-1">{{ req.pickuplocation|default:"Not specified" }}</span></div>
-                                            <div class="text-sm font-bold"><span class="text-black">Contact:</span> <span class="font-medium text-gray-700 ml-1">{{ req.rider.userdetails.phonenumber|default:"N/A" }}</span></div>
-                                        </div>
-                                        <div class="bg-[#8ccb90] text-white px-4 py-1.5 rounded-lg font-bold text-xs tracking-wider uppercase text-center w-max shadow-sm">
-                                            CONFIRMED
-                                        </div>
-                                    </div>
-                                    <div id="minimap-acc-{{ req.id }}" class="minimap-container w-[120px] sm:w-[150px] h-[120px] sm:h-[150px] shrink-0 rounded-xl overflow-hidden relative border-2 border-green-500/20 z-0" 
-                                        data-lat="{{ req.pickuplatitude }}" 
-                                        data-lng="{{ req.pickuplongitude }}">
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            {% else %}
-                                <!-- Empty State when there are no confirmed passengers -->
-                                <div class="bg-white/10 rounded-[1.5rem] p-6 flex items-center justify-center text-white/70 border border-white/20">
-                                    <p class="font-bold text-sm uppercase tracking-wider">No passengers confirmed yet</p>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
+                <div id="driver-state">
+                    {% include "partials/driverrequests.html" %}
                 </div>
             
             {% else %}
@@ -503,6 +414,11 @@
                     if(section) section.scrollIntoView({ behavior: 'smooth' }); 
                 }, 600);
             {% endif %}
+
+            // --- POLLING VARIABLES (Must be inside DOMContentLoaded for DOM access) ---
+            let driverPrevPendingIds = [];
+            let driverPrevAcceptedIds = [];
+            let driverPollingInitialized = false;
 
             const scrollToFormBtn = document.getElementById('scroll-to-form');
             if (scrollToFormBtn) {
@@ -706,60 +622,265 @@
 
                     if(locInput.value === "Select direction first...") locInput.value = "";
 
-                    if (userMarker) {
-                        const pos = userMarker.getLatLng();
-                        updateLocationData(pos.lat, pos.lng, locInput.value);
-                    }
+                // If a marker already exists on the map, recalculate the route for the new direction
+                if (userMarker) {
+                    const pos = userMarker.getLatLng();
+                    updateLocationData(pos.lat, pos.lng, locInput.value);
                 }
-                
-                toBtn.onclick = () => setDirection('to');
-                fromBtn.onclick = () => setDirection('from');
-                
-            } // <--- THIS BRACKET IS WHAT WAS CAUSING THE ISSUE!
+            }
+            
+            toBtn.onclick = () => setDirection('to');
+            fromBtn.onclick = () => setDirection('from');
+            }
 
-            // --- MINIMAPS LOGIC (Always runs) ---
-            setTimeout(() => {
+           
+
+            // Smooth Scroll from hero
+            // Smooth Scroll from hero (Dynamic based on active trips)
+                const scrollToFormBtn = document.getElementById('scroll-to-form');
+                if (scrollToFormBtn) {
+                    scrollToFormBtn.onclick = () => document.getElementById('create-ride-section').scrollIntoView({ behavior: 'smooth' });
+                }
+
+                const scrollToActiveBtn = document.getElementById('scroll-to-active');
+                if (scrollToActiveBtn) {
+                    scrollToActiveBtn.onclick = () => document.getElementById('active-trip-section').scrollIntoView({ behavior: 'smooth' });
+                }
+        
+            function initRequestMaps() {
                 const minimapContainers = document.querySelectorAll('.minimap-container');
                 minimapContainers.forEach(container => {
-                    if (container._leaflet_id) return; 
+                    // Safety check: Prevent Leaflet from re-initializing the same container
+                    if (!container.id) return;
+
                     const lat = parseFloat(container.getAttribute('data-lat'));
                     const lng = parseFloat(container.getAttribute('data-lng'));
 
-                    if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
-                        const mmap = L.map(container.id, {
-                            zoomControl: false,       
-                            dragging: false,          
-                            scrollWheelZoom: false,   
-                            doubleClickZoom: false,
-                            boxZoom: false,
-                            keyboard: false,
-                            attributionControl: false 
-                        }).setView([lat, lng], 15.5);
-
-                        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(mmap);
-
-                        L.circleMarker([lat, lng], {
-                            radius: 8,
-                            fillColor: "#191265",
-                            color: "#ffffff",
-                            weight: 3,
-                            opacity: 1,
-                            fillOpacity: 1
-                        }).addTo(mmap);
-                        
-                        setTimeout(() => {
-                            mmap.invalidateSize();
-                        }, 300);
-                        
-                    } else {
+                    if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) {
                         container.innerHTML = `
                             <div class="w-full h-full bg-gray-100 flex flex-col items-center justify-center text-gray-400">
                                 <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                                 <span class="text-[10px] font-bold uppercase tracking-wider">No Location</span>
                             </div>`;
+                        return;
                     }
+
+                    if (container._leaflet_id) {
+                        // Re-use existing map if already initialized
+                        return;
+                    }
+
+                    const mmap = L.map(container.id, {
+                        zoomControl: false,
+                        dragging: false,
+                        scrollWheelZoom: false,
+                        doubleClickZoom: false,
+                        boxZoom: false,
+                        keyboard: false,
+                        attributionControl: false
+                    }).setView([lat, lng], 15.5);
+
+                    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(mmap);
+
+                    L.circleMarker([lat, lng], {
+                        radius: 8,
+                        fillColor: "#191265",
+                        color: "#ffffff",
+                        weight: 3,
+                        opacity: 1,
+                        fillOpacity: 1
+                    }).addTo(mmap);
+
+                    setTimeout(() => mmap.invalidateSize(), 300);
                 });
-            }, 150); 
+            }
+
+            // ---------------- TOAST ----------------
+            function showToast(message, type = "info") {
+                const toast = document.createElement("div");
+                toast.className = "rounded-xl px-4 py-3 font-bold shadow-lg text-sm text-white transition-opacity";
+                toast.style.position = "fixed";
+                toast.style.top = "20px";
+                toast.style.right = "20px";
+                toast.style.zIndex = "9999";
+                toast.style.maxWidth = "340px";
+                toast.style.opacity = "0.95";
+                toast.style.backgroundColor = type === "success" ? "#198754" : type === "error" ? "#dc3545" : "#0d6efd";
+                toast.innerText = message;
+
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.style.opacity = "0";
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            const driverToastStorageKey = "driver_toast_message";
+            const driverRequestActionStorageKey = "driver_request_actions";
+
+            function queueDriverToast(message, type = "info") {
+                sessionStorage.setItem(driverToastStorageKey, JSON.stringify({ message, type }));
+            }
+
+            function showQueuedDriverToast() {
+                try {
+                    const raw = sessionStorage.getItem(driverToastStorageKey);
+                    if (!raw) return;
+                    const payload = JSON.parse(raw);
+                    sessionStorage.removeItem(driverToastStorageKey);
+                    if (payload?.message) showToast(payload.message, payload.type || "info");
+                } catch (ex) {
+                    sessionStorage.removeItem(driverToastStorageKey);
+                }
+            }
+
+            function getDriverRequestActions() {
+                try {
+                    const raw = sessionStorage.getItem(driverRequestActionStorageKey);
+                    const parsed = raw ? JSON.parse(raw) : {};
+                    return parsed && typeof parsed === "object" ? parsed : {};
+                } catch (ex) {
+                    return {};
+                }
+            }
+
+            function setDriverRequestActions(actions) {
+                sessionStorage.setItem(driverRequestActionStorageKey, JSON.stringify(actions));
+            }
+
+            function rememberDriverRequestAction(requestId, action) {
+                if (!requestId || !action) return;
+                const actions = getDriverRequestActions();
+                actions[String(requestId)] = action;
+                setDriverRequestActions(actions);
+            }
+
+            function consumeDriverRequestAction(requestId) {
+                const actions = getDriverRequestActions();
+                const key = String(requestId);
+                const action = actions[key];
+                if (action) {
+                    delete actions[key];
+                    setDriverRequestActions(actions);
+                }
+                return action || null;
+            }
+
+            function getDriverPendingRequestIds() {
+                return Array.from(document.querySelectorAll('#driver-state input[name="requestid"]')).map(input => String(input.value));
+            }
+
+            function getDriverAcceptedRequestIds() {
+                return Array.from(document.querySelectorAll('#driver-state input[name="accepted_requestid"]')).map(input => String(input.value));
+            }
+
+            function getDriverAddedItems(newArr, oldArr) {
+                return newArr.filter(id => !oldArr.includes(id));
+            }
+            function getDriverRemovedItems(newArr, oldArr) {
+                return oldArr.filter(id => !newArr.includes(id));
+            }
+
+            document.addEventListener("submit", function (event) {
+                const form = event.target;
+                if (!(form instanceof HTMLFormElement)) return;
+                if (!form.closest("#driver-state")) return;
+
+                const submitter = event.submitter;
+                if (!submitter || submitter.name !== "action") return;
+                if (!["accept", "reject"].includes(submitter.value)) return;
+
+                const requestId = form.querySelector('input[name="requestid"]')?.value;
+                rememberDriverRequestAction(requestId, submitter.value);
+            });
+
+            function renderDriverState(html) {
+                const container = document.getElementById("driver-state");
+                if (!container) return;
+
+                const trimmed = (html || "").trim();
+                container.innerHTML = trimmed;
+
+                // Keep the tiles visible even when both sections are empty so their empty states render.
+                container.hidden = false;
+
+                if (container.querySelector('.minimap-container')) {
+                    setTimeout(initRequestMaps, 50);
+                }
+            }
+
+            async function pollDriver() {
+                try {
+                    const res = await fetch("/driver/poll/");
+                    const contentType = res.headers.get("content-type") || "";
+
+                    if (!res.ok || !contentType.includes("application/json")) {
+                        const text = await res.text();
+                        throw new Error(`Polling failed ${res.status}: ${text.slice(0, 120)}`);
+                    }
+
+                    const data = await res.json();
+                    const newPending = (data.pending_ids || []).map(String);
+                    const newAccepted = (data.accepted_ids || []).map(String);
+                    const addedPending = getDriverAddedItems(newPending, driverPrevPendingIds);
+                    const removedPending = getDriverRemovedItems(newPending, driverPrevPendingIds);
+                    const removedAccepted = getDriverRemovedItems(newAccepted, driverPrevAcceptedIds);
+                    const cancelledPending = removedPending.filter(id => !consumeDriverRequestAction(id));
+                    const pendingChanged = newPending.join(",") !== driverPrevPendingIds.join(",");
+                    const acceptedChanged = newAccepted.join(",") !== driverPrevAcceptedIds.join(",");
+
+                    if (driverPollingInitialized) {
+                        if (addedPending.length > 0) {
+                            showToast("New incoming ride request!", "info");
+                        }
+
+                        if (cancelledPending.length > 0) {
+                            showToast("An incoming request was cancelled.", "error");
+                        }
+
+                        if (removedAccepted.length > 0) {
+                            queueDriverToast("An accepted rider cancelled the ride.", "error");
+                            window.location.reload();
+                            return;
+                        }
+
+                        if (acceptedChanged) {
+                            window.location.reload();
+                            return;
+                        }
+                    }
+
+                    if (pendingChanged || acceptedChanged) {
+                        renderDriverState(data.html || "");
+                    }
+
+                    driverPrevPendingIds = [...newPending];
+                    driverPrevAcceptedIds = [...newAccepted];
+                    driverPollingInitialized = true;
+                } catch (error) {
+                    console.error("Driver polling failed:", error);
+                }
+            }
+
+            function startDriverPolling() {
+                if (window.__driverPollInterval) {
+                    clearInterval(window.__driverPollInterval);
+                }
+
+                pollDriver();
+                window.__driverPollInterval = setInterval(pollDriver, 4000);
+            }
+
+            // Initialization when page is ready
+            // Update to capture current DOM state before polling starts
+            driverPrevPendingIds = getDriverPendingRequestIds();
+            driverPrevAcceptedIds = getDriverAcceptedRequestIds();
+            
+            showQueuedDriverToast();
+            initRequestMaps();
+            startDriverPolling();
+
         });
     </script>
 </body>
