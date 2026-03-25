@@ -420,21 +420,7 @@
             let driverPrevAcceptedIds = [];
             let driverPollingInitialized = false;
 
-            const scrollToFormBtn = document.getElementById('scroll-to-form');
-            if (scrollToFormBtn) {
-                scrollToFormBtn.onclick = () => {
-                    const formSection = document.getElementById('create-ride-section');
-                    if (formSection) formSection.scrollIntoView({ behavior: 'smooth' });
-                };
-            }
-
-            const scrollToActiveBtn = document.getElementById('scroll-to-active');
-            if (scrollToActiveBtn) {
-                scrollToActiveBtn.onclick = () => {
-                    const activeSection = document.getElementById('active-trip-section');
-                    if (activeSection) activeSection.scrollIntoView({ behavior: 'smooth' });
-                };
-            }
+    
 
             // --- UI FORM VARIABLES ---
             const locInput = document.getElementById('location-input');
