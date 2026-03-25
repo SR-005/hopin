@@ -20,7 +20,7 @@
 
 <body class="bg-gray-100 scroll-smooth relative overflow-x-hidden">
 
-    <nav class="w-full flex items-center px-6 lg:px-12 py-4 fixed top-0 left-0 z-50 bg-white shadow-sm">
+    <nav class="w-full flex items-center px-6 lg:px-12 py-4 fixed top-0 left-0 z-50  ">
         <div class="flex items-center w-1/4">
             <img src="{% static 'hopin_app/images/logo1.png' %}" class="h-14" alt="Hop In Logo">
         </div>
@@ -72,7 +72,7 @@
             <div class="flex justify-between items-center pl-3">
                 <div class="text-sm text-gray-700">
                     <p><span class="font-bold text-[#191265]">Model:</span> {{ trip.vehicletype }}</p>
-                    <p class="mt-1"><span class="font-bold text-[#191265]">Reg:</span> KL-XX XXXX</p>
+                    <p class="mt-1"><span class="font-bold text-[#191265]">Reg:</span> {{ trip.vehiclenumber }}</p>
 
                     <div class="flex items-center justify-between mt-3">
                         {% if trip.vehicletype == "Bike" %}
@@ -99,7 +99,7 @@
                 <img src="https://ui-avatars.com/api/?name={{ driver_name }}&background=191265&color=fff"
                     class="w-12 h-12 rounded-full shadow-md">
                 <div>
-                    <p class="text-lg font-bold text-[#191265]">{{ driver_name }}</p>
+                    <p class="text-lg font-bold text-[#191265]">{{ trip.usercredentials.first_name }}</p>
                     <p class="text-sm text-gray-500 font-medium">+91 xxxxxxxxxx</p>
                 </div>
             </div>
