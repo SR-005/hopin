@@ -58,7 +58,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     confirmBtn.innerText = "Confirm Pickup Now";
                 } else {
                     confirmBtn.disabled = true;
-                    confirmBtn.innerText = "Confirm Pickup (Waiting for Driver...)";
+                    confirmBtn.innerText = "Confirm Pickup ";
                 }
             })
             .catch(err => console.error("Status fetch error:", err));

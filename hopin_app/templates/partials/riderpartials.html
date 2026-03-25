@@ -1,3 +1,4 @@
+{% load static %}
 <style>
     /* Logic: Show/Hide the card based on the checkbox state */
     .toggle-trigger:checked~.driver-details-card {
@@ -77,14 +78,14 @@
 </style>
 {% if accepted %}
 {% for request in accepted %}
-<div class="mt-2 w-[500px] border-2 border-green-600 rounded-[2rem] p-4 bg-white shadow-2xl relative">
+<div class="mt-2 w-[520px] border-2 border-green-600 rounded-[2rem] p-4 bg-white shadow-2xl relative">
     <div class="flex justify-between items-start">
 
         <div class="flex gap-4 items-start">
             <img src="https://ui-avatars.com/api/?name={{ request.trip.usercredentials }}&background=16a34a&color=fff"
                 class="w-14 h-14 rounded-full border-2 border-gray-100 shadow-sm">
 
-            <div class="flex flex-col"> 
+            <div class="flex flex-col">
                 <p class="text-green-600 font-bold text-lg leading-tight truncate max-w-[160px]">
                     {{ request.trip.usercredentials.first_name }}
                 </p>
@@ -99,6 +100,7 @@
                 </div>
 
                 <div class="mt-5">
+                    {% if request.trip.vehicletype == "bike" %}
                     {% if request.trip.helmet %}
                     <span
                         class="bg-green-100 text-green-700 text-[10px] font-extrabold px-3 py-1 rounded-lg border border-green-200">
@@ -110,12 +112,17 @@
                         NO HELMET
                     </span>
                     {% endif %}
+                    {% endif %}
                 </div>
             </div>
         </div>
 
         <div class="flex flex-col justify-between items-end self-stretch min-h-[120px]">
-            <img src="/static/images/bike-icon.png" class="w-14 opacity-70" alt="bike">
+            {% if request.trip.vehicletype == "bike" %}
+            <img src="{% static 'images/bike.png' %}" class="w-14 opacity-70" alt="bike">
+            {% else %}
+            <img src="{% static 'images/car.png' %}" class="w-14 opacity-70" alt="car">
+            {% endif %}
 
             <div class="flex items-center gap-2 mt-auto">
                 <form method="POST" action="{% url 'rider' %}" class="m-0 flex items-center gap-2">
@@ -146,7 +153,7 @@
 {% endif %}
 {% if requests %}
 <div
-    class="absolute top-0 -mt-4 left-0 w-[420px] h-[120px] -ml-[3px] translate-y-[20px] bg-white/5 rounded-[2rem] p-3 border border-white/10 shadow-inner overflow-hidden flex flex-col z-20">
+    class="absolute top-0 -mt-4 left-0 w-[520px] h-[200px] -ml-[3px] translate-y-[20px] bg-white/5 rounded-[2rem] p-3 border border-white/10 shadow-inner overflow-hidden flex flex-col z-20">
 
     <p class="text-[10px] font-black uppercase text-[#191265] opacity-100 tracking-widest mb-2 px-2">
         Active Requests ({{ requests|length }})

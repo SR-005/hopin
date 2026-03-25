@@ -95,10 +95,10 @@
                 class="w-[538px] ml-auto mt-6 z-0 relative pointer-events-none">
         </section>
 
-        <section id="search-section" class="flex justify-center gap-20 items-start pt-20 h-screen bg-transparent">
-
+        <section id="search-section"
+            class="flex flex-col justify-start items-center gap-6 pt-20 min-h-screen bg-[#191265] pb-20">
             <form method="POST" id="searchForm" action="{% url 'rider' %}"
-                class="flex gap-6 border border-white/30 rounded-2xl p-8 bg-[#191265]/70 shadow-xl w-fit">
+                class="flex gap-5 border border-white/30 rounded-2xl p-6 bg-[#191265]/70 shadow-xl w-fit">
                 {% csrf_token %}
 
                 <input type="hidden" name="action" value="riderdetails">
@@ -107,72 +107,182 @@
                 <input type="hidden" name="latitude" id="lat-input">
                 <input type="hidden" name="longitude" id="lng-input">
 
-                <div class="w-[400px]">
-                    <h2 class="text-4xl text-white font-bold mb-6">
+                <div class="w-[340px]">
+                    <h2 class="text-3xl text-white font-bold mb-5">
                         Search <span class="text-white">Ride</span>
                     </h2>
-                    <label class="text-white block mb-1">Direction</label>
-                    <div class="flex gap-4 mb-4">
+
+                    <label class="text-white block text-sm mb-1">Direction</label>
+                    <div class="flex gap-3 mb-3">
                         <button type="button" id="toCollege"
-                            class="flex-1 bg-white hover:bg-gray-200 py-3 rounded-xl text-[#191265] font-bold shadow-inner transition">
+                            class="flex-1 bg-white hover:bg-gray-200 py-2.5 rounded-xl text-[#191265] text-sm font-bold shadow-inner transition">
                             To College
                         </button>
                         <button type="button" id="fromCollege"
-                            class="flex-1 bg-white/40 hover:bg-white/80 py-3 rounded-xl text-[#191265] font-bold transition">
+                            class="flex-1 bg-white/40 hover:bg-white/80 py-2.5 rounded-xl text-[#191265] text-sm font-bold transition">
                             From College
                         </button>
                     </div>
 
-                    <label class="text-white block mb-1">Pickup Location</label>
-                    <div class="relative mb-4">
+                    <label class="text-white block text-sm mb-1">Pickup Location</label>
+                    <div class="relative mb-3">
                         <input id="pickup" type="text"
-                            class="w-full bg-gray-300 rounded-xl p-3 font-semibold text-[#191265]" autocomplete="off"
-                            required>
+                            class="w-full bg-gray-300 rounded-xl p-2.5 text-sm font-semibold text-[#191265]"
+                            autocomplete="off" required>
                         <div id="pickup-results"
                             class="absolute top-full left-0 w-full bg-white rounded-xl shadow-lg z-50 text-sm overflow-hidden">
                         </div>
                     </div>
 
-                    <label class="text-white block mb-1">Destination</label>
-                    <div class="relative mb-4">
+                    <label class="text-white block text-sm mb-1">Destination</label>
+                    <div class="relative mb-3">
                         <input id="destination" type="text"
-                            class="w-full bg-gray-300 rounded-xl p-3 font-semibold text-[#191265]" autocomplete="off"
-                            required>
+                            class="w-full bg-gray-300 rounded-xl p-2.5 text-sm font-semibold text-[#191265]"
+                            autocomplete="off" required>
                         <div id="destination-results"
                             class="absolute top-full left-0 w-full bg-white rounded-xl shadow-lg z-50 text-sm overflow-hidden">
                         </div>
                     </div>
 
-
-                    <div class="flex gap-6 mb-6">
+                    <div class="flex gap-4 mb-4">
                         <div class="flex flex-col w-1/2">
-                            <label class="text-white mb-2">Date</label>
+                            <label class="text-white text-sm mb-1.5">Date</label>
                             <input id="rideDate" name="ridedate" type="date"
-                                class="w-full bg-gray-300 rounded-xl p-3 text-[#191265] font-medium outline-none cursor-pointer"
+                                class="w-full bg-gray-300 rounded-xl p-2.5 text-sm text-[#191265] font-medium outline-none cursor-pointer"
                                 required>
                         </div>
 
                         <div class="flex flex-col w-1/2">
-                            <label class="text-white mb-2">Time</label>
+                            <label class="text-white text-sm mb-1.5">Time</label>
                             <input id="rideTime" name="ridetime" type="time"
-                                class="w-full bg-gray-300 rounded-xl p-3 text-[#191265] font-medium outline-none cursor-pointer"
+                                class="w-full bg-gray-300 rounded-xl p-2.5 text-sm text-[#191265] font-medium outline-none cursor-pointer"
                                 required>
                         </div>
                     </div>
 
                     <button type="submit"
-                        class="w-full bg-white text-[#191265] py-3 rounded-xl font-bold hover:bg-gray-200 transition">
+                        class="w-full bg-white text-[#191265] py-2.5 rounded-xl text-sm font-bold hover:bg-gray-200 transition">
                         Search Rides
                     </button>
                 </div>
 
-                <div class="flex flex-col w-[450px]">
-
-                    <div id="map" class="flex-grow rounded-xl border-2 border-white/20 bg-gray-200 min-h-[400px]">
+                <div class="flex flex-col w-[380px]">
+                    <div id="map" class="flex-grow rounded-xl border-2 border-white/20 bg-gray-200 min-h-[320px]">
                     </div>
                 </div>
             </form>
+            <div class="w-full max-w-[800px] -mt-2">
+                <h3 class="text-xl text-white font-bold mb-3">Re-Book Previous Rides</h3>
 
+                <div id="rebookRidesList"
+                    class="flex flex-col gap-3 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
+
+                    {% if preferredtrips %}
+                    {% for trip in preferredtrips %}
+                    <div class="ride-card bg-white rounded-xl p-4 text-[#191265] shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100"
+                        data-vehicle="{{ trip.vehicletype|lower }}"
+                        data-helmet="{{ trip.helmet|default_if_none:''|lower }}"
+                        data-original-order="{{ forloop.counter0 }}">
+
+                        <div class="flex justify-between items-center mb-2">
+                            <div class="flex items-center gap-3">
+                                <img src="https://ui-avatars.com/api/?name={{ trip.usercredentials }}&background=191265&color=fff"
+                                    class="w-8 h-8 rounded-full shadow-sm" alt="User Avatar">
+                                <span class="font-bold text-lg">{{ trip.usercredentials.first_name }}</span>
+                            </div>
+                            <div class="flex items-start font-bold text-[#333]">
+                                <span class="text-base mt-1">₹</span>
+                                <span class="text-2xl leading-none">{{ amount }}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between items-center gap-4">
+
+                            <div
+                                class="flex-1 flex items-center gap-3 bg-gray-50 p-2 px-4 rounded-lg border border-gray-100">
+                                <div class="flex flex-col items-start w-[80px] shrink-0">
+                                    <p class="font-black text-[#191265] text-[10px] uppercase leading-tight">Start</p>
+                                    <p class="text-xs text-gray-500 font-bold truncate w-full">
+                                        {% if trip.direction == 'from' %} AISAT {% else %} {{ trip.preferedlocation }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+
+                                <div class="flex-1 flex items-center relative">
+                                    <div class="w-1.5 h-1.5 bg-gray-400 rounded-full shrink-0"></div>
+                                    <div class="flex-1 h-[2px] bg-gray-300 border-t-2 border-dashed border-gray-400">
+                                    </div>
+                                    <div class="absolute right-0 translate-x-1 text-gray-400">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                            stroke-linejoin="round">
+                                            <path d="M5 12h14M12 5l7 7-7 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col items-end w-[80px] shrink-0 text-right">
+                                    <p class="font-black text-[#191265] text-[10px] uppercase leading-tight">End</p>
+                                    <p class="text-xs text-gray-500 font-bold truncate w-full">
+                                        {% if trip.direction == 'from' %} {{ trip.preferedlocation }} {% else %} AISAT
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 shrink-0">
+                                <div class="flex items-center gap-1.5">
+                                    <span
+                                        class="font-bold text-xs uppercase bg-white text-[#191265] px-2 py-1 rounded-md border border-gray-200 shadow-sm">
+                                        {{ trip.vehicletype }}
+                                    </span>
+                                    {% if trip.vehicletype|lower == "bike" %}
+                                    {% if request.trip.helmet %}
+                                    <span
+                                        class="bg-[#9BCCA5] text-white text-[9px] font-extrabold px-1.5 py-1 rounded-md uppercase whitespace-nowrap shadow-sm">
+                                        +HELMET
+                                    </span>
+                                    {% else %}
+                                    <span
+                                        class="bg-red text-white text-[9px] font-extrabold px-1.5 py-1 rounded-md uppercase whitespace-nowrap shadow-sm">
+                                        +No Helmet
+                                    </span>
+                                    {% endif %}
+                                    {% endif %}
+                                </div>
+
+                                <form method="POST" action="{% url 'rider' %}" class="m-0">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="tripid" value="{{ trip.id }}">
+
+                                    {% if trip.id in requestedrides %}
+                                    <button disabled type="submit"
+                                        class="px-6 py-2 bg-gray-400 text-white rounded-full font-bold cursor-not-allowed text-xs">
+                                        Requested
+                                    </button>
+                                    {% else %}
+                                    <button type="submit" name="action" value="bookagain"
+                                        class="px-6 py-2 bg-[#191265] text-white rounded-full font-bold hover:bg-blue-900 transition shadow-md active:scale-95 text-xs">
+                                        Re-Book
+                                    </button>
+                                    {% endif %}
+                                </form>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    {% endfor %}
+
+                    {% else %}
+                    <div class="bg-white/10 rounded-xl p-6 text-center border-2 border-dashed border-white/30">
+                        <p class="text-lg font-medium mb-1 text-white">No Previous Rides</p>
+                        <p class="text-white/60 text-xs">Your past routes will appear here for easy re-booking.</p>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
         </section>
     </div>
 
@@ -228,7 +338,8 @@
                                             Start</p>
                                         <p class="text-[10px] text-gray-500 font-bold truncate w-full text-center">
                                             {% if trip.direction == 'from' %} AISAT {% else %} {{ trip.preferedlocation
-                                            }} {% endif %}
+                                            }}
+                                            {% endif %}
                                         </p>
                                     </div>
 
@@ -256,10 +367,17 @@
                                 <div class="flex items-center gap-3">
                                     <span class="font-black text-sm uppercase px-1">{{ trip.vehicletype }}</span>
                                     {% if trip.vehicletype|lower == "bike" %}
+                                    {% if request.trip.helmet %}
                                     <span
                                         class="bg-[#9BCCA5] text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg uppercase whitespace-nowrap">
                                         +HELMET
                                     </span>
+                                    {% else %}
+                                    <span
+                                        class="bg-red text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg uppercase whitespace-nowrap">
+                                        No Helmet
+                                    </span>
+                                    {% endif %}
                                     {% endif %}
                                 </div>
                             </div>
