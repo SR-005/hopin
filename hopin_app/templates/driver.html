@@ -29,33 +29,40 @@
         .font-playfair { font-family: 'Playfair Display', serif; }
         .font-bricolage { font-family: 'Bricolage Grotesque', sans-serif; }
         
+        /* Updated Form Inputs & Styling */
         .custom-input {
-            background-color: #3B3B7A;
+            background-color: #191265; 
             border: none;
             color: white;
-            border-radius: 0.75rem;
-            padding: 0.65rem 1rem;
+            border-radius: 0.5rem;
+            padding: 0.6rem 1rem; /* Compact vertical padding */
             width: 100%;
-            font-size: 0.85rem;
+            font-size: 1rem; 
             transition: all 0.2s ease;
         }
         .custom-input:focus {
-            outline: 2px solid #ffffff40;
-            background-color: #45458a;
+            outline: 2px solid #19126560;
+            background-color: #211885; 
         }
         .custom-input:disabled {
-            background-color: #2a2a5a;
-            opacity: 0.7;
+            background-color: #191265;
+            opacity: 0.6;
             cursor: not-allowed;
         }
-        .custom-input::placeholder { color: #A0A0C0; }
+        .custom-input::placeholder { color: #8C9BB4; } 
         
-        /* Specific Select Element Styling to match inputs */
         select.custom-input option {
             background-color: #191265;
             color: white;
         }
         
+        /* Makes the native calendar and clock icons white */
+        .custom-input::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 1; /* Makes it slightly soft to match your text */
+            cursor: pointer;
+        }
+
         .autocomplete-results {
             position: absolute;
             z-index: 1000;
@@ -65,25 +72,23 @@
             margin-top: 0.25rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             color: #191265;
-            max-height: 180px;
+            max-height: 220px;
             overflow-y: auto;
         }
         .autocomplete-item {
-            padding: 0.75rem 1rem;
+            padding: 0.6rem 1rem; 
             cursor: pointer;
             border-bottom: 1px solid #f3f4f6;
-            font-size: 0.8rem;
-            font-weight: 500;
+            font-size: 0.95rem; 
+            font-weight: 600;
         }
         .autocomplete-item:last-child { border-bottom: none; }
-        .autocomplete-item:hover { background-color: #f3f4f6; color: #3B3B7A; }
-        
-        #map { border-radius: 1.5rem; }
+        .autocomplete-item:hover { background-color: #f3f4f6; color: #191265; }
 
         /* Direction Buttons Styles */
         .direction-btn {
-            background-color: #4E5875;
-            color: white;
+            background-color: #D1D5DB; /* Whitish grey for inactive state */
+            color: #4B5563; 
         }
         .direction-btn-active {
             background-color: #191265 !important;
@@ -183,111 +188,108 @@
     </section>
 
     <!-- Section 2: Create Ride Section -->
-{% if not lasttrip %}
-    <section id="create-ride-section" class="min-h-screen bg-[#191265] py-12 px-6 md:px-16 flex flex-col justify-center">
-            <h2 class="text-white text-3xl md:text-4xl font-black uppercase tracking-tighter mb-6 text-center md:text-left font-bricolage">Create Your Ride</h2>
+    {% if not lasttrip %}
+        <section id="create-ride-section" class="min-h-screen bg-[#191265] py-6 px-4 md:px-12 flex flex-col justify-center items-center">
+            <div class="w-full max-w-5xl">
+                <h2 class="text-white text-3xl md:text-4xl font-black uppercase tracking-tighter mb-4 text-center md:text-left font-bricolage">Create Your Ride</h2>
 
-        <div class="bg-white rounded-[2rem] p-4 md:p-6 lg:p-8 flex flex-col lg:flex-row gap-6 shadow-2xl">
-            <!-- Form Left Side -->
-            <div class="w-full lg:w-[45%] flex flex-col">
-                <h3 class="text-[#191265] text-xl font-extrabold mb-4">Trip Details Timings</h3>
-                <form id="rideForm" action="{% url 'driver' %}" method="POST" class="space-y-4">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="tripdetails">
-                    <!-- Initializes empty, forcing user to pick a direction -->
-                    <input type="hidden" id="prefereddirection" name="prefereddirection" value="">
+                <div class="bg-white rounded-[1.5rem] p-4 md:p-5 flex flex-col lg:flex-row gap-5 shadow-2xl">
                     
-                    <!-- Real dynamic values updated by Leaflet script -->
-                    <input type="hidden" id="lat" name="latitude" value="">
-                    <input type="hidden" id="lng" name="longitude" value="">
-                    <textarea id="routegeometry" name="routegeometry" style="display:none;"></textarea>
-                    
-                    <div class="space-y-3">
-                        <div class="space-y-1">
-                            <label class="text-[#191265] font-bold text-[10px] uppercase tracking-wider ml-1">Direction</label>
-                            <div class="flex gap-4">
-                                <button type="button" id="toCollege" class="direction-btn flex-1 py-2 rounded-xl font-bold transition-all text-xs">To College</button>
-                                <button type="button" id="fromCollege" class="direction-btn flex-1 py-2 rounded-xl font-bold transition-all text-xs">From College</button>
+                    <div class="w-full lg:w-[55%] flex flex-col">
+                        <h3 class="text-[#191265] text-xl font-extrabold mb-1">Trip Details</h3>
+                        
+                        <form id="rideForm" action="{% url 'driver' %}" method="POST" class="space-y-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="tripdetails">
+                            <input type="hidden" id="prefereddirection" name="prefereddirection" value="">
+                            
+                            <input type="hidden" id="lat" name="latitude" value="">
+                            <input type="hidden" id="lng" name="longitude" value="">
+                            <textarea id="routegeometry" name="routegeometry" style="display:none;"></textarea>
+                            
+                            <div class="space-y-1">
+                                <label class="text-[#191265] font-black text-sm uppercase tracking-widest ml-1">Direction</label>
+                                <div class="flex gap-3">
+                                    <button type="button" id="toCollege" class="direction-btn flex-1 py-2.5 rounded-lg font-bold transition-all text-base">To College</button>
+                                    <button type="button" id="fromCollege" class="direction-btn flex-1 py-2.5 rounded-lg font-bold transition-all text-base">From College</button>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="space-y-1">
-                            <label class="text-[#191265] font-bold text-[10px] uppercase tracking-wider ml-1">Location Details</label>
-                            <!-- Flex-col allows us to dynamically swap the visual order of Pickup/Dropoff using flex order -->
-                            <div class="flex flex-col gap-2" id="location-fields-wrapper">
-                                <div class="relative" id="input-1-container" style="order: 1;">
+                            <div class="space-y-1">
+                                <label class="text-[#191265] font-black text-sm uppercase tracking-widest ml-1">Location Details</label>
+                                
+                                <div id="college-endpoint-display" class="bg-gray-100 text-[#191265] px-3 py-2 rounded-lg font-bold text-sm mb-2 border border-gray-200 hidden">
+                                    <span id="endpoint-label" class="opacity-60 uppercase text-xs tracking-wider mr-2 font-black">Destination:</span> 
+                                    AISAT Engineering College
+                                </div>
+
+                                <div class="relative">
                                     <input type="text" id="location-input" name="preferedlocation" placeholder="Select direction first..." class="custom-input" autocomplete="off" disabled required>
                                     <div id="autocomplete-results" class="autocomplete-results hidden"></div>
                                 </div>
-                                <div class="relative" id="input-2-container" style="order: 2;">
-                                    <input type="text" id="destination-dummy" placeholder="Destination" class="custom-input" value="AISAT Engineering College" disabled>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="space-y-1">
+                                    <label class="text-[#191265] font-black text-sm uppercase tracking-widest ml-1">Date</label>
+                                    <input type="date" name="ridedate" class="custom-input cursor-pointer" onkeydown="return false" required>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[#191265] font-black text-sm uppercase tracking-widest ml-1">Time</label>
+                                    <input type="time" id="ridetime" name="ridetime" class="custom-input" required>
                                 </div>
                             </div>
-                        </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="space-y-1">
+                                    <label class="text-[#191265] font-black text-sm uppercase tracking-widest ml-1">Vehicle Type</label>
+                                    <select name="vehicletype" id="vehicletype" class="custom-input" required>
+                                        <option value="car">Car</option>
+                                        <option value="bike">Bike</option>
+                                        <option value="scooter">Scooter</option>
+                                    </select>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[#191265] font-black text-sm uppercase tracking-widest ml-1">Seats</label>
+                                    <input type="number" name="availableseats" value="1" min="1" max="6" class="custom-input" required>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="space-y-1">
+                                    <label class="text-[#191265] font-black text-sm uppercase tracking-widest ml-1">Vehicle No.</label>
+                                    <input type="text" name="vehiclenumber" placeholder="KL-XX-XX-XXXX" class="custom-input uppercase" required>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[#191265] font-black text-sm uppercase tracking-widest ml-1">Vehicle Model</label>
+                                    <input type="text" name="vehiclemodel" placeholder="Swift / Dio" class="custom-input capitalize" required>
+                                </div>
+                            </div>
+
+                            <div id="helmet-container" class="flex items-center justify-between hidden">
+                                <div class="flex items-center gap-3 py-0.5 ml-1 text-[#191265]">
+                                    <input type="checkbox" id="helmet" name="helmet" class="w-5 h-5 rounded focus:ring-[#191265] custom-checkbox">
+                                    <label for="helmet" class="font-bold text-sm uppercase cursor-pointer">Helmet Available</label>
+                                </div>
+                            </div>
+                            <br>
+                            <br>
+                            <button type="submit" name="action" value="tripdetails" id="submitBtn" class="w-full bg-[#191265] text-white py-3 rounded-xl font-black uppercase tracking-widest hover:bg-blue-900 transition-all shadow-md text-sm mt-10">Post Ride</button>
+                        </form>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-1">
-                            <label class="text-[#191265] font-bold text-[10px] uppercase tracking-wider ml-1">Date</label>
-                            <input type="date" name="ridedate" class="custom-input" required>
+                    <div class="w-full lg:w-[45%] h-[200px] lg:h-auto min-h-[200px] rounded-[1.25rem] overflow-hidden relative border-4 border-[#191265]/5">
+                        <div id="map-overlay" class="absolute inset-0 bg-white/40 z-[1000] flex items-center justify-center backdrop-blur-[2px] transition-all">
+                            <div class="bg-[#191265] text-white px-4 py-2 rounded-xl font-bold shadow-xl text-xs text-center mx-4">
+                                Select Direction to Unlock Map
+                            </div>
                         </div>
-                        <div class="space-y-1">
-                            <label class="text-[#191265] font-bold text-[10px] uppercase tracking-wider ml-1">Time</label>
-                            <input type="time" id="ridetime" name="ridetime" class="custom-input" required>
-                        </div>
-                    </div>
-
-                    <div class="flex gap-4">
-                        <div class="space-y-1 flex-1">
-                            <label class="text-[#191265] font-bold text-[10px] uppercase tracking-wider ml-1">Vehicle Type</label>
-                            <select name="vehicletype" id="vehicletype" class="custom-input" required>
-                                <option value="car" {% if lasttrip.vehicletype == 'car' %}selected{% endif %}>Car</option>
-                                <option value="bike" {% if lasttrip.vehicletype == 'bike' %}selected{% endif %}>Bike</option>
-                                <option value="scooter" {% if lasttrip.vehicletype == 'scooter' %}selected{% endif %}>Scooter</option>
-                            </select>
-                        </div>
-                        <div class="space-y-1 flex-1">
-                            <label class="text-[#191265] font-bold text-[10px] uppercase tracking-wider ml-1">Seats Available</label>
-                            <input type="number" name="availableseats" value="1" min="1" max="6" class="custom-input" required>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="space-y-1">
-                            <label class="text-[#191265] font-bold text-[10px] uppercase tracking-wider ml-1">Vehicle No.</label>
-                            <input type="text" name="vehiclenumber" value="{{ lasttrip.vehiclenumber|default:'' }}" placeholder="KL-XX-XX-XXXX" class="custom-input" required>
-                        </div>
-                        <div class="space-y-1">
-                            <label class="text-[#191265] font-bold text-[10px] uppercase tracking-wider ml-1">Vehicle Model</label>
-                            <input type="text" name="vehiclemodel" value="{{ lasttrip.vehiclemodel|default:'' }}" placeholder="Swift / Dio" class="custom-input" required>
-                        </div>
-                    </div>
-
-                    <!-- Helmet option dynamically toggled based on Vehicle Type -->
-                    <div id="helmet-container" class="flex items-center justify-between hidden">
-                        <div class="flex items-center gap-2 py-1 ml-1 text-[#191265]">
-                            <input type="checkbox" id="helmet" name="helmet" class="w-4 h-4 rounded focus:ring-[#191265] custom-checkbox">
-                            <label for="helmet" class="font-bold text-[11px] uppercase cursor-pointer">Helmet Available for Pillion</label>
-                        </div>
-                    </div>
-
-                    <button type="submit" name="action" value="tripdetails" id="submitBtn" class="w-full bg-[#191265] text-white py-4 rounded-xl font-black uppercase tracking-widest hover:bg-blue-900 transition-all shadow-lg text-sm mt-2">Post Ride</button>
-                </form>
-            </div>
-
-            <!-- Map Right Side - Now Interactive -->
-            <div class="w-full lg:w-[55%] h-[400px] lg:h-auto min-h-[400px] rounded-[1.5rem] overflow-hidden relative border-4 border-[#191265]/5">
-                <!-- Overlay to block map until direction is selected -->
-                <div id="map-overlay" class="absolute inset-0 bg-white/40 z-[1000] flex items-center justify-center backdrop-blur-[2px] transition-all">
-                    <div class="bg-[#191265] text-white px-6 py-3 rounded-2xl font-bold shadow-xl text-sm">
-                        Select a Direction to Unlock Map
+                        <div id="map" class="w-full h-full z-0"></div>
                     </div>
                 </div>
-                <div id="map" class="w-full h-full z-0"></div>
             </div>
-        </div>
-    </section>
-{% endif %}    
+        </section>
+    {% endif %}   
 
     <!-- SECTION 3: Active Trip Management -->
     <section id="active-trip-section" class="min-h-screen bg-[#191265] py-16 px-6 md:px-16 flex flex-col items-center">
@@ -352,7 +354,7 @@
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 w-full">
                         <div class="flex flex-col gap-2.5 w-full sm:flex-1">
                             <div class="flex flex-col gap-0.5">
-                                <h5 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Vehicle Details</h5>
+                                <h5 class="text-[15px] font-black text-gray-400 uppercase tracking-widest">Vehicle Details</h5>
                                 <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm font-bold text-[#191265]">
                                     {% if lasttrip.vehiclemodel %}
                                         <span class="capitalize">{{ lasttrip.vehiclemodel }}</span><span class="text-gray-300 font-normal">•</span>
@@ -367,7 +369,10 @@
                             <div class="flex flex-wrap items-center justify-start gap-2">
                                 <span class="bg-[#191265]/5 text-[#191265] px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-black tracking-widest uppercase border border-[#191265]/10">{{ lasttrip.vehicletype }}</span>
                                 {% if lasttrip.helmet == 'on' %}
-                                    <span class="bg-[#8ccb90]/10 text-[#2b7130] px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-black tracking-widest uppercase border border-[#8ccb90]/30">+HELMET</span>
+                                    <span class="flex items-center gap-1 bg-[#8ccb90]/10 text-[#2b7130] px-2.5 py-1 rounded-md text-[10px] sm:text-[11px] font-black tracking-widest uppercase border border-[#8ccb90]/30">
+                                        <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 11.917 9.724 16.5 19 7.5"/>
+                                        </svg>HELMET</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -425,32 +430,74 @@
 
     
 
-            // --- UI FORM VARIABLES ---
+            // --- UI FORM VARIABLES & LOGIC ---
             const locInput = document.getElementById('location-input');
-            const destDummy = document.getElementById('destination-dummy');
+            const endpointDisplay = document.getElementById('college-endpoint-display');
+            const endpointLabel = document.getElementById('endpoint-label');
             
-            // CRITICAL FIX: Only run Map & Form logic if the form actually exists on the page!
             if (locInput) {
-                const inputContainer1 = document.getElementById('input-1-container');
-                const inputContainer2 = document.getElementById('input-2-container');
                 const autocompleteResults = document.getElementById('autocomplete-results');
                 const toBtn = document.getElementById('toCollege');
                 const fromBtn = document.getElementById('fromCollege');
                 const directionInput = document.getElementById('prefereddirection');
                 const timeInput = document.getElementById("ridetime");
                 
+                // 1. DATE RESTRICTION (Today & Tomorrow Only)
+                const dateInput = document.querySelector('input[name="ridedate"]');
+                if (dateInput) {
+                    const today = new Date();
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    
+                    const formatDate = (date) => {
+                        const y = date.getFullYear();
+                        const m = String(date.getMonth() + 1).padStart(2, '0');
+                        const d = String(date.getDate()).padStart(2, '0');
+                        return `${y}-${m}-${d}`;
+                    };
+                    
+                    dateInput.min = formatDate(today);
+                    dateInput.max = formatDate(tomorrow);
+                    dateInput.value = formatDate(today);
+                }
+
+                // 2. AUTOFILL VEHICLE DETAILS (From LocalStorage)
+                const vType = document.getElementById('vehicletype');
+                const vSeats = document.querySelector('input[name="availableseats"]');
+                const vNum = document.querySelector('input[name="vehiclenumber"]');
+                const vModel = document.querySelector('input[name="vehiclemodel"]');
+                const vHelmet = document.getElementById('helmet');
+
+                if (localStorage.getItem('hopin_vNum')) {
+                    if(vType) vType.value = localStorage.getItem('hopin_vType');
+                    if(vSeats) vSeats.value = localStorage.getItem('hopin_vSeats');
+                    if(vNum) vNum.value = localStorage.getItem('hopin_vNum');
+                    if(vModel) vModel.value = localStorage.getItem('hopin_vModel');
+                    if(vHelmet) vHelmet.checked = localStorage.getItem('hopin_vHelmet') === 'true';
+                }
+
+                // Save details on form submit
+                const rideForm = document.getElementById('rideForm');
+                if (rideForm) {
+                    rideForm.addEventListener('submit', function() {
+                        localStorage.setItem('hopin_vType', vType.value);
+                        localStorage.setItem('hopin_vSeats', vSeats.value);
+                        localStorage.setItem('hopin_vNum', vNum.value);
+                        localStorage.setItem('hopin_vModel', vModel.value);
+                        localStorage.setItem('hopin_vHelmet', vHelmet.checked);
+                    });
+                }
+                
                 // --- MAP & LOCATION LOGIC ---
                 const collegeLat = 10.0469; 
                 const collegeLng = 76.3467;
                 const collegeName = "AISAT Engineering College";
                 
-                // Initialize Map
                 const map = L.map('map').setView([collegeLat, collegeLng], 12);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap'
                 }).addTo(map);
 
-                // Fixed College Marker
                 const collegeIcon = L.divIcon({
                     className: 'custom-div-icon',
                     html: `<div style="background-color:#191265; width:15px; height:15px; border-radius:50%; border:3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>`,
@@ -494,7 +541,6 @@
                             map.fitBounds(routeLine.getBounds(), {padding: [30, 30]});
                         }
                     } catch(e) {
-                        console.error("Routing error, falling back to straight line:", e);
                         const fallbackGeoJSON = {"type": "LineString", "coordinates": [[lng, lat], [collegeLng, collegeLat]]};
                         document.getElementById('routegeometry').value = JSON.stringify(fallbackGeoJSON);
                         if (routeLine) map.removeLayer(routeLine);
@@ -506,8 +552,9 @@
                         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
                             .then(res => res.json())
                             .then(data => {
-                                const address = data.address.road || data.address.suburb || data.address.village || data.display_name.split(',')[0];
-                                locInput.value = address;
+                                // Shorten Reverse Geocode
+                                const parts = data.display_name.split(',');
+                                locInput.value = parts.slice(0, 2).join(', ').trim();
                             });
                     } else {
                         locInput.value = addressString;
@@ -542,11 +589,15 @@
                                     data.forEach(item => {
                                         const div = document.createElement('div');
                                         div.className = 'autocomplete-item';
-                                        div.innerText = item.display_name;
+                                        
+                                        // 3. SHORTEN AUTOCOMPLETE STRING
+                                        const parts = item.display_name.split(',');
+                                        const shortName = parts.slice(0, 2).join(', ').trim();
+                                        div.innerText = shortName;
                                         
                                         div.onclick = function() {
                                             autocompleteResults.classList.add('hidden');
-                                            updateLocationData(parseFloat(item.lat), parseFloat(item.lon), item.display_name.split(',')[0]);
+                                            updateLocationData(parseFloat(item.lat), parseFloat(item.lon), shortName);
                                         };
                                         autocompleteResults.appendChild(div);
                                     });
@@ -563,25 +614,27 @@
                     }
                 });
 
-                const vehicleSelect = document.getElementById('vehicletype');
-                const helmetContainer = document.getElementById('helmet-container');
-                const helmetCheckbox = document.getElementById('helmet');
-
                 function toggleHelmetVisibility() {
-                    if (vehicleSelect.value === 'bike' || vehicleSelect.value === 'scooter') {
-                        helmetContainer.classList.remove('hidden');
+                    if (vType.value === 'bike' || vType.value === 'scooter') {
+                        document.getElementById('helmet-container').classList.remove('hidden');
                     } else {
-                        helmetContainer.classList.add('hidden');
-                        helmetCheckbox.checked = false; 
+                        document.getElementById('helmet-container').classList.add('hidden');
+                        if (vHelmet) vHelmet.checked = false; 
                     }
                 }
 
-                vehicleSelect.addEventListener('change', toggleHelmetVisibility);
-                toggleHelmetVisibility(); 
+                if (vType) {
+                    vType.addEventListener('change', toggleHelmetVisibility);
+                    toggleHelmetVisibility(); 
+                }
 
+                // REVISED SET DIRECTION LOGIC
                 function setDirection(dir) {
                     directionInput.value = dir;
                     locInput.disabled = false; 
+                    
+                    // Show the endpoint display banner once direction is chosen
+                    if (endpointDisplay) endpointDisplay.classList.remove('hidden');
                     
                     const mapOverlay = document.getElementById('map-overlay');
                     if (mapOverlay) mapOverlay.classList.add('hidden'); 
@@ -591,35 +644,28 @@
                         fromBtn.classList.remove('direction-btn-active');
                         timeInput.value = "07:45";
                         
-                        inputContainer1.style.order = 1;
+                        endpointLabel.innerText = "DROP-OFF:";
                         locInput.placeholder = "Search Pickup Point...";
-                        
-                        inputContainer2.style.order = 2;
-                        destDummy.value = "Drop-off: " + collegeName;
 
                     } else {
                         fromBtn.classList.add('direction-btn-active'); 
                         toBtn.classList.remove('direction-btn-active');
-                        timeInput.value = "16:30";
+                        timeInput.value = "13:30"; 
                         
-                        inputContainer2.style.order = 1;
-                        destDummy.value = "Pickup: " + collegeName;
-                        
-                        inputContainer1.style.order = 2;
+                        endpointLabel.innerText = "PICKUP:";
                         locInput.placeholder = "Search Drop-off Point...";
                     }
 
                     if(locInput.value === "Select direction first...") locInput.value = "";
 
-                // If a marker already exists on the map, recalculate the route for the new direction
-                if (userMarker) {
-                    const pos = userMarker.getLatLng();
-                    updateLocationData(pos.lat, pos.lng, locInput.value);
+                    if (userMarker) {
+                        const pos = userMarker.getLatLng();
+                        updateLocationData(pos.lat, pos.lng, locInput.value);
+                    }
                 }
-            }
-            
-            toBtn.onclick = () => setDirection('to');
-            fromBtn.onclick = () => setDirection('from');
+                
+                toBtn.onclick = () => setDirection('to');
+                fromBtn.onclick = () => setDirection('from');
             }
 
            

@@ -179,15 +179,18 @@
 
         const csrftoken = getCookie("csrftoken");
         const riders = [];
+        
+        // FIXED: Removed quotes around the default 0 so it stays a valid number for Leaflet
         {% for rider in riders %}
             riders.push({
-                lat: {{ rider.pickuplatitude|default:"0" }},
-                lng: {{ rider.pickuplongitude|default:"0" }},
+                lat: {{ rider.pickuplatitude|default:0 }},
+                lng: {{ rider.pickuplongitude|default:0 }},
                 name: "{{ rider.rider.email }}"
             });
         {% endfor %}
 
-        const route = {{ riders.0.trip.routegeometry|safe|default:"null" }};
+        // FIXED: Safely check if riders exist before trying to load the route to prevent JS crashes
+        const route = {% if riders and riders.0.trip.routegeometry %}{{ riders.0.trip.routegeometry|safe }}{% else %}null{% endif %};
         const rideid = "{{ rideid }}";
 
         let map;
@@ -255,6 +258,7 @@
         }
 
         document.addEventListener("DOMContentLoaded", function () {
+            // Only initialize map if the route successfully loaded
             if (!route) return;
 
             latlngs = route.coordinates.map(coord => [coord[1], coord[0]]);
@@ -265,25 +269,26 @@
                 maxZoom: 19
             }).addTo(map);
 
+            // Kept your Tailwind UI Color for the route line!
             polyline = L.polyline(latlngs, {
-                color: "#191265", // Updated to match brand color
+                color: "#191265",
                 weight: 6
             }).addTo(map);
 
             L.marker(latlngs[0]).addTo(map).bindPopup("Start");
             L.marker(latlngs[latlngs.length - 1]).addTo(map).bindPopup("Destination");
 
+            // Adds rider markers based on exactly how testlocation.html did it
             riders.forEach(r => {
-                if(r.lat !== 0 && r.lng !== 0) {
-                    L.marker([r.lat, r.lng])
-                        .addTo(map)
-                        .bindPopup("Rider: " + r.name);
-                }
+                L.marker([r.lat, r.lng])
+                    .addTo(map)
+                    .bindPopup("Rider: " + r.name);
             });
 
             driverMarker = L.marker(latlngs[0], {
                 icon: L.icon({
-                    iconUrl: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png", // Note: Ensure this URL works for you or replace with a local static car icon
+                    // Kept the reference icon from testlocation
+                    iconUrl: "https://googleusercontent.com/maps.google.com/0", 
                     iconSize: [32, 32]
                 })
             }).addTo(map).bindPopup("Driver");
