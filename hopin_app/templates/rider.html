@@ -270,7 +270,7 @@
                                     <div class="flex items-center gap-1">
                                         <span class="text-yellow-400 text-sm">★</span>
                                         <span class="font-bold text-[#191265] text-xs">
-                                            {{ trip.usercredentials.userdetails.averagerating|default:"4.5" }}
+                                            {{ trip.usercredentials.userdetails.averagerating|default_if_none:"New" }}
                                         </span>
                                     </div>
 
@@ -334,7 +334,8 @@
                         {% for trip, distance, score, amount in rides %}
                         <div class="ride-card bg-white rounded-[2rem] p-6 text-[#191265] shadow-lg hover:shadow-xl transition-all duration-300 mb-4 border border-gray-100"
                             data-vehicle="{{ trip.vehicletype|lower }}"
-                            data-helmet="{{ trip.helmet|default_if_none:''|lower }}" data-price="{{ amount }}"
+                            data-helmet="{{ trip.helmet|default_if_none:''|lower }}"
+                            data-rating="{{ trip.usercredentials.userdetails.averagerating|default_if_none:'0'|default:'0' }}"
                             data-original-order="{{ forloop.counter0 }}">
 
                             <div class="flex justify-between gap-6">
@@ -437,8 +438,8 @@
                                         <!-- ⭐ Rating -->
                                         <div class="flex items-center gap-1 ml-auto">
                                             <span>⭐</span>
-                                            <span>
-                                                {{ trip.usercredentials.userdetails.averagerating|default:"4.5" }}
+                                            <span class="driver-rating-value">
+                                                {{ trip.usercredentials.userdetails.averagerating|default_if_none:"New" }}
                                             </span>
                                         </div>
 
@@ -531,8 +532,7 @@
                             <select id="sortFilter"
                                 class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 font-semibold text-[#191265] focus:border-[#191265] focus:ring-[#191265]">
                                 <option value="optimized">Optimized Ride</option>
-                                <option value="price-asc">Price: Low to High</option>
-                                <option value="price-desc">Price: High to Low</option>
+                                <option value="rating-desc">Rating: High to Low</option>
                             </select>
                         </div>
                     </div>
@@ -565,7 +565,7 @@
             };
         </script>
 
-        <script src="{% static 'hopin_app/js/rider.js' %}?v=20260324-1"></script>
+        <script src="{% static 'hopin_app/js/rider.js' %}?v=20260326-3"></script>
 
 </body>
 

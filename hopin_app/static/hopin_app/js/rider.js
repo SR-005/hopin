@@ -352,10 +352,14 @@ document.addEventListener("DOMContentLoaded", function () {
         ridesCountLabel.textContent = `${count} Ride${count === 1 ? "" : "s"} Available`;
     }
 
-    function reorderRideCards(cards) {
-        if (!ridesList) return;
-        cards.forEach(card => ridesList.appendChild(card));
-        if (filteredEmptyState) ridesList.appendChild(filteredEmptyState);
+    function applyRideCardOrder(cards) {
+        cards.forEach((card, index) => {
+            card.style.order = String(index);
+        });
+
+        if (filteredEmptyState) {
+            filteredEmptyState.style.order = String(cards.length);
+        }
     }
 
     function getSelectedVehicle() {
@@ -363,13 +367,27 @@ document.addEventListener("DOMContentLoaded", function () {
         return selectedRadio ? selectedRadio.value : "";
     }
 
+    function parseCardRating(card) {
+        const rawRating = (card.dataset.rating || "").trim();
+        const parsedRating = Number.parseFloat(rawRating);
+        if (Number.isFinite(parsedRating)) {
+            return parsedRating;
+        }
+
+        const visibleRating = card.querySelector(".driver-rating-value")?.textContent?.trim() || "";
+        const parsedVisibleRating = Number.parseFloat(visibleRating);
+        return Number.isFinite(parsedVisibleRating) ? parsedVisibleRating : 0;
+    }
+
     function sortRideCards(cards, sortValue) {
         const sortedCards = [...cards];
 
-        if (sortValue === "price-asc") {
-            sortedCards.sort((a, b) => parseFloat(a.dataset.price || "0") - parseFloat(b.dataset.price || "0"));
-        } else if (sortValue === "price-desc") {
-            sortedCards.sort((a, b) => parseFloat(b.dataset.price || "0") - parseFloat(a.dataset.price || "0"));
+        if (sortValue === "rating-desc") {
+            sortedCards.sort((a, b) => {
+                const ratingDiff = parseCardRating(b) - parseCardRating(a);
+                if (ratingDiff !== 0) return ratingDiff;
+                return parseInt(a.dataset.originalOrder || "0", 10) - parseInt(b.dataset.originalOrder || "0", 10);
+            });
         } else {
             sortedCards.sort((a, b) => parseInt(a.dataset.originalOrder || "0", 10) - parseInt(b.dataset.originalOrder || "0", 10));
         }
@@ -416,7 +434,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (shouldShow) visibleCount += 1;
         });
 
-        reorderRideCards(sortedCards);
+        applyRideCardOrder(sortedCards);
         updateResultsCount(visibleCount);
 
         if (filteredEmptyState) {

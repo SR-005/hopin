@@ -4,8 +4,9 @@ from dotenv import load_dotenv
 import os
 import json
 import razorpay
+from django.db.models import Avg
 from django.http import JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import get_object_or_404, render, redirect
 User=get_user_model()
 
 load_dotenv()
@@ -16,16 +17,15 @@ razorpayclient=razorpay.Client(auth=(RAZORID, RAZORSECRET))
 
 def averagerating(currentrequest):
     driver=currentrequest.trip.usercredentials
-    driverdetails=userdetail.objects.get(usercredentials=driver)
-    completedrides=riderequest.objects.filter(trip__usercredentials=driver, status="DROPPED", rating__isnull=False)
+    driverdetails, _ = userdetail.objects.get_or_create(usercredentials=driver)
+    avgrating = riderequest.objects.filter(
+        trip__usercredentials=driver,
+        status="DROPPED",
+        rating__isnull=False
+    ).aggregate(avg_rating=Avg("rating"))["avg_rating"]
 
-    allratings=[]
-    for rides in completedrides:
-        allratings.append(rides.rating)
-
-    avgrating=sum(allratings)/len(allratings)
     print("AVG :", avgrating)
-    driverdetails.averagerating=round(avgrating,1)
+    driverdetails.averagerating=round(avgrating,1) if avgrating is not None else None
     driverdetails.save()
 
 def verifypayment(request):
@@ -51,13 +51,13 @@ def verifypayment(request):
 def createpayment(request):
     print("ENTER CREATE PAYMENT")
     requestid=request.POST.get("requestid")
-    currentrequest=riderequest.objects.get(id=requestid)
-    paymentrecord=payment.objects.get(requestdetails=currentrequest)
+    currentrequest=get_object_or_404(riderequest, id=requestid)
+    paymentrecord=get_object_or_404(payment, requestdetails=currentrequest)
 
     print("RAZORID", RAZORID)
     print("RAZORSECRET", RAZORSECRET)
     razorpayclient=razorpay.Client(auth=(RAZORID, RAZORSECRET))
-    amount_rupees=paymentrecord.amount
+    amount_rupees=float(paymentrecord.amount or 0)
     amount=max(100, int(round(amount_rupees * 100)))  # Razorpay expects paise and enforces a minimum amount
     currentorder=razorpayclient.order.create({
         "amount": amount,
@@ -91,6 +91,14 @@ def testprofilefunction(request):
             requestid=request.POST.get("requestid")
             currentrating=request.POST.get("rating")
             currentrequest=riderequest.objects.get(id=requestid)
+
+            try:
+                currentrating = int(currentrating)
+            except (TypeError, ValueError):
+                return redirect("profile")
+
+            if currentrating < 1 or currentrating > 5:
+                return redirect("profile")
 
             currentrequest.rating=currentrating
             currentrequest.save()
