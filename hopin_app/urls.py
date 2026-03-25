@@ -41,6 +41,11 @@ urlpatterns=[
     path("fetchtracking/<int:rideid>/", trackingview.fetchtracking, name="fetchtracking"),   #test tracking
     path("fetchstatus/<int:requestid>/", trackingview.fetchstatus, name="fetchstatus"),    #fetch status of ride: completed or not
     path("tracking/<int:rideid>/", trackingview.trackingfunction, name="tracking"),   #test tracking
+    # 1. The URL to load the Live Dashboard
+    path('live-ride/<int:rideid>/', locationview.testlocationfunction, name='testlocation'),
+    
+    # 2. The background URL the map uses to update coordinates silently
+    path('updatelocation/<int:rideid>/', locationview.updatelocation, name='updatelocation'),
 
     
 ]
