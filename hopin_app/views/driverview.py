@@ -1,6 +1,4 @@
 from datetime import  time, datetime, timedelta, time
-
-from httpx import request
 from ..models import trip, riderequest
 from ..ml.routeopt import tripprice
 from django.contrib.auth import get_user_model
