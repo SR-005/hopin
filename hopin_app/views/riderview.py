@@ -454,7 +454,7 @@ def ongoingrequest(allrequest):
     return requestedrides
 
 
-# redirect to location tracking page if ride has started
+#redirect to location tracking page if ride has started
 def seemore(request):
     rideid = request.POST.get("tripid")
     print("RideID: ", rideid)
