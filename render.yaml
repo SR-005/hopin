@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: hopin
+    runtime: python
+    plan: free
+    autoDeployTrigger: commit
+    healthCheckPath: /
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    startCommand: python manage.py migrate && gunicorn hopin_config.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.9
+      - key: DATABASE_URL
+        sync: false
+      - key: BREVO_USER
+        sync: false
+      - key: BREVO_PASS
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: RAZORPAYKEY
+        sync: false
+      - key: RAZORPAYSECRET
+        sync: false
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_ADMIN_EMAIL
+        sync: false

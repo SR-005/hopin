@@ -6,6 +6,12 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
+from ..notifications import (
+    send_dropoff_notification,
+    send_payment_due_notification,
+    send_pickup_confirmed_notification,
+    send_ride_completed_notification,
+)
 User=get_user_model()
 
 
@@ -38,8 +44,14 @@ def rideend(currentride):
 
         ridecompletedriders=riderequest.objects.filter(trip=currentride,status__in=["DROPPEDNOTCONFIRMED","DROPPED"])
         for riders in ridecompletedriders:
-            payment.objects.create(requestdetails=riders,amount=riders.price)
+            payment_record, created = payment.objects.get_or_create(
+                requestdetails=riders,
+                defaults={"amount": riders.price}
+            )
+            if created:
+                send_payment_due_notification(riders.rider, payment_record.id)
             print(f"Payment Request Created for {riders}")
+        send_ride_completed_notification(currentride.usercredentials)
         print("Trip Ended")
 
 #fetch location from driver
@@ -67,7 +79,9 @@ def updatelocation(request,rideid):
 
         riders=riderequest.objects.filter(trip=currentride,status__in=["FULLCONFIRM", "HALFCONFIRM", "ACCEPTED"])
         print("Current Req2: ",riders)
-        riderdropped(latitude,longitude,riders)
+        dropped_rides = riderdropped(latitude,longitude,riders)
+        for dropped_ride in dropped_rides:
+            send_dropoff_notification(dropped_ride.rider)
         rideend(currentride)
         return JsonResponse({"status": currentride.status})
 
@@ -120,6 +134,7 @@ def testlocationfunction(request, rideid):
         pickuprider.save()
         ride.has_boarded = True 
         ride.save()
+        send_pickup_confirmed_notification(pickuprider.rider)
 
     # --- NEW: Context variables added for the UI Navbar ---
     context = {

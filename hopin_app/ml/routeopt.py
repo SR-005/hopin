@@ -157,6 +157,7 @@ def tripdestinationreached(currenttrip, currentlatitude, currentlongitude, compl
 
 
 def riderdropped(currentlatitude, currentlongitude, riders):
+    dropped_rides = []
     for ride in riders:
         if ride.status=="FULLCONFIRM":
             dropofflatitude, dropofflongitude=getriderdropofflocation(ride)
@@ -168,7 +169,9 @@ def riderdropped(currentlatitude, currentlongitude, riders):
             if distance<=DESTINATION_RADIUS_KM:
                 ride.status="DROPPED"
                 ride.save()
+                dropped_rides.append(ride)
                 print(f"Ride ended for {ride}")
+    return dropped_rides
 
 
 # Haversine's Distance Function- Price Calculation

@@ -1,0 +1,6 @@
+{% if user.is_authenticated or group %}
+  {% load static %}
+  <script id="webpush-js" type="text/javascript" src="{% static 'webpush/webpush.js' %}?v=20260326-2"></script>
+  <meta name="service-worker-js" content="{% url 'service_worker' %}">
+  <meta name="django-webpush-vapid-key" content="{{ vapid_public_key }}">
+{% endif %}

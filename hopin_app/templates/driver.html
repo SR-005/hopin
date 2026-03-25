@@ -1,4 +1,4 @@
-{% load static %}
+{% load static webpush_notifications %}
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -19,6 +19,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Bricolage+Grotesque:wght@700;800&display=swap" rel="stylesheet">
+    {% webpush_header %}
     
     <style>
         body {
@@ -118,6 +119,8 @@
             {% endfor %}
         </div>
     {% endif %}
+
+    {% include "partials/webpush_banner.html" %}
 
     <!-- Section 1: Hero -->
     <section class="min-h-screen bg-white flex flex-col relative overflow-hidden">

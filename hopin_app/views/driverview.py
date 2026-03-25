@@ -11,6 +11,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from ..forms import createtripForm
+from ..notifications import (
+    send_request_accepted_notification,
+    send_request_rejected_notification,
+    send_ride_started_notification,
+    send_trip_deleted_notification,
+)
 
 from .commonview import cleanup
 User=get_user_model()
@@ -143,6 +149,10 @@ def acceptride(request):
         riderequest.objects.filter(rider=rider,status="PENDING").exclude(id=currentrequest.id).delete()
 
         currentride.save()
+        
+        # Send push notification to rider
+        send_request_accepted_notification(rider)
+        
         return redirect("driver")
     else:
         messages.error(request, "Ride Max Capacity has already been filled!")
@@ -154,6 +164,10 @@ def rejectride(request):
     currentrequest=riderequest.objects.get(id=request.POST.get("requestid"))
     currentrequest.status="REJECTED"
     currentrequest.save()
+    
+    # Send push notification to rider
+    send_request_rejected_notification(currentrequest.rider)
+    
     return redirect("driver")
 
 #delete a posted ride
@@ -169,7 +183,19 @@ def deleteride(request):
         messages.error(request, "Cannot delete ride within 20 minutes of start time.")
         return redirect("driver")
 
+    # Get all riders who requested this trip before deleting
+    affected_riders = list(
+        User.objects.filter(
+            id__in=riderequest.objects.filter(trip=deleteride).values_list("rider_id", flat=True)
+        ).distinct()
+    )
+    
     deleteride.delete()
+    
+    # Send push notifications to all affected riders
+    if affected_riders:
+        send_trip_deleted_notification(affected_riders)
+    
     messages.success(request, "Your Ride has been Deleted!")
     return redirect("driver")
 
@@ -181,6 +207,18 @@ def starttracking(request):
 
     ride.status="ONGOING"
     ride.save()
+
+    riders_to_notify = list(
+        User.objects.filter(
+            id__in=riderequest.objects.filter(
+                trip=ride,
+                status__in=["ACCEPTED", "HALFCONFIRM", "FULLCONFIRM"]
+            ).values_list("rider_id", flat=True)
+        ).distinct()
+    )
+    if riders_to_notify:
+        send_ride_started_notification(riders_to_notify)
+
     return redirect("testlocation", rideid=rideid)
 
 #driver page routing function

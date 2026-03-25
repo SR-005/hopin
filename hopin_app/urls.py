@@ -1,6 +1,5 @@
 from django.urls import path
-from . import views
-from .views import authview,payandrateview,driverview,riderview,trackingview,locationview,profileview,testdriverview
+from .views import authview,payandrateview,driverview,riderview,trackingview,locationview,profileview,testdriverview,commonview
 
 urlpatterns=[
     #Profile view functions
@@ -13,6 +12,10 @@ urlpatterns=[
     path("verify/", authview.verifyfunction, name="verify"),
     path("logout/", authview.logoutfunction, name="logout"),
 
+    #notification view functions
+    path("register_webpush_subscription/", commonview.register_webpush_subscription, name="register_webpush_subscription"),
+    path("push-debug/", commonview.push_debug_page, name="push_debug"),
+    path("push-debug/status/", commonview.push_debug_status, name="push_debug_status"),
 
     #payment and rating view functions
     path("testpay/<int:paymentid>/", payandrateview.testpayfunction, name="testpay"),

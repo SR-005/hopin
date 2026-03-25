@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+
+import dj_database_url
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR=Path(__file__).resolve().parent.parent
@@ -43,6 +47,7 @@ INSTALLED_APPS=[
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'webpush',
     'hopin_app.apps.HopinAppConfig',
 ]
 
@@ -68,6 +73,7 @@ SOCIALACCOUNT_LOGIN_ON_GET=True       #to skip permission screen
 
 MIDDLEWARE=[
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -75,7 +81,6 @@ MIDDLEWARE=[
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'hopin_app.middleware.PendingPaymentMiddleware',
 ]
 
@@ -84,7 +89,7 @@ ROOT_URLCONF='hopin_config.urls'
 TEMPLATES=[
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -100,26 +105,32 @@ WSGI_APPLICATION='hopin_config.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-import os
-from dotenv import load_dotenv
-
 load_dotenv()
-DATABASES={
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv("DBNAME"),
-        'USER': os.getenv("DBUSER"),
-        'PASSWORD': os.getenv("DBPASSWORD"),
-        'HOST': os.getenv("DBHOST"),
-        'PORT': os.getenv("DBPORT"),
-        'OPTIONS': {
-            'sslmode': 'require',
-        },
-        'CONN_MAX_AGE': 600,
-        
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL:
+    DATABASES = {
+        "default": dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True,
+        )
     }
-}
+else:
+    DATABASES={
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv("DBNAME"),
+            'USER': os.getenv("DBUSER"),
+            'PASSWORD': os.getenv("DBPASSWORD"),
+            'HOST': os.getenv("DBHOST"),
+            'PORT': os.getenv("DBPORT"),
+            'OPTIONS': {
+                'sslmode': 'require',
+            },
+            'CONN_MAX_AGE': 600,
+            
+        }
+    }
 
 
 # Password validation
@@ -169,6 +180,8 @@ STATICFILES_DIRS=[
     BASE_DIR / "static",
 ]
 STATIC_ROOT=os.path.join(BASE_DIR, "staticfiles")
+STATICFILES_STORAGE="whitenoise.storage.CompressedManifestStaticFilesStorage"
+SECURE_PROXY_SSL_HEADER=("HTTP_X_FORWARDED_PROTO", "https")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -189,3 +202,10 @@ BREVO_API_KEY=os.environ.get("BREVO_API_KEY")
 BREVO_API_TIMEOUT=10
 
 EMAIL_TIMEOUT = 5
+
+# Web Push Settings
+WEBPUSH_SETTINGS = {
+    "VAPID_PUBLIC_KEY": os.environ.get("VAPID_PUBLIC_KEY"),
+    "VAPID_PRIVATE_KEY": os.environ.get("VAPID_PRIVATE_KEY"),
+    "VAPID_ADMIN_EMAIL": os.environ.get("VAPID_ADMIN_EMAIL", "admin@example.com")
+}

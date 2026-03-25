@@ -6,6 +6,7 @@ import json
 import razorpay
 from django.http import JsonResponse
 from django.shortcuts import render, redirect
+from ..notifications import send_payment_received_notification, send_payment_success_notification
 User=get_user_model()
 
 
@@ -55,6 +56,12 @@ def verifypayment(request):
             currentpayment.paymentid=data['razorpay_payment_id']
             currentpayment.status="PAID"
             currentpayment.save()
+            send_payment_success_notification(currentpayment.requestdetails.rider, currentpayment.amount)
+            send_payment_received_notification(
+                currentpayment.requestdetails.trip.usercredentials,
+                currentpayment.requestdetails.rider,
+                currentpayment.amount,
+            )
             return JsonResponse({"status": "success"})
         except:
             return JsonResponse({"status": "failed"})

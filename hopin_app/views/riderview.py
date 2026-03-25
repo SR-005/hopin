@@ -10,6 +10,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from .commonview import cleanup
+from ..notifications import send_new_ride_request_notification, send_request_cancelled_notification
 User = get_user_model()
 
 
@@ -379,6 +380,7 @@ def requestride(request):
         pickuplongitude=longitude,
         price=amount
     )
+    send_new_ride_request_notification(ride.usercredentials, request.user)
     return redirect("rider")
 
 
@@ -404,6 +406,7 @@ def requestrideagain(request, pastrides):
     riderequest.objects.create(trip=currenttrip, rider=request.user,
                                pickuplatitude=pastride.pickuplatitude, pickuplongitude=pastride.pickuplongitude,
                                price=amount)
+    send_new_ride_request_notification(currenttrip.usercredentials, request.user)
     return redirect("rider")
 
 
@@ -437,6 +440,7 @@ def cancelrequest(request):
         cancelride.status = "EMPTY"
         cancelride.save()
 
+    send_request_cancelled_notification(cancelride.usercredentials, request.user)
     messages.success(request, "Your Ride Request has been Cancelled!")
     return redirect("rider")
 
