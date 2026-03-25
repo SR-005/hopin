@@ -5,47 +5,9 @@
         animation: slideDown 0.3s ease-out;
     }
 
-    /* Ensure the modal is the absolute top of the world */
-    #bigMapModal {
-        z-index: 999999 !important;
-    }
-
-    /* When the modal is open, we "sink" the main map and everything in it */
-    body.modal-open #map,
-    body.modal-open .leaflet-pane,
-    body.modal-open .leaflet-control-container,
-    body.modal-open .leaflet-marker-pane {
-        z-index: 1 !important;
-        pointer-events: none !important;
-    }
-
-    /* Force the image into the background during modal state */
-    body.modal-open img[src*='rider.png'] {
-        z-index: -1 !important;
-        pointer-events: none !important;
-    }
-
     /* Rotate the arrow icon when open */
     .toggle-trigger:checked~.status-pill .arrow-svg {
         transform: rotate(90deg);
-    }
-
-    /* 1. Force Modal to be above the illustration */
-    #bigMapModal {
-        z-index: 999999 !important;
-        /* Extremely high to beat everything */
-        isolation: isolate;
-    }
-
-    /* 2. Fix for Leaflet tiles sometimes appearing behind the white card */
-    #bigPopupMap {
-        z-index: 1 !important;
-    }
-
-    /* 3. Ensure the illustration stays below the modal */
-    /* Find your illustration class/ID and add a lower z-index if needed, e.g.: */
-    .illustration-container {
-        z-index: 10 !important;
     }
 
     /* Custom Scrollbar for the Request Box */
@@ -59,55 +21,11 @@
 
     .custom-rider-scrollbar::-webkit-scrollbar-thumb {
         background: rgba(29, 78, 216, 0.2);
-        /* Soft blue */
         border-radius: 10px;
-    }
-
-    /* This ensures the modal is the absolute highest layer in the browser */
-    #bigMapModal {
-        z-index: 999999 !important;
-    }
-
-    /* This is the magic part: when the modal is open, we force the main map 
-    and its markers to a low z-index so they can't overlap anything else */
-    body.modal-open #map {
-        z-index: 1 !important;
-        pointer-events: none;
-        /* Prevents clicking the background map while modal is up */
-    }
-
-    /* Ensure Leaflet markers on the main map follow the parent's z-index */
-    body.modal-open .leaflet-pane,
-    body.modal-open .leaflet-control-container {
-        z-index: 1 !important;
     }
 
     .custom-rider-scrollbar::-webkit-scrollbar-thumb:hover {
         background: rgba(29, 78, 216, 0.5);
-    }
-
-    /* Ensure the modal container is the absolute top layer */
-    #bigMapModal {
-        isolation: isolate;
-        /* Creates a new stacking context */
-    }
-
-    /* Force the map inside the modal to stay within its container */
-    #bigPopupMap {
-        z-index: 1 !important;
-    }
-
-    /* Optional: Hide page scroll when modal is open to prevent "map bleed" */
-    /* Clean scroll lock class */
-    body.modal-open {
-        overflow: hidden !important;
-        height: 100vh;
-    }
-
-    /* Ensure modal is truly on top */
-    #bigMapModal {
-        z-index: 999999 !important;
-        isolation: isolate;
     }
 
     @keyframes slideDown {
@@ -121,8 +39,42 @@
             transform: translateY(0);
         }
     }
-</style>
 
+    /* =========================================
+       MODAL & MAP FIXES
+       ========================================= */
+
+
+
+    /* Ensure modal is always on top */
+    #bigMapModal {
+        z-index: 999999 !important;
+        isolation: isolate;
+    }
+
+    /* Prevent Leaflet tiles from hiding behind the modal background */
+    #bigPopupMap {
+        z-index: 10 !important;
+        background: #f3f4f6;
+        /* Light gray while loading */
+    }
+
+    /* Sink the background map and elements so they don't overlap */
+    body.modal-open #map,
+    body.modal-open .leaflet-pane,
+    body.modal-open .leaflet-control-container,
+    body.modal-open .leaflet-top,
+    body.modal-open .leaflet-bottom {
+        z-index: 1 !important;
+        pointer-events: none !important;
+    }
+
+    /* Force the background rider image to stay behind */
+    body.modal-open img[src*='rider.png'] {
+        z-index: -1 !important;
+        pointer-events: none !important;
+    }
+</style>
 {% if accepted %}
 {% for request in accepted %}
 <div class="mt-4 w-[400px] border-2 border-green-600 rounded-[2rem] p-6 bg-white shadow-2xl relative">
@@ -190,7 +142,7 @@
 {% endif %}
 {% if requests %}
 <div
-    class="absolute top-0 left-0 w-[420px] h-[160px] -ml-[3px] translate-y-[20px] bg-white/5 rounded-[2rem] p-3 border border-white/10 shadow-inner overflow-hidden flex flex-col z-20">
+    class="absolute top-0 -mt-4 left-0 w-[420px] h-[120px] -ml-[3px] translate-y-[20px] bg-white/5 rounded-[2rem] p-3 border border-white/10 shadow-inner overflow-hidden flex flex-col z-20">
 
     <p class="text-[10px] font-black uppercase text-[#191265] opacity-100 tracking-widest mb-2 px-2">
         Active Requests ({{ requests|length }})
@@ -207,7 +159,8 @@
                         class="w-10 h-10 rounded-full border border-[#191265]">
                     <div class="leading-tight">
                         <p class="text-blue=800 text-[10px] font-bold uppercase tracking-tight">Pending sent to</p>
-                        <p class="text-[#191265] font-bold text-sm truncate max-w-[140px]">{{ request.trip.usercredentials }}</p>
+                        <p class="text-[#191265] font-bold text-sm truncate max-w-[140px]">{{
+                            request.trip.usercredentials }}</p>
                     </div>
                 </div>
 
@@ -235,6 +188,124 @@
     </div>
 </div>
 {% endif %}
+
+<script>
+    let bigMapInstance = null;
+    let hasRideEnded = false; // Safety variable to prevent opening if ride is done
+    let isMapOpen = false; // Add this at the very top of your script
+
+    function openBigRouteModal(requestId, rideId) {
+        if (hasRideEnded) return;
+
+        window.isMapViewing = true; // LOCK THE POLL GLOBALLY
+        console.log("Map opened, polling locked.");
+        const modal = document.getElementById('bigMapModal');
+
+        // 1. Lock screen scroll and sink background map
+        document.body.classList.add('modal-open');
+
+        // 2. Completely destroy old map instance to prevent blank screen
+        if (bigMapInstance) {
+            bigMapInstance.off();
+            bigMapInstance.remove();
+            bigMapInstance = null;
+        }
+
+        // 3. Show the modal
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        // 4. Initialize fresh map
+        setTimeout(() => {
+            try {
+                bigMapInstance = L.map('bigPopupMap').setView([10.0469, 76.3467], 13);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '&copy; OpenStreetMap'
+                }).addTo(bigMapInstance);
+
+                // Fetch route
+                fetch(`/fetchtracking/${rideId}/?requestid=${requestId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.route) {
+                            const routeData = typeof data.route === "string" ? JSON.parse(data.route) : data.route;
+                            const coords = routeData.coordinates.map(c => [c[1], c[0]]);
+
+                            const poly = L.polyline(coords, {
+                                color: '#191265',
+                                weight: 6,
+                                opacity: 0.8
+                            }).addTo(bigMapInstance);
+
+                            L.marker(coords[0]).addTo(bigMapInstance).bindPopup("Driver Location");
+                            L.marker(coords[coords.length - 1]).addTo(bigMapInstance).bindPopup("Destination");
+
+                            // Zoom nicely to the route
+                            bigMapInstance.fitBounds(poly.getBounds(), { padding: [50, 50] });
+                        }
+                    })
+                    .catch(err => console.error("Map error:", err));
+            } catch (e) {
+                console.error("Leaflet Error:", e);
+            }
+        }, 500);
+    }
+
+    function closeBigMapPopup() {
+        window.isMapViewing = false; // UNLOCK THE POLL GLOBALLY
+        console.log("Map closed, polling resumed.");
+        const modal = document.getElementById('bigMapModal');
+
+        // 1. Hide the modal
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+
+        // 2. Unlock the screen scroll and restore background maps
+        document.body.classList.remove('modal-open');
+
+        // 3. Clean up memory
+        if (bigMapInstance) {
+            bigMapInstance.off();
+            bigMapInstance.remove();
+            bigMapInstance = null;
+        }
+    }
+    // ==========================================
+    // SCROLL UNLOCK WATCHDOG
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('bigMapModal');
+
+        if (modal) {
+            // Create an observer to watch for ANY changes to the modal's classes
+            const observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    if (mutation.attributeName === "class") {
+                        // If the modal becomes hidden for ANY reason, unlock the scroll immediately
+                        if (modal.classList.contains('hidden')) {
+                            document.body.classList.remove('modal-open');
+                            document.body.style.overflow = '';
+                            document.body.style.position = '';
+                            document.body.style.height = '';
+
+                            // Also restore the background image safely
+                            const riderImg = document.querySelector("img[src*='rider.png']");
+                            if (riderImg) {
+                                riderImg.style.zIndex = "10";
+                                riderImg.style.position = "relative";
+                            }
+                        }
+                    }
+                });
+            });
+
+            // Start watching the modal
+            observer.observe(modal, { attributes: true });
+        }
+    });
+</script>
 <div id="bigMapModal"
     class="hidden fixed inset-0 bg-[#191265]/90 backdrop-blur-md flex items-center justify-center p-4 lg:p-10"
     style="z-index: 999999 !important;">
@@ -252,98 +323,3 @@
         <div id="bigPopupMap" class="w-full h-full bg-gray-50"></div>
     </div>
 </div>
-<script>
-    let bigMapInstance = null;
-
-    function openBigRouteModal(requestId, rideId) {
-        const modal = document.getElementById('bigMapModal');
-
-        // 1. Lock scroll using class (safer)
-        document.body.classList.add('modal-open');
-
-        // 2. Hide background image priority
-        const riderImg = document.querySelector("img[src*='rider.png']");
-        if (riderImg) {
-            riderImg.style.zIndex = "-1";
-        }
-
-        // 3. Reset map instance if it exists to prevent "Map already initialized" error
-        if (bigMapInstance) {
-            bigMapInstance.remove();
-            bigMapInstance = null;
-        }
-
-        // 4. Show modal
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-
-        // 5. Initialize Map after modal is visible
-        setTimeout(() => {
-            try {
-                bigMapInstance = L.map('bigPopupMap').setView([10.0469, 76.3467], 13);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19
-                }).addTo(bigMapInstance);
-
-                fetch(`/fetchtracking/${rideId}/?requestid=${requestId}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.route) {
-                            const routeData = typeof data.route === "string" ? JSON.parse(data.route) : data.route;
-                            const coords = routeData.coordinates.map(c => [c[1], c[0]]);
-
-                            const poly = L.polyline(coords, {
-                                color: '#191265',
-                                weight: 6,
-                                opacity: 0.8
-                            }).addTo(bigMapInstance);
-
-                            L.marker(coords[0]).addTo(bigMapInstance).bindPopup("Driver Location");
-                            L.marker(coords[coords.length - 1]).addTo(bigMapInstance).bindPopup("Destination");
-
-                            bigMapInstance.fitBounds(poly.getBounds(), { padding: [50, 50] });
-                        }
-                    })
-                    .catch(err => console.error("Fetch error:", err));
-            } catch (e) {
-                console.error("Leaflet init error:", e);
-            }
-        }, 400);
-    }
-
-    function closeBigMapPopup() {
-        const modal = document.getElementById('bigMapModal');
-
-        // 1. Hide Modal
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-
-        // 2. Unlock Scroll
-        document.body.classList.remove('modal-open');
-
-        // 3. Restore image
-        const riderImg = document.querySelector("img[src*='rider.png']");
-        if (riderImg) {
-            riderImg.style.zIndex = "10";
-        }
-
-        // 4. Cleanup Map memory
-        if (bigMapInstance) {
-            bigMapInstance.remove();
-            bigMapInstance = null;
-        }
-    }
-
-    // Background click to close
-    window.addEventListener('click', function (e) {
-        const modal = document.getElementById('bigMapModal');
-        if (e.target === modal) {
-            closeBigMapPopup();
-        }
-    });
-
-    // ESC key to close
-    document.addEventListener('keydown', function (e) {
-        if (e.key === "Escape") closeBigMapPopup();
-    });
-</script>
