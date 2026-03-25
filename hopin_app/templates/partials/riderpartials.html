@@ -77,16 +77,16 @@
 </style>
 {% if accepted %}
 {% for request in accepted %}
-<div class="mt-4 w-[400px] border-2 border-green-600 rounded-[2rem] p-6 bg-white shadow-2xl relative">
+<div class="mt-2 w-[500px] border-2 border-green-600 rounded-[2rem] p-4 bg-white shadow-2xl relative">
     <div class="flex justify-between items-start">
 
         <div class="flex gap-4 items-start">
             <img src="https://ui-avatars.com/api/?name={{ request.trip.usercredentials }}&background=16a34a&color=fff"
                 class="w-14 h-14 rounded-full border-2 border-gray-100 shadow-sm">
 
-            <div class="flex flex-col">
+            <div class="flex flex-col"> 
                 <p class="text-green-600 font-bold text-lg leading-tight truncate max-w-[160px]">
-                    {{ request.trip.usercredentials }}
+                    {{ request.trip.usercredentials.first_name }}
                 </p>
 
                 <div class="mt-1">
@@ -120,6 +120,10 @@
             <div class="flex items-center gap-2 mt-auto">
                 <form method="POST" action="{% url 'rider' %}" class="m-0 flex items-center gap-2">
                     {% csrf_token %}
+                    <button type="button" onclick="openBigRouteModal('{{ request.id }}', '{{ request.trip.id }}')"
+                        class="bg-[#191265] hover:bg-[#2b247c] text-white px-3 py-1.5 rounded-lg text-[10px] font-black uppercase shadow-md transition-all active:scale-95">
+                        Route
+                    </button>
                     <input type="hidden" name="requestid" value="{{ request.id }}">
 
                     <button type="submit" name="action" value="cancelrequest"
