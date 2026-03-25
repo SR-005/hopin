@@ -1,4 +1,4 @@
-from ..ml.routeopt import riderdropped
+from ..ml.routeopt import riderdropped, tripdestinationreached
 from ..models import trip, riderequest, payment
 from django.contrib.auth import get_user_model
 import json
@@ -11,11 +11,20 @@ User=get_user_model()
 
 def rideend(currentride):
     print("Ride status:", currentride.status)
+
+    # Do not complete the ride until at least one passenger has boarded.
     if not currentride.has_boarded:
+        return
+
+    if not tripdestinationreached(
+        currentride,
+        currentride.currentlatitude,
+        currentride.currentlongitude
+    ):
         return
     
     pendingrides=riderequest.objects.filter(trip=currentride,status="FULLCONFIRM")
-    if not pendingrides.exists() and currentride.has_boarded:
+    if not pendingrides.exists():
         currentride.status="COMPLETED" 
         currentride.save()
 
