@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <title>Profile</title>
 
     <style>
@@ -137,40 +138,27 @@
 
 <div class="container">
 
-    {% if pending %}
+    {% if pendingpayments %}
     <div class="card">
         <h2>💰 Pending Payment</h2>
 
-        <p><strong>{{ pending }}</strong></p>
+        <p><strong>{{ pendingpayments }}</strong></p>
 
-        <!-- RATE FORM -->
-        <form method="POST" action="{% url 'testpay' pending.id %}">
-            {% csrf_token %}
-            <label>Rate the Ride:</label><br>
-            <input type="number" name="rating" min="1" max="5" required>
-            <input type="hidden" name="requestid" value="{{ pending.requestdetails.id }}">
-            <br><br>
-            <button type="submit" name="action" value="rateride">
-                Submit Rating
-            </button>
-        </form>
 
         <br>
 
         <!-- PAY FORM -->
-        <form method="POST" action="{% url 'testpay' pending.id %}">
+        <form method="POST" action="{% url 'profile' %}">
             {% csrf_token %}
-            <input type="hidden" name="requestid" value="{{ pending.requestdetails.id }}">
+            <label>Rate the Ride:</label><br>
+            <input type="number" name="rating" min="1" max="5" required>
 
-            {% if pending.requestdetails.rating %}
-                <button type="submit" name="action" value="completepayment">
+            <input type="hidden" name="requestid" value="{{ pendingpayments.requestdetails.id }}">
+            <input type="hidden" name="paymentid" value="{{ pendingpayments.id }}">
+
+                <button type="submit" name="action" value="paypending">
                     Pay Now
                 </button>
-            {% else %}
-                <button disabled title="Please rate before paying">
-                    Pay Now
-                </button>
-            {% endif %}
         </form>
     </div>
     {% endif %}
@@ -179,7 +167,7 @@
 
 
 <!-- ================= RAZORPAY SCRIPT ================= -->
-{% if pending and orderid %}
+{% if pendingpayments and orderid %}
 <script>
     var options = {
         "key": "{{ RAZORID }}",
@@ -202,7 +190,7 @@
             .then(data => {
                 if (data.status === "success") {
                     alert("✅ Payment Successful");
-                    window.location.reload();
+                    window.location.replace('/');
                 } else {
                     alert("❌ Payment Failed");
                 }

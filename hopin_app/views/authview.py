@@ -21,12 +21,10 @@ def otpgenerator():
 def sendotptomail(request):
     user=request.user
     email=user.email
-    phonenumber=request.POST.get("phone")
 
     otp=otpgenerator()
     request.session['otp']=otp
     request.session['otptime']=timezone.now().timestamp()
-    request.session['phonenumber']=phonenumber
     request.session['otpsent']=True
 
     try:
@@ -54,7 +52,7 @@ def verifyotp(request):
     
     if userotp==request.session.get('otp'):
         userprofile=userdetail.objects.get(usercredentials=request.user)
-        userprofile.phonenumber=request.session.get('phonenumber')
+        userprofile.phonenumber=request.POST.get("phone")
         userprofile.verificationpending=True
         userprofile.save()
 
@@ -113,13 +111,6 @@ def landingfunction(request):
     except:
         print("User is not Logged in or Logged Out")
         status="false"
-
-    if request.method=="POST":
-        action=request.POST.get("action")
-        if action=="paypending":
-            paymentid=request.POST.get("paymentid")
-            return redirect("testpay",paymentid=paymentid)
-    
 
     
     return render(request, "landing.html", {"status":status,"user":user,"firstname":firstname,"pending":pendingpayment})

@@ -55,7 +55,7 @@
                     </div>
 
                     <div class="flex flex-wrap justify-center lg:justify-start items-center gap-3 sm:gap-8 mt-6 sm:mt-10">
-                        <a href="{% url 'testdriver' %}">
+                        <a href="{% url 'driver' %}">
                             <button id="btn-create"
                                 class="px-5 py-2 sm:px-8 sm:py-2.5 lg:px-10 lg:py-3 rounded-[14px] border-[1.5px] border-white text-white font-['Black_Mango'] font-semibold text-sm sm:text-lg lg:text-xl hover:bg-white hover:text-[#191265] transition-all duration-300 shadow-sm focus:ring-4 focus:ring-blue-300">
                                 Create
@@ -68,12 +68,10 @@
                             </button>
                         </a>
                         {% if pending %}
-                            <form method="POST" action="{% url 'landing' %}">
-                            {% csrf_token %}
-                                <h1>{{pending}}</h1>
-                                <input type="hidden" name="paymentid" value="{{ pending.id }}">
+                            <a href="{% url 'profile' %}">
+                                <h1>You have a Pending Payment</h1>
                                 <button type="submit" name="action" value="paypending">Pay Now</button>
-                            </form>
+                            </a>
                         {% endif %}
                     </div>
                 </div>
