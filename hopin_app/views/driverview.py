@@ -1,4 +1,6 @@
 from datetime import  time, datetime, timedelta, time
+
+from httpx import request
 from ..models import trip, riderequest
 from ..ml.routeopt import tripprice
 from django.contrib.auth import get_user_model
@@ -240,12 +242,15 @@ def driverfunction(request):
         currentrequest.routegeometry_json=json.dumps(currentrequest.trip.routegeometry or {})
 
     # NOTE: I changed "lasttrip" in the context to "activetrips" for the UI to display the CURRENT active ride, not the past one.
+    ongoing_trip = trip.objects.filter(usercredentials=request.user,status="ONGOING").order_by("-id").first()
+    current_display_trip = activetrips if activetrips else ongoing_trip
+    
     return render(request, "driver.html",{
         "requests":pendingrequests,
         "accepted":acceptedrequests,
-        "lasttrip": activetrips, # Changed this to show the active trip in the UI summary card
+        "lasttrip": current_display_trip, # This guarantees the UI knows you have a ride!
         "startride":startride,
         "activetrips":activetrips,
-        "ongoing":trip.objects.filter(usercredentials=request.user,status="ONGOING").order_by("-id").first(),
+        "ongoing":ongoing_trip,
         "lasttrip_routegeometry_json": lasttriproutegeometryjson
     })

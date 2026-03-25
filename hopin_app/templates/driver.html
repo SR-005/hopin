@@ -164,7 +164,11 @@
             <div class="max-w-xl z-10">
                 <h1 class="text-[#191265] text-5xl md:text-7xl font-extrabold leading-tight mb-4 font-inter">Got Empty Seats!?</h1>
                 <p class="text-[#191265] text-2xl md:text-3xl font-medium opacity-90 font-inter">Start earning with them, right now!!</p>
-                <button id="scroll-to-form" class="mt-12 bg-[#191265] text-white px-10 py-4 rounded-2xl font-bold hover:bg-blue-900 transition-all shadow-xl">Create Now</button>
+                {% if lasttrip %}
+                    <button id="scroll-to-active" class="mt-12 bg-[#191265] text-white px-10 py-4 rounded-2xl font-bold hover:bg-blue-900 transition-all shadow-xl">Show Active Ride</button>
+                {% else %}
+                    <button id="scroll-to-form" class="mt-12 bg-[#191265] text-white px-10 py-4 rounded-2xl font-bold hover:bg-blue-900 transition-all shadow-xl">Create Now</button>
+                {% endif %}
             </div>
             <div class="w-full md:w-[60%] relative flex justify-center">
                 <div class="relative w-full max-w-2xl">
@@ -176,8 +180,9 @@
     </section>
 
     <!-- Section 2: Create Ride Section -->
+{% if not lasttrip %}
     <section id="create-ride-section" class="min-h-screen bg-[#191265] py-12 px-6 md:px-16 flex flex-col justify-center">
-        <h2 class="text-white text-3xl md:text-4xl font-black uppercase tracking-tighter mb-6 text-center md:text-left font-bricolage">Create Your Ride</h2>
+            <h2 class="text-white text-3xl md:text-4xl font-black uppercase tracking-tighter mb-6 text-center md:text-left font-bricolage">Create Your Ride</h2>
 
         <div class="bg-white rounded-[2rem] p-4 md:p-6 lg:p-8 flex flex-col lg:flex-row gap-6 shadow-2xl">
             <!-- Form Left Side -->
@@ -279,6 +284,7 @@
             </div>
         </div>
     </section>
+{% endif %}    
 
     <!-- SECTION 3: Active Trip Management -->
     <section id="active-trip-section" class="min-h-screen bg-[#191265] py-16 px-6 md:px-16 flex flex-col items-center">
@@ -286,43 +292,104 @@
 
         <div class="w-full max-w-6xl flex flex-col gap-8">
             
-            {% if lasttrip != None %}
-                <!-- Summary Card -->
-                <div class="bg-white rounded-[2.5rem] p-8 text-[#191265] shadow-2xl flex flex-col md:flex-row justify-between items-center gap-10">
-                    <div class="flex flex-col gap-4">
-                        <div class="flex items-center gap-4">
-                            <div class="w-16 h-16 bg-[#191265] rounded-full flex items-center justify-center text-white">
-                                <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            {% if lasttrip %}
+                <div class="bg-white rounded-[1.5rem] p-5 sm:p-6 shadow-xl w-full max-w-5xl flex flex-col gap-5 sm:gap-6 text-[#191265] border border-gray-100">
+                    
+                    <div class="flex justify-between items-center gap-4">
+                        <div class="flex items-center gap-3 shrink-0">
+                            <div class="w-9 h-9 rounded-full bg-[#191265] text-white flex items-center justify-center font-bold text-base shadow-sm">
+                                {{ request.user.email|make_list|first|upper }}
                             </div>
-                            <div>
-                                <p class="text-xs uppercase font-black text-gray-400">Current Route</p>
-                                <h4 class="text-3xl font-black capitalize">{{ lasttrip.prefereddirection }} College</h4>
+                            <h4 class="font-extrabold text-base sm:text-lg font-bricolage tracking-wide">{{ request.user.email }}</h4>
+                        </div>
+                        
+                        <div class="bg-gray-50 text-[#191265] px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-sm sm:text-base font-black tracking-widest uppercase border border-gray-200 shadow-sm whitespace-nowrap">
+                            <span class="opacity-70 mr-1 hidden sm:inline">🕒</span>{{ lasttrip.ridedate|date:"M d" }} • {{ lasttrip.ridetime|time:"H:i" }}
+                        </div>
+                    </div>
+
+                    <div class="flex flex-row items-center justify-between border border-gray-100 rounded-xl py-3 px-3 sm:px-4 w-full gap-4 sm:gap-6 shadow-sm bg-gray-50/30">
+                        
+                        <div class="flex items-center justify-between flex-1 sm:pr-6 border-r border-gray-100 gap-2 sm:gap-4">
+                            
+                            <div class="flex flex-col text-left shrink-0">
+                                <span class="font-black text-lg sm:text-xl leading-none">START</span>
+                                <span class="text-[10px] sm:text-xs text-gray-500 font-bold truncate mt-0.5 max-w-[70px] sm:max-w-[120px]">
+                                    {% if lasttrip.prefereddirection == 'to' %}{{ lasttrip.preferedlocation }}{% else %}AISAT{% endif %}
+                                </span>
+                            </div>
+
+                            <div class="flex-1 flex items-center min-w-[40px] px-2 sm:px-4">
+                                <div class="w-2 h-2 rotate-45 bg-[#191265] shrink-0"></div>
+                                <div class="w-full h-[2px] bg-[#191265] rounded-full mx-0.5"></div>
+                                <svg class="w-4 h-4 text-[#191265] shrink-0 -ml-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                            </div>
+
+                            <div class="flex flex-col text-right shrink-0">
+                                <span class="font-black text-lg sm:text-xl leading-none">END</span>
+                                <span class="text-[10px] sm:text-xs text-gray-500 font-bold truncate mt-0.5 max-w-[70px] sm:max-w-[120px]">
+                                    {% if lasttrip.prefereddirection == 'from' %}{{ lasttrip.preferedlocation }}{% else %}AISAT{% endif %}
+                                </span>
                             </div>
                         </div>
-                        <p class="font-black text-xl">{{ lasttrip.preferedlocation }}</p>
+                        
+                        <div class="w-20 h-12 sm:w-32 sm:h-16 flex justify-center items-center shrink-0">
+                            {% if lasttrip.vehicletype == 'car' %}
+                                <img src="https://cdn-icons-png.flaticon.com/512/3201/3201831.png" alt="Car" class="w-full h-full object-contain opacity-90 drop-shadow-sm">
+                            {% elif lasttrip.vehicletype == 'bike' %}
+                                <img src="https://cdn-icons-png.flaticon.com/512/2972/2972185.png" alt="Bike" class="w-full h-full object-contain opacity-90 drop-shadow-sm">
+                            {% else %}
+                                <img src="https://cdn-icons-png.flaticon.com/512/3757/3757314.png" alt="Scooter" class="w-full h-full object-contain opacity-90 drop-shadow-sm">
+                            {% endif %}
+                        </div>
                     </div>
 
-                    <div class="bg-gray-50 rounded-[2rem] p-6 flex flex-col gap-2 min-w-[250px] shadow-inner">
-                        <p class="font-black text-gray-800">📅 {{ lasttrip.ridedate }}</p>
-                        <p class="font-black text-gray-800">⏰ {{ lasttrip.ridetime }}</p>
-                        <p class="font-black text-gray-800 capitalize">🚗 {{ lasttrip.vehicletype }} ({{ lasttrip.vehiclemodel|default:"No model info" }})</p>
-                    </div>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-5 w-full">
+                        
+                        <div class="flex flex-col gap-3 w-full sm:flex-1">
+                            
+                            <div class="flex flex-col gap-0.5">
+                                <h5 class="text-[11px] font-black text-gray-400 uppercase tracking-widest">Vehicle Details</h5>
+                                <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-sm sm:text-base font-bold text-[#191265]">
+                                    {% if lasttrip.vehiclemodel %}
+                                        <span class="capitalize">{{ lasttrip.vehiclemodel }}</span>
+                                        <span class="text-gray-300 font-normal">•</span>
+                                    {% endif %}
+                                    
+                                    {% if lasttrip.vehiclenumber %}
+                                        <span class="uppercase">{{ lasttrip.vehiclenumber }}</span>
+                                        <span class="text-gray-300 font-normal">•</span>
+                                    {% endif %}
+                                    
+                                    <span>{{ lasttrip.availableseats }} SEAT{% if lasttrip.availableseats|add:"0" > 1 %}S{% endif %}</span>
+                                </div>
+                            </div>
 
-                    <div class="flex flex-col gap-3 w-full md:w-auto">
-                        <form class="async-form" action="{% url 'driver' %}" method="POST"> {% csrf_token %}
-                            <input type="hidden" name="tripid" value="{{ lasttrip.id }}">
-                            <input type="hidden" name="action" value="delete">
-                            <button type="submit" class="w-full bg-red-500 text-white px-8 py-3 rounded-xl font-black uppercase hover:bg-red-700 shadow-lg text-xs">Delete Trip</button>
-                        </form>
-                        {% if accepted %}
-                            <form action="{% url 'driver' %}" method="POST" class="w-full">
-                                {% csrf_token %}
+                            <div class="flex flex-wrap items-center justify-start gap-2">
+                                <span class="bg-[#191265]/5 text-[#191265] px-3 py-1.5 rounded-md text-[10px] sm:text-[11px] font-black tracking-widest uppercase border border-[#191265]/10">{{ lasttrip.vehicletype }}</span>
+                                {% if lasttrip.helmet == 'on' %}
+                                    <span class="bg-[#8ccb90]/10 text-[#2b7130] px-3 py-1.5 rounded-md text-[10px] sm:text-[11px] font-black tracking-widest uppercase border border-[#8ccb90]/30">+HELMET</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="flex w-full sm:w-auto gap-2 shrink-0 mt-1 sm:mt-0">
+                            <form class="w-full sm:w-auto m-0" action="{% url 'driver' %}" method="POST"> {% csrf_token %}
                                 <input type="hidden" name="tripid" value="{{ lasttrip.id }}">
-                                <input type="hidden" name="action" value="startride">
-                                <button type="submit" class="w-full bg-green-500 text-white px-8 py-3 rounded-xl font-black uppercase tracking-wider hover:bg-green-600 shadow-lg text-xs transition-colors">START RIDE</button>
+                                <input type="hidden" name="action" value="delete">
+                                <button type="submit" class="w-full bg-white border border-red-500 text-red-500 px-5 py-1.5 rounded-xl font-bold hover:bg-red-50 transition-colors text-xs shadow-sm uppercase tracking-wide">Delete</button>
                             </form>
-                        {% endif %}
+                            {% if accepted %}
+                                <form action="{% url 'driver' %}" method="POST" class="w-full sm:w-auto m-0">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="tripid" value="{{ lasttrip.id }}">
+                                    <input type="hidden" name="action" value="startride">
+                                    <button type="submit" class="w-full bg-[#191265] text-white px-6 py-1.5 rounded-xl font-bold hover:bg-blue-900 transition-colors shadow-md text-xs uppercase tracking-wide">Start Ride</button>
+                                </form>
+                            {% endif %}
+                        </div>
                     </div>
+
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -666,7 +733,16 @@
            
 
             // Smooth Scroll from hero
-            document.getElementById('scroll-to-form').onclick = () => document.getElementById('create-ride-section').scrollIntoView({ behavior: 'smooth' });
+            // Smooth Scroll from hero (Dynamic based on active trips)
+                const scrollToFormBtn = document.getElementById('scroll-to-form');
+                if (scrollToFormBtn) {
+                    scrollToFormBtn.onclick = () => document.getElementById('create-ride-section').scrollIntoView({ behavior: 'smooth' });
+                }
+
+                const scrollToActiveBtn = document.getElementById('scroll-to-active');
+                if (scrollToActiveBtn) {
+                    scrollToActiveBtn.onclick = () => document.getElementById('active-trip-section').scrollIntoView({ behavior: 'smooth' });
+                }
         
             setTimeout(() => {
                 const minimapContainers = document.querySelectorAll('.minimap-container');
