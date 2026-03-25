@@ -40,7 +40,7 @@ urlpatterns=[
     path("testtracking/<int:rideid>/", trackingview.testtrackingfunction, name="testtracking"),   #test tracking
     path("fetchtracking/<int:rideid>/", trackingview.fetchtracking, name="fetchtracking"),   #test tracking
     path("fetchstatus/<int:requestid>/", trackingview.fetchstatus, name="fetchstatus"),    #fetch status of ride: completed or not
-    path("tracking/<int:rideid>/", trackingview.testtrackingfunction, name="tracking"),   #test tracking
+    path("tracking/<int:rideid>/", trackingview.trackingfunction, name="tracking"),   #test tracking
 
     
 ]

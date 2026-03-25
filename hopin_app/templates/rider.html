@@ -111,6 +111,17 @@
                     <h2 class="text-4xl text-white font-bold mb-6">
                         Search <span class="text-white">Ride</span>
                     </h2>
+                    <label class="text-white block mb-1">Direction</label>
+                    <div class="flex gap-4 mb-4">
+                        <button type="button" id="toCollege"
+                            class="flex-1 bg-white hover:bg-gray-200 py-3 rounded-xl text-[#191265] font-bold shadow-inner transition">
+                            To College
+                        </button>
+                        <button type="button" id="fromCollege"
+                            class="flex-1 bg-white/40 hover:bg-white/80 py-3 rounded-xl text-[#191265] font-bold transition">
+                            From College
+                        </button>
+                    </div>
 
                     <label class="text-white block mb-1">Pickup Location</label>
                     <div class="relative mb-4">
@@ -132,17 +143,6 @@
                         </div>
                     </div>
 
-                    <label class="text-white block mb-1">Direction</label>
-                    <div class="flex gap-4 mb-4">
-                        <button type="button" id="toCollege"
-                            class="flex-1 bg-white hover:bg-gray-200 py-3 rounded-xl text-[#191265] font-bold shadow-inner transition">
-                            To College
-                        </button>
-                        <button type="button" id="fromCollege"
-                            class="flex-1 bg-white/40 hover:bg-white/80 py-3 rounded-xl text-[#191265] font-bold transition">
-                            From College
-                        </button>
-                    </div>
 
                     <div class="flex gap-6 mb-6">
                         <div class="flex flex-col w-1/2">
@@ -213,7 +213,7 @@
                                     <div class="flex items-center gap-3">
                                         <img src="https://ui-avatars.com/api/?name={{ trip.usercredentials }}&background=191265&color=fff"
                                             class="w-10 h-10 rounded-full shadow-sm">
-                                        <span class="font-bold text-xl">{{ trip.usercredentials }}</span>
+                                        <span class="font-bold text-xl">{{ trip.usercredentials.first_name }}</span>
                                     </div>
 
                                     <div class="flex items-start font-bold text-[#333]">
