@@ -16,7 +16,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{% static 'rider.css' %}">
     {% webpush_header %}
 </head>
 
@@ -258,10 +257,10 @@
                                 <!-- CENTER: Date & Time -->
                                 <div class="text-xs text-gray-600 text-center">
                                     <div class="font-semibold text-[#191265]">
-                                        {{ trip.date|default:"12 Mar 2026" }}
+                                        {{ trip.ridedate }}
                                     </div>
                                     <div class="text-[11px]">
-                                        {{ trip.time|default:"08:30 AM" }}
+                                        {{ trip.ridetime }}
                                     </div>
                                 </div>
 
@@ -439,7 +438,8 @@
                                         <div class="flex items-center gap-1 ml-auto">
                                             <span>⭐</span>
                                             <span class="driver-rating-value">
-                                                {{ trip.usercredentials.userdetails.averagerating|default_if_none:"New" }}
+                                                {{ trip.usercredentials.userdetails.averagerating|default_if_none:"New"
+                                                }}
                                             </span>
                                         </div>
 
@@ -447,7 +447,7 @@
                                 </div>
 
                                 <div class="flex flex-col items-center justify-between min-w-[130px]">
-                                    <div onclick="showRoutePopup({{ trip.latitude }}, {{ trip.longitude }}, 10.050272, 76.329273)"
+                                    <div onclick="showRoutePopup({{ trip.latitude }}, {{ trip.longitude }}, 10.050272, 76.329273 {{ riderlatitude|default:'null' }}, {{ riderlongitude|default:'null' }} )"
                                         class="w-32 h-20 rounded-2xl overflow-hidden border-2 border-gray-100 shadow-inner cursor-pointer hover:border-indigo-500 transition-all relative group">
 
                                         <div
