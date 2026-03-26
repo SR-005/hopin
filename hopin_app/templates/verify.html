@@ -34,11 +34,11 @@
 
     {# default message display snippet- as web popup #}
     {% if messages %}
-        {% for message in messages %}
-        <script>
-            alert("{{ message|escapejs }}");
-        </script>
-        {% endfor %}
+    {% for message in messages %}
+    <script>
+        alert("{{ message|escapejs }}");
+    </script>
+    {% endfor %}
     {% endif %}
 
 
@@ -46,7 +46,7 @@
     <div id="modal" class="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/20">
         <div class="bg-white rounded-2xl p-6 w-[90%] max-w-md shadow-lg relative">
 
-            
+
 
             <!-- PHONE FORM -->
             {% if not otpsent %}
@@ -54,8 +54,10 @@
             <form method="POST" action="{% url 'verify' %}">
                 {% csrf_token %}
                 <h4 class="text-1xl font-bold mb-2">An OTP will be send to your email: </h4>
-                <input type="text" id="disabled-input" aria-label="disabled input" class="bg-neutral-secondary-medium border border-default-medium text-fg-disabled text-sm rounded-base focus:ring-brand focus:border-brand block w-full px-3 py-2.5 shadow-xs placeholder:text-body mb-5" value="{{ request.user.email }}" disabled>
-                <button type="submit" name="action" value="sendotp" class="w-full bg-[#191265] text-white py-2 rounded-lg">Send OTP</button>
+                <input type="text" value="{{ request.user.email }}" disabled class="bg-gray-50 border border-gray-300 text-gray-400 text-sm rounded-lg 
+           block w-full p-2.5 cursor-not-allowed mb-5 shadow-sm">
+                <button type="submit" name="action" value="sendotp"
+                    class="w-full bg-[#191265] text-white py-2 rounded-lg">Send OTP</button>
             </form>
             {% endif %}
 
@@ -66,23 +68,26 @@
                 {% csrf_token %}
                 <input name="otp" type="text" placeholder="Enter OTP" class="w-full border p-2 mb-4 rounded" required>
                 <h4 class="text-1xl font-bold mb-2">Enter Phone Number</h4>
-                <input name="phone" type="text" placeholder="Phone Number" class="w-full border p-2 mb-4 rounded" required>
-                <button type="submit" name="action" value="verifyotp" class="w-full bg-green-600 text-white py-2 rounded-lg">Verify OTP</button>
+                <input name="phone" type="text" placeholder="Phone Number" class="w-full border p-2 mb-4 rounded"
+                    required>
+                <button type="submit" name="action" value="verifyotp"
+                    class="w-full bg-green-600 text-white py-2 rounded-lg">Verify OTP</button>
             </form>
             {% endif %}
 
-            <a href="{% url 'logout' %}" class="block px-4 py-2 hover:bg-red-100 text-red-600">
-                <button type="submit" name="action" value="cancelverify" class="w-full mt-2 bg-red-500 text-white py-2 rounded-lg">Cancel</button>
+            <a href="{% url 'logout' %}" class="block hover:bg-red-100 text-red-600">
+                <button type="submit" name="action" value="cancelverify"
+                    class="w-full mt-2 bg-red-500 text-white py-2 rounded-lg">Cancel</button>
             </a>
 
         </div>
     </div>
 
-<script>
-    // Modal is already visible by default (no hidden class)
+    <script>
+        // Modal is already visible by default (no hidden class)
 
-    function closeModal() {
-        document.getElementById("signupModal").style.display="none";
-    }
-</script>
+        function closeModal() {
+            document.getElementById("signupModal").style.display = "none";
+        }
+    </script>
 </body>
