@@ -114,7 +114,8 @@
                     
                     <div class="flex-1 overflow-y-auto rider-scroll pr-2 flex flex-col gap-6">
                         {% for rider in riders %}
-                            {% if rider.status == "ACCEPTED" %}
+                            
+                            {% if rider.status == "ACCEPTED" or rider.status == "HALFCONFIRM" or rider.status == "FULLCONFIRM" %}
                                 <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 flex flex-col min-h-[220px] justify-between transition-all">
                                     
                                     <div class="flex items-center gap-4">
@@ -144,21 +145,34 @@
                                         </div>
                                     </div>
                                     
-                                    <form method="POST" action="{% url 'testlocation' rideid %}" class="w-full m-0 mt-6 pt-5 border-t border-gray-100" onsubmit="return confirm('Are you sure you want to confirm pickup for {{ rider.rider.email }}?');">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="tripid" id="tripid" value="{{ rideid }}">
-                                        <input type="hidden" name="requestid" id="requestid" value="{{ rider.id }}">
-                                        
-                                        <button type="submit" name="action" value="pickup" 
-                                            class="w-full py-4 rounded-xl bg-[#191265] text-white font-black text-sm uppercase tracking-widest hover:bg-[#2a228a] active:scale-95 transition-all duration-200 shadow-md flex items-center justify-center gap-2">
-                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                            Confirm Pickup
-                                        </button>
-                                    </form>
+                                    {% if rider.status == "ACCEPTED" %}
+                                        <form method="POST" action="{% url 'testlocation' rideid %}" class="w-full m-0 mt-6 pt-5 border-t border-gray-100" onsubmit="return confirm('Are you sure you want to confirm pickup for {{ rider.rider.email }}?');">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="tripid" id="tripid" value="{{ rideid }}">
+                                            <input type="hidden" name="requestid" id="requestid" value="{{ rider.id }}">
+                                            
+                                            <button type="submit" name="action" value="pickup" 
+                                                class="w-full py-4 rounded-xl bg-[#191265] text-white font-black text-sm uppercase tracking-widest hover:bg-[#2a228a] active:scale-95 transition-all duration-200 shadow-md flex items-center justify-center gap-2">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                Confirm Pickup
+                                            </button>
+                                        </form>
+                                    {% else if rider.status == "HALFCONFIRM" %}
+                                        <div class="w-full mt-6 pt-5 border-t border-gray-100 flex items-center justify-center gap-2 text-blue-600 font-black text-sm uppercase tracking-widest py-4 bg-blue-50 rounded-xl">
+                                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                            Pending Confirmation
+                                        </div>
+
+                                    {% else %}
+                                        <div class="w-full mt-6 pt-5 border-t border-gray-100 flex items-center justify-center gap-2 text-green-600 font-black text-sm uppercase tracking-widest py-4 bg-green-50 rounded-xl">
+                                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                            Pickup Confirmed
+                                        </div>
+                                    {% endif %}
+                                    
                                 </div>
-                            {% if rider.status == "HALFCONFIRM" || rider.status == "FULLCONFIRM" %}
-                            <p>hello</p>
                             {% endif %}
+                            
                         {% empty %}
                             <div class="flex flex-col items-center justify-center h-full text-center px-4 opacity-60 py-10">
                                 <svg class="w-16 h-16 text-[#191265] mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
