@@ -14,16 +14,23 @@
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Bricolage+Grotesque:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&display=swap" rel="stylesheet">
     {% webpush_header %}
     
     <style>
+        /* Custom Black Mango Font */
+        @font-face {
+            font-family: 'Black Mango';
+            src: url("{% static 'hopin_app/fonts/Black_Mango_SemiBold.ttf' %}") format('truetype');
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Poppins', sans-serif;
             background-color: #191265;
         }
-        .font-playfair { font-family: 'Playfair Display', serif; }
-        .font-bricolage { font-family: 'Bricolage Grotesque', sans-serif; }
         
         .custom-input {
             background-color: #191265; 
@@ -143,12 +150,12 @@
 
         <div class="flex-1 flex flex-col md:flex-row items-center justify-between px-8 md:px-24 relative py-8 mt-16">
             <div class="max-w-xl z-10">
-                <h1 class="text-[#191265] text-5xl md:text-7xl font-extrabold leading-tight mb-4 font-inter">Got Empty Seats!?</h1>
-                <p class="text-[#191265] text-2xl md:text-3xl font-medium opacity-90 font-inter">Start earning with them, right now!!</p>
+                <h1 class="text-5xl md:text-7xl font-bold leading-tight mb-4 font-['Black_Mango'] text-[#191265]">Got Empty Seats!?</h1>
+                <p class="text-2xl md:text-3xl font-['Playfair_Display'] text-[#191265] mt-4">Start earning with them, right now!!</p>
                 {% if lasttrip %}
-                    <button id="scroll-to-active" class="mt-12 bg-[#191265] text-white px-10 py-4 rounded-2xl font-bold hover:bg-blue-900 transition-all shadow-xl">Show Active Ride</button>
+                    <button id="scroll-to-active" class="mt-10 bg-[#191265] text-white px-10 py-3 text-2xl rounded-full font-['Bricolage_Grotesque'] hover:bg-indigo-900 transition-all shadow-xl">Show Active Ride</button>
                 {% else %}
-                    <button id="scroll-to-form" class="mt-12 bg-[#191265] text-white px-10 py-4 rounded-2xl font-bold hover:bg-blue-900 transition-all shadow-xl">Create Now</button>
+                    <button id="scroll-to-form" class="mt-10 bg-[#191265] text-white px-10 py-3 text-2xl rounded-full font-['Bricolage_Grotesque'] hover:bg-indigo-900 transition-all shadow-xl">Create Now</button>
                 {% endif %}
             </div>
             <div class="w-full md:w-[60%] relative flex justify-center">
@@ -163,7 +170,7 @@
     {% if not lasttrip %}
         <section id="create-ride-section" class="min-h-screen bg-[#191265] py-6 px-4 md:px-12 flex flex-col justify-center items-center">
             <div class="w-full max-w-5xl">
-                <h2 class="text-white text-3xl md:text-4xl font-black uppercase tracking-tighter mb-4 text-center md:text-left font-bricolage">Create Your Ride</h2>
+                <h2 class="text-4xl md:text-5xl font-['Black_Mango'] text-white mb-6 text-center md:text-left">Create Your Ride</h2>
 
                 <div class="bg-white rounded-[1.5rem] p-4 md:p-5 flex flex-col lg:flex-row gap-5 shadow-2xl">
                     
@@ -264,7 +271,7 @@
     {% endif %}   
 
     <section id="active-trip-section" class="min-h-screen bg-[#191265] py-16 px-6 md:px-16 flex flex-col items-center">
-        <h2 class="text-white text-3xl md:text-5xl font-black uppercase tracking-tighter mb-12 w-full max-w-6xl font-bricolage">Active Ride Management</h2>
+        <h2 class="text-white text-4xl md:text-5xl font-['Black_Mango'] mb-12 w-full max-w-6xl text-center md:text-left">Active Ride Management</h2>
 
         <div class="w-full max-w-6xl flex flex-col gap-8">
             
@@ -276,7 +283,7 @@
                             <div class="w-8 h-8 rounded-full bg-[#191265] text-white flex items-center justify-center font-bold text-sm shadow-sm">
                                 {{ request.user.email|make_list|first|upper }}
                             </div>
-                            <h4 class="font-extrabold text-sm sm:text-base font-bricolage tracking-wide">{{ request.user.email }}</h4>
+                            <h4 class="font-bold text-sm sm:text-base tracking-wide">{{ request.user.email }}</h4>
                         </div>
                         
                         <div class="bg-gray-50 text-[#191265] flex items-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-black tracking-widest uppercase border border-gray-200 shadow-sm whitespace-nowrap">
@@ -373,7 +380,7 @@
             {% else %}
                 <div class="bg-white/5 border border-white/10 rounded-[2.5rem] p-16 flex flex-col items-center justify-center text-center shadow-xl w-full">
                     <svg class="w-20 h-20 text-white/30 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    <h3 class="text-3xl font-black text-white mb-3 uppercase tracking-wide font-bricolage">No Active Rides</h3>
+                    <h3 class="text-3xl font-['Black_Mango'] text-white mb-3">No Active Rides</h3>
                     <p class="text-white/60 font-medium text-lg max-w-lg">You don't have any ongoing trips at the moment. Fill out the form above to start sharing your journey!</p>
                 </div>
             {% endif %}
@@ -568,6 +575,8 @@
                 const collegeLat = 10.050272; 
                 const collegeLng = 76.329273;
                 const collegeName = "AISAT Engineering College";
+                const maxLocationLength = 100;
+                const nominatimLanguage = 'en';
                 
                 const map = L.map('map').setView([collegeLat, collegeLng], 12);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -584,6 +593,34 @@
                 
                 let userMarker;
                 let routeLine;
+
+                function trimLocationLabel(label) {
+                    if (!label) return '';
+                    return label.replace(/\s+/g, ' ').trim().slice(0, maxLocationLength);
+                }
+
+                function buildShortLocationLabel(place) {
+                    const address = place?.address || {};
+                    const nameParts = [
+                        place?.name,
+                        address.road,
+                        address.neighbourhood,
+                        address.suburb,
+                        address.hamlet,
+                        address.quarter,
+                        address.village,
+                        address.town,
+                        address.city
+                    ].filter(Boolean);
+
+                    const primaryName = nameParts[0] || '';
+                    const locality = address.city || address.town || address.village || address.suburb || address.state_district || address.state || '';
+                    const shortLabel = locality && primaryName && locality !== primaryName
+                        ? `${primaryName}, ${locality}`
+                        : (primaryName || locality || place?.display_name || '');
+
+                    return trimLocationLabel(shortLabel);
+                }
 
                 async function updateLocationData(lat, lng, addressString = null) {
                     document.getElementById('lat').value = lat;
@@ -627,14 +664,13 @@
                     }
 
                     if (!addressString) {
-                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&accept-language=${nominatimLanguage}&lat=${lat}&lon=${lng}`)
                             .then(res => res.json())
                             .then(data => {
-                                const parts = data.display_name.split(',');
-                                locInput.value = parts.slice(0, 2).join(', ').trim();
+                                locInput.value = buildShortLocationLabel(data);
                             });
                     } else {
-                        locInput.value = addressString;
+                        locInput.value = trimLocationLabel(addressString);
                     }
                 }
 
@@ -657,7 +693,7 @@
                     }
 
                     autocompleteTimeout = setTimeout(() => {
-                        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`)
+                        fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&accept-language=${nominatimLanguage}&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`)
                             .then(res => res.json())
                             .then(data => {
                                 autocompleteResults.innerHTML = '';
@@ -667,8 +703,7 @@
                                         const div = document.createElement('div');
                                         div.className = 'autocomplete-item';
                                         
-                                        const parts = item.display_name.split(',');
-                                        const shortName = parts.slice(0, 2).join(', ').trim();
+                                        const shortName = buildShortLocationLabel(item);
                                         div.innerText = shortName;
                                         
                                         div.onclick = function() {

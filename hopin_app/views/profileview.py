@@ -75,11 +75,15 @@ def testprofilefunction(request):
     countrides=None
     currentorderid=None
     currentamount=None
+    currentaverage=None
 
-    completedtrips=trip.objects.filter(usercredentials=user,status="COMPLETED")
+    completedtrips=trip.objects.filter(usercredentials=user,status="COMPLETED").order_by("-ridedate")
     counttrips=len(completedtrips)
-    droppedrides=riderequest.objects.filter(rider=user,status="DROPPED")
+    droppedrides=riderequest.objects.filter(rider=user,status="DROPPED").order_by("-trip__ridedate")
     countrides=len(droppedrides)
+    userobject=userdetail(usercredentials=user)
+    currentaverage=userobject.averagerating
+
 
     pendingpayments=payment.objects.filter(requestdetails__rider=request.user,status="PENDING")
     if pendingpayments.exists():
@@ -111,5 +115,5 @@ def testprofilefunction(request):
             currentpayment.save()
 
     return render(request, "testprofile.html", {"completedtrips":completedtrips,"droppedrides":droppedrides,"counttrips":counttrips,
-                                                "countrides":countrides,"pendingpayments":pendingpayments, "orderid": currentorderid, "amount": currentamount,
+                                                "countrides":countrides,"averagerating":currentaverage,"pendingpayments":pendingpayments, "orderid": currentorderid, "amount": currentamount,
                                                 "RAZORID": RAZORID})
