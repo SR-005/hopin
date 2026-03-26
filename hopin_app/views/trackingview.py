@@ -107,6 +107,7 @@ def confirmride(request):
 
 def trackingfunction(request, rideid):
     currentrideid = None
+    firstname=request.user.first_name
     currentride = get_object_or_404(
         trip, id=rideid, status__in=["ONGOING", "COMPLETED"])
     print("Current Tracking Ride: ", currentride)
@@ -122,4 +123,4 @@ def trackingfunction(request, rideid):
         if action == "confirmride":
             return confirmride(request)
 
-    return render(request, "tracking.html", {"rideid": currentrideid, "requestid": currentrequest.id, "riderlatitude": riderlatitude, "riderlongitude": riderlongitude})
+    return render(request, "tracking.html", {"rideid": currentrideid,"firstname":firstname,"currentrequest":currentrequest, "requestid": currentrequest.id, "riderlatitude": riderlatitude, "riderlongitude": riderlongitude})
