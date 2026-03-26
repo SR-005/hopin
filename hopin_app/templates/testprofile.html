@@ -56,7 +56,7 @@
 
     <div class="bg-white w-full h-[180px] rounded-b-3xl relative shadow-md">
         <div class="absolute -bottom-[40px] left-6 sm:left-20 w-[100px] h-[100px] bg-white rounded-full flex items-center justify-center border-[6px] border-[#171158] shadow-lg">
-            <svg class="w-14 h-14 text-[#171158]" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="w-14 h-14 text-[#171158]" fill="#5c5b5b" viewBox="0 0 24 24">
                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
             </svg>
         </div>
@@ -87,7 +87,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-6">
                 <div>
                     <p class="text-xs font-extrabold mb-1 text-gray-400 uppercase tracking-widest">Name:</p>
-                    <p class="text-sm sm:text-base font-bold text-white capitalize">
+                    <p class="text-sm sm:text-2xl font-bold text-white capitalize">
                         {% if request.user.first_name %}
                             {{ request.user.first_name }} {{ request.user.last_name }}
                         {% else %}
@@ -97,7 +97,7 @@
                 </div>
                 <div>
                     <p class="text-xs font-extrabold mb-1 text-gray-400 uppercase tracking-widest">Email:</p>
-                    <p class="text-sm sm:text-base font-bold text-white break-all">{{ request.user.email }}</p>
+                    <p class="text-sm sm:text-2xl font-bold text-white break-all">{{ request.user.email }}</p>
                 </div>
                 <div class="col-span-1 sm:col-span-2 mt-2">
                     <p class="text-xs font-extrabold mb-1.5 text-gray-400 uppercase tracking-widest">Phone Number:</p>
