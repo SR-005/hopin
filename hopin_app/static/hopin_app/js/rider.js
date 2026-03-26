@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const collegeLng = 76.329273;
     const collegeName = "AISAT Engineering College";
     const maxLocationLength = 100;
+    const nominatimLanguage = "en";
 
     let direction = "to"; // Default direction
     let userLat = null;
@@ -85,6 +86,16 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!label) return "";
         const normalized = label.replace(/\s+/g, " ").trim();
         return normalized.slice(0, maxLocationLength);
+    }
+
+    function buildNominatimUrl(endpoint, params) {
+        const searchParams = new URLSearchParams({
+            format: "json",
+            addressdetails: "1",
+            "accept-language": nominatimLanguage,
+            ...params
+        });
+        return `https://nominatim.openstreetmap.org/${endpoint}?${searchParams.toString()}`;
     }
 
     function buildShortLocationLabel(place) {
@@ -202,7 +213,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (lngHidden) lngHidden.value = lng;
         marker.setLatLng([lat, lng]);
 
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+        fetch(buildNominatimUrl("reverse", { lat, lon: lng }))
             .then(res => res.json())
             .then(data => {
                 const placeName = buildShortLocationLabel(data);
@@ -215,7 +226,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /* ---------------- AUTOCOMPLETE (NOMINATIM) ---------------- */
     function searchLocation(query, resultsBox, isPickup) {
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`)
+        fetch(buildNominatimUrl("search", { q: query, countrycodes: "in", limit: "5" }))
             .then(res => res.json())
             .then(data => {
                 resultsBox.innerHTML = "";
