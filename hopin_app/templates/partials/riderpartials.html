@@ -240,82 +240,99 @@
                 fetch(`/fetchtracking/${rideId}/?requestid=${requestId}`)
                     .then(res => res.json())
                     .then(data => {
-                        if (data.route) {
-                            const routeData = typeof data.route === "string" ? JSON.parse(data.route) : data.route;
-                            const coords = routeData.coordinates.map(c => [c[1], c[0]]);
+                        if (!data.route) return;
 
-                            const poly = L.polyline(coords, {
-                                color: '#191265',
-                                weight: 6,
-                                opacity: 0.8
-                            }).addTo(bigMapInstance);
+                        const routeData = typeof data.route === "string"
+                            ? JSON.parse(data.route)
+                            : data.route;
 
-                            L.marker(coords[0]).addTo(bigMapInstance).bindPopup("Driver Location");
-                            L.marker(coords[coords.length - 1]).addTo(bigMapInstance).bindPopup("Destination");
+                        const coords = routeData.coordinates.map(c => [c[1], c[0]]);
 
-                            // Zoom nicely to the route
-                            bigMapInstance.fitBounds(poly.getBounds(), { padding: [50, 50] });
+                        const poly = L.polyline(coords, {
+                            color: '#191265',
+                            weight: 6,
+                            opacity: 0.8
+                        }).addTo(bigMapInstance);
+
+                        // Start
+                        L.marker(coords[0])
+                            .addTo(bigMapInstance)
+                            .bindPopup("Driver Start");
+
+                        // End
+                        L.marker(coords[coords.length - 1])
+                            .addTo(bigMapInstance)
+                            .bindPopup("Destination");
+
+                        // Rider
+                        if (data.rider_lat && data.rider_lng) {
+                            const riderIcon = L.icon({
+                                iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+                                iconSize: [40, 40],
+                                iconAnchor: [20, 40]
+                            });
+
+                            L.marker([data.rider_lat, data.rider_lng], { icon: riderIcon })
+                                .addTo(bigMapInstance)
+                                .bindPopup("Your Pickup Location");
                         }
+
+                        // Zoom
+                        bigMapInstance.fitBounds(poly.getBounds(), { padding: [50, 50] });
                     })
                     .catch(err => console.error("Map error:", err));
-            } catch (e) {
-                console.error("Leaflet Error:", e);
-            }
-        }, 500);
-    }
+                function closeBigMapPopup() {
+                    window.isMapViewing = false; // UNLOCK THE POLL GLOBALLY
+                    console.log("Map closed, polling resumed.");
+                    const modal = document.getElementById('bigMapModal');
 
-    function closeBigMapPopup() {
-        window.isMapViewing = false; // UNLOCK THE POLL GLOBALLY
-        console.log("Map closed, polling resumed.");
-        const modal = document.getElementById('bigMapModal');
+                    // 1. Hide the modal
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
 
-        // 1. Hide the modal
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+                    // 2. Unlock the screen scroll and restore background maps
+                    document.body.classList.remove('modal-open');
 
-        // 2. Unlock the screen scroll and restore background maps
-        document.body.classList.remove('modal-open');
+                    // 3. Clean up memory
+                    if (bigMapInstance) {
+                        bigMapInstance.off();
+                        bigMapInstance.remove();
+                        bigMapInstance = null;
+                    }
+                }
+                // ==========================================
+                // SCROLL UNLOCK WATCHDOG
+                // ==========================================
+                document.addEventListener('DOMContentLoaded', function () {
+                    const modal = document.getElementById('bigMapModal');
 
-        // 3. Clean up memory
-        if (bigMapInstance) {
-            bigMapInstance.off();
-            bigMapInstance.remove();
-            bigMapInstance = null;
-        }
-    }
-    // ==========================================
-    // SCROLL UNLOCK WATCHDOG
-    // ==========================================
-    document.addEventListener('DOMContentLoaded', function () {
-        const modal = document.getElementById('bigMapModal');
+                    if (modal) {
+                        // Create an observer to watch for ANY changes to the modal's classes
+                        const observer = new MutationObserver(function (mutations) {
+                            mutations.forEach(function (mutation) {
+                                if (mutation.attributeName === "class") {
+                                    // If the modal becomes hidden for ANY reason, unlock the scroll immediately
+                                    if (modal.classList.contains('hidden')) {
+                                        document.body.classList.remove('modal-open');
+                                        document.body.style.overflow = '';
+                                        document.body.style.position = '';
+                                        document.body.style.height = '';
 
-        if (modal) {
-            // Create an observer to watch for ANY changes to the modal's classes
-            const observer = new MutationObserver(function (mutations) {
-                mutations.forEach(function (mutation) {
-                    if (mutation.attributeName === "class") {
-                        // If the modal becomes hidden for ANY reason, unlock the scroll immediately
-                        if (modal.classList.contains('hidden')) {
-                            document.body.classList.remove('modal-open');
-                            document.body.style.overflow = '';
-                            document.body.style.position = '';
-                            document.body.style.height = '';
+                                        // Also restore the background image safely
+                                        const riderImg = document.querySelector("img[src*='rider.png']");
+                                        if (riderImg) {
+                                            riderImg.style.zIndex = "10";
+                                            riderImg.style.position = "relative";
+                                        }
+                                    }
+                                }
+                            });
+                        });
 
-                            // Also restore the background image safely
-                            const riderImg = document.querySelector("img[src*='rider.png']");
-                            if (riderImg) {
-                                riderImg.style.zIndex = "10";
-                                riderImg.style.position = "relative";
-                            }
-                        }
+                        // Start watching the modal
+                        observer.observe(modal, { attributes: true });
                     }
                 });
-            });
-
-            // Start watching the modal
-            observer.observe(modal, { attributes: true });
-        }
-    });
 </script>
 <div id="bigMapModal"
     class="hidden fixed inset-0 bg-[#191265]/90 backdrop-blur-md flex items-center justify-center p-4 lg:p-10"

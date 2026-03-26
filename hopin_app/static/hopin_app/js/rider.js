@@ -674,7 +674,8 @@ let popupMap = null;
 let routeLayer = null;
 let mapMarkers = [];
 
-function showRoutePopup(sLat, sLng, eLat, eLng) {
+// ✅ NEW
+function showRoutePopup(sLat, sLng, eLat, eLng, rLat = null, rLng = null) {
     window.isMapViewing = true; // LOCK: Stop background polling
     console.log("Map opened! Polling locked.");
 
@@ -713,9 +714,25 @@ function showRoutePopup(sLat, sLng, eLat, eLng) {
                 }).addTo(popupMap);
 
                 const startMarker = L.marker([sLat, sLng]).addTo(popupMap).bindPopup("Start");
+
                 const endMarker = L.marker([eLat, eLng]).addTo(popupMap).bindPopup("End");
+
                 mapMarkers.push(startMarker, endMarker);
 
+                // ✅ ADD THIS (rider marker only in popup)
+                if (rLat && rLng) {
+                    const riderIcon = L.icon({
+                        iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+                        iconSize: [35, 35],
+                        iconAnchor: [17, 35]
+                    });
+
+                    const riderMarker = L.marker([rLat, rLng], { icon: riderIcon })
+                        .addTo(popupMap)
+                        .bindPopup("Rider Location");
+
+                    mapMarkers.push(riderMarker);
+                }
                 popupMap.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
             })
             .catch(err => console.error("OSRM Fetch Error:", err));
