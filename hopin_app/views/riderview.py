@@ -244,7 +244,7 @@ def riderpoll(request):
     html = render_to_string("partials/riderpartials.html", {
         "requests": requests,
         "accepted": accepted,
-        "requestedrides": requestedrides
+        "requestedrides": requestedrides,
     }, request=request)
 
     return JsonResponse({"html": html,

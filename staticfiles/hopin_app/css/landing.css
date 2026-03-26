@@ -1,0 +1,74 @@
+html {
+    scroll-behavior: smooth;
+}
+
+@font-face {
+    font-family: 'Black Mango';
+    src:  url('../fonts/Black_Mango _SemiBold.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+/* "{% static 'hopin_app/fonts/Brasika_Display_Regular.otf' %}" */
+@font-face {
+    font-family: 'Brasika';
+    src:  url('../fonts/Brasika_Display_Regular.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
+body {
+    font-family: 'Black Mango', sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* The stylized HOP IN typography */
+.title-hop-in {
+    font-family: 'Brasika', serif;
+    font-weight: normal;
+    line-height: 0.85;
+    letter-spacing: -0.01em;
+    transform: scaleX(1.05);
+    transform-origin: left;
+}
+
+/* Navbar active underline */
+.nav-link-active {
+    position: relative;
+}
+.nav-link-active::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 2px;
+    background-color: #EAE9DF;
+}
+
+/* BULLETPROOF BACKGROUND CURVE
+    Replaces the failing Tailwind classes to guarantee 
+    it never covers the whole screen again.
+*/
+.bg-curve {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 40vh;
+    background-color: #F4F5F7;
+    border-bottom-left-radius: 3rem;
+    border-bottom-right-radius: 3rem;
+    z-index: 0;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+    .bg-curve {
+        width: 38%;
+        /* Height set past 100vh so the curve is only visible on scroll */
+        height: 130vh; 
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 140px;
+    }
+}
