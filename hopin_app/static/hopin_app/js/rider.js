@@ -39,23 +39,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     //TOAST
     function showToast(message, type = "info") {
-        const toast = document.createElement("div");
-
-        const colors = {
-            success: "bg-green-600",
-            error: "bg-red-600",
-            info: "bg-blue-600"
-        };
-
-        toast.className = `${colors[type]} text-white px-4 py-3 rounded-xl shadow-lg fixed top-5 right-5 z-50`;
-
-        toast.innerText = message;
-
-        document.body.appendChild(toast);
-
-        setTimeout(() => {
-            toast.remove();
-        }, 3000);
+        if (window.HopinToast && typeof window.HopinToast.show === "function") {
+            window.HopinToast.show(message, type);
+        }
     }
 
     const cancelledRequestStorageKey = "rider_cancelled_request_ids";
@@ -292,7 +278,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (mapSubmitBtn) {
         mapSubmitBtn.addEventListener("click", function () {
             if (!userLat || !userLng) {
-                alert("Please select a location on the map or type in a location first.");
+                showToast("Please select a location on the map or type in a location first.", "error");
                 return;
             }
 
@@ -335,7 +321,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (!latHidden.value || !lngHidden.value) {
                 e.preventDefault();
-                alert("Please select a specific location from the dropdown suggestions or click on the map.");
+                showToast("Please select a specific location from the dropdown suggestions or click on the map.", "error");
             }
         });
     }
@@ -602,12 +588,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 const data = await res.json();
-                const acceptedIds = data.accepted_ids || [];
-                const pendingIds = data.pending_ids || [];
-                const rejectedIds = data.rejected_ids || [];
-                const activeRequestIds = data.active_request_ids || [];
+                const acceptedIds = (data.accepted_ids || []).map(String);
+                const pendingIds = (data.pending_ids || []).map(String);
+                const rejectedIds = (data.rejected_ids || []).map(String);
+                const activeRequestIds = (data.active_request_ids || []).map(String);
                 const cancelledRequestIds = getCancelledRequestIds();
-                const visibleRequestIds = [...acceptedIds, ...pendingIds, ...activeRequestIds].map(String);
+                const visibleRequestIds = [...acceptedIds, ...pendingIds, ...activeRequestIds];
                 const staleCancelledIds = cancelledRequestIds.filter(id => !visibleRequestIds.includes(String(id)));
 
                 if (staleCancelledIds.length > 0) {
@@ -680,7 +666,7 @@ function showRoutePopup(sLat, sLng, eLat, eLng, rLat = null, rLng = null) {
     console.log("Map opened! Polling locked.");
 
     if (!sLat || !sLng || !eLat || !eLng) {
-        alert("Location coordinates are missing for this ride.");
+        showToast("Location coordinates are missing for this ride.", "error");
         return;
     }
 

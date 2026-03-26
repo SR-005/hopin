@@ -2,6 +2,28 @@ var isPushEnabled = false,
     registration,
     subBtn;
 
+function notifyPushState(status) {
+  document.dispatchEvent(new CustomEvent('hopin:webpush-state', {
+    detail: { status: status }
+  }));
+}
+
+function markSubscribed() {
+  subBtn.textContent = 'Unsubscribe from Push Messaging';
+  subBtn.disabled = false;
+  isPushEnabled = true;
+  notifyPushState('subscribed');
+}
+
+function markUnsubscribed(shouldNotify) {
+  subBtn.textContent = 'Subscribe to Push Messaging';
+  subBtn.disabled = false;
+  isPushEnabled = false;
+  if (shouldNotify !== false) {
+    notifyPushState('unsubscribed');
+  }
+}
+
 window.addEventListener('load', function () {
   subBtn = document.getElementById('webpush-subscribe-button');
 
@@ -44,39 +66,35 @@ window.addEventListener('load', function () {
 
   function initialiseState(reg) {
     if (!reg.showNotification) {
-      subBtn.textContent = 'Subscribe to Push Messaging';
-      subBtn.disabled = false;
+      markUnsubscribed(false);
       showMessage('Notifications are not supported in this browser.');
+      notifyPushState('unsupported');
       return;
     }
 
     if (Notification.permission === 'denied') {
-      subBtn.textContent = 'Subscribe to Push Messaging';
-      subBtn.disabled = false;
+      markUnsubscribed(false);
       showMessage('Browser notifications are blocked for this site.');
+      notifyPushState('permission-denied');
       return;
     }
 
     if (!('PushManager' in window)) {
-      subBtn.textContent = 'Subscribe to Push Messaging';
-      subBtn.disabled = false;
+      markUnsubscribed(false);
       showMessage('Push messaging is not available in this browser.');
+      notifyPushState('unsupported');
       return;
     }
 
     reg.pushManager.getSubscription().then(function (subscription) {
       if (!subscription) {
-        subBtn.textContent = 'Subscribe to Push Messaging';
-        subBtn.disabled = false;
+        markUnsubscribed();
         return;
       }
 
       postSubscribeObj('subscribe', subscription).then(function (response) {
-        if (response.status === 201) {
-          subBtn.textContent = 'Unsubscribe from Push Messaging';
-          subBtn.disabled = false;
-          isPushEnabled = true;
-          showMessage('Successfully subscribed for push notifications.');
+        if (response.ok) {
+          markSubscribed();
           return;
         }
 
@@ -146,10 +164,8 @@ function subscribe(reg) {
     }
 
     return postSubscribeObj('subscribe', subscription).then(function (response) {
-      if (response.status === 201) {
-        subBtn.textContent = 'Unsubscribe from Push Messaging';
-        subBtn.disabled = false;
-        isPushEnabled = true;
+      if (response.ok) {
+        markSubscribed();
         showMessage('Successfully subscribed for push notifications.');
         return;
       }
@@ -186,15 +202,13 @@ function unsubscribe(reg) {
     }
 
     postSubscribeObj('unsubscribe', subscription).then(function (response) {
-      if (response.status !== 202) {
+      if (!response.ok) {
         throw new Error('Server returned status ' + response.status);
       }
 
       return subscription.unsubscribe().then(function () {
-        subBtn.textContent = 'Subscribe to Push Messaging';
+        markUnsubscribed();
         showMessage('Successfully unsubscribed from push notifications.');
-        isPushEnabled = false;
-        subBtn.disabled = false;
       });
     }).catch(function (error) {
       console.error('Unsubscribe error.', error);
