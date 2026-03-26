@@ -1,13 +1,14 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profile - Hop In</title>
     
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -54,15 +55,54 @@
 </head>
 <body class="pb-16">
 
-    <div class="bg-white w-full h-[180px] rounded-b-3xl relative shadow-md">
-        <div class="absolute -bottom-[40px] left-6 sm:left-20 w-[100px] h-[100px] bg-white rounded-full flex items-center justify-center border-[6px] border-[#171158] shadow-lg">
+    <nav class="w-full flex items-center justify-between px-6 lg:px-12 py-6 absolute top-0 left-0 z-50">
+        <div class="flex items-center w-auto lg:w-1/4">
+            <a href="/">
+                <img src="{% static 'hopin_app/images/logo1.png' %}" class="h-10 sm:h-12 md:h-14 w-auto object-contain" alt="Hop In Logo" onerror="this.src='https://placehold.co/150x50?text=LOGO'">
+            </a>
+        </div>
+
+        <ul class="hidden md:flex space-x-12 lg:space-x-16 font-playfair tracking-widest font-extrabold text-[16px] lg:text-[18px] absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+            <li><a href="/" class="text-[#171158] hover:opacity-70 transition-opacity">Home</a></li>
+            <li><a href="#info-section" class="text-[#171158] hover:opacity-70 transition-opacity">Info</a></li>
+            <li><a href="#complaints-section" class="text-[#171158] hover:opacity-70 transition-opacity">Complaints</a></li>
+        </ul>
+
+        <div class="flex justify-end items-center gap-6 w-auto lg:w-1/4 ml-auto" id="auth-container">
+            <div class="flex items-center gap-4">
+                <span class="text-[#171158] font-playfair font-extrabold text-[16px] lg:text-[18px] tracking-wide hidden sm:block">
+                    {{ request.user.first_name|default:request.user.username }}
+                </span>
+                <button type="button" id="user-menu-button" data-dropdown-toggle="user-dropdown" class="flex text-sm rounded-full focus:ring-4 focus:ring-[#171158]/20">
+                    <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-full border-2 border-[#171158] shadow-md bg-white flex items-center justify-center text-[#171158] overflow-hidden hover:bg-gray-50 transition-colors">
+                        <svg class="w-6 h-6 lg:w-8 lg:h-8" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                            <path fill-rule="evenodd" d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </button>
+                <div id="user-dropdown" class="hidden z-50 my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow-xl w-44 border border-gray-100">
+                    <div class="px-4 py-3">
+                        <span class="block font-bold text-[#171158] truncate">{{ request.user.first_name|default:request.user.username }}</span>
+                        <span class="block text-xs text-gray-500 truncate mt-0.5">{{ request.user.email }}</span>
+                    </div>
+                    <ul class="py-2 text-sm text-gray-700 font-bold">
+                        <li><a href="#" class="block px-4 py-2 hover:bg-gray-100 text-[#171158]">Profile</a></li>
+                        <li><a href="{% url 'logout' %}" class="block px-4 py-2 hover:bg-red-50 text-red-600">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="bg-white w-full h-[220px] rounded-b-3xl relative shadow-md">
+        <div class="absolute -bottom-[40px] left-6 sm:left-20 w-[100px] h-[100px] bg-white rounded-full flex items-center justify-center border-[6px] border-[#171158] shadow-lg z-10">
             <svg class="w-14 h-14 text-[#171158]" fill="#5c5b5b" viewBox="0 0 24 24">
                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
             </svg>
         </div>
     </div>
 
-    <div class="max-w-4xl w-full px-6 sm:px-20 mt-16 flex flex-col items-start gap-1">
+    <div class="max-w-4xl w-full px-6 sm:px-20 mt-16 flex flex-col items-start gap-1 relative z-0">
         <h1 class="text-3xl sm:text-4xl font-playfair font-black tracking-wide capitalize text-white drop-shadow-md">
             {% if request.user.first_name %}
                 {{ request.user.first_name }} {{ request.user.last_name }}
@@ -149,89 +189,99 @@
             {% endif %}
         </div>
 
-        <div class="glass-card">
-            <h2 class="text-xl sm:text-2xl font-playfair font-black mb-5 tracking-wide border-b border-white/10 pb-3">User as Rider</h2>
+        <div id="info-section" class="scroll-mt-24 flex flex-col gap-6">
             
-            <div class="flex justify-between items-center pb-5 border-b border-white/5">
-                <span class="text-sm sm:text-base font-extrabold text-gray-300">Total Rides Taken</span>
-                <span class="text-3xl sm:text-4xl font-black text-blue-400">{{ countrides|default:"0" }}</span>
-            </div>
-            
-            <div class="mt-6">
-                <h3 class="text-xs sm:text-sm font-extrabold tracking-widest uppercase text-gray-400 mb-4">Previous Ride Details</h3>
+            <div class="glass-card">
+                <h2 class="text-xl sm:text-2xl font-playfair font-black mb-5 tracking-wide border-b border-white/10 pb-3">User as Rider</h2>
                 
-                <div class="flex flex-col gap-4 max-h-[140px] sm:max-h-[160px] overflow-y-auto custom-scrollbar pr-3 snap-y snap-mandatory">
-                    {% for ride in droppedrides %}
-                        <div class="shrink-0 snap-start bg-[#171158] p-4 sm:p-5 rounded-xl border border-white/5 flex flex-col gap-2.5 shadow-sm hover:border-white/10 transition-colors h-max">
-                            
-                            <div class="flex justify-between items-center border-b border-white/5 pb-2">
-                                <span class="text-sm sm:text-base font-bold text-gray-300">{{ ride.trip.ridedate|date:"M d, Y"|default:"Date Unknown" }}</span>
-                                <span class="text-xs sm:text-sm font-black text-blue-400 uppercase tracking-widest">{{ ride.status|default:"Completed" }}</span>
-                            </div>
-                            
-                            <div class="flex justify-between items-start pt-1 gap-4">
-                                <div class="flex flex-col gap-1 text-left max-w-[50%]">
-                                    <span class="text-[10px] sm:text-xs font-extrabold text-gray-500 uppercase tracking-widest">Driver Details</span>
-                                    <span class="text-base sm:text-lg font-bold text-white truncate">{{ ride.trip.usercredentials.first_name|default:ride.trip.usercredentials.email|default:"Pending Assignment" }}</span>
+                <div class="flex justify-between items-center pb-5 border-b border-white/5">
+                    <span class="text-sm sm:text-base font-extrabold text-gray-300">Total Rides Taken</span>
+                    <span class="text-3xl sm:text-4xl font-black text-blue-400">{{ countrides|default:"0" }}</span>
+                </div>
+                
+                <div class="mt-6">
+                    <h3 class="text-xs sm:text-sm font-extrabold tracking-widest uppercase text-gray-400 mb-4">Previous Ride Details</h3>
+                    
+                    <div class="flex flex-col gap-4 max-h-[140px] sm:max-h-[160px] overflow-y-auto custom-scrollbar pr-3 snap-y snap-mandatory">
+                        {% for ride in droppedrides %}
+                            <div class="shrink-0 snap-start bg-[#171158] p-4 sm:p-5 rounded-xl border border-white/5 flex flex-col gap-2.5 shadow-sm hover:border-white/10 transition-colors h-max">
+                                
+                                <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                                    <span class="text-sm sm:text-base font-bold text-gray-300">{{ ride.trip.ridedate|date:"M d, Y"|default:"Date Unknown" }}</span>
+                                    <span class="text-xs sm:text-sm font-black text-blue-400 uppercase tracking-widest">{{ ride.status|default:"Completed" }}</span>
                                 </div>
-                                <div class="flex flex-col gap-1 text-right max-w-[50%]">
-                                    <span class="text-[10px] sm:text-xs font-extrabold text-gray-500 uppercase tracking-widest">Route / Details</span>
-                                    <span class="text-base sm:text-lg font-bold text-white truncate">{{ ride.pickuplocation|default:"Not Specified" }}</span>
+                                
+                                <div class="flex justify-between items-start pt-1 gap-4">
+                                    <div class="flex flex-col gap-1 text-left max-w-[50%]">
+                                        <span class="text-[10px] sm:text-xs font-extrabold text-gray-500 uppercase tracking-widest">Driver Details</span>
+                                        <span class="text-base sm:text-lg font-bold text-white truncate">{{ ride.trip.usercredentials.first_name|default:ride.trip.usercredentials.email|default:"Pending Assignment" }}</span>
+                                    </div>
+                                    <div class="flex flex-col gap-1 text-right max-w-[50%]">
+                                        <span class="text-[10px] sm:text-xs font-extrabold text-gray-500 uppercase tracking-widest">Route / Details</span>
+                                        <span class="text-base sm:text-lg font-bold text-white truncate">{{ ride.pickuplocation|default:"Not Specified" }}</span>
+                                    </div>
                                 </div>
-                            </div>
 
-                        </div>
-                    {% empty %}
-                        <div class="shrink-0 snap-start bg-[#171158]/50 p-6 rounded-xl border border-white/5 text-center">
-                            <p class="text-sm text-gray-400 italic font-bold">No previous rides found.</p>
-                        </div>
-                    {% endfor %}
+                            </div>
+                        {% empty %}
+                            <div class="shrink-0 snap-start bg-[#171158]/50 p-6 rounded-xl border border-white/5 text-center">
+                                <p class="text-sm text-gray-400 italic font-bold">No previous rides found.</p>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="glass-card">
-            <h2 class="text-xl sm:text-2xl font-playfair font-black mb-5 tracking-wide border-b border-white/10 pb-3">User as Driver</h2>
-            
-            <div class="flex justify-between items-center pb-4 border-b border-white/5">
-                <span class="text-sm sm:text-base font-extrabold text-gray-300">Total Rides Given</span>
-                <span class="text-3xl sm:text-4xl font-black text-green-400">{{ counttrips|default:"0" }}</span>
-            </div>
-            <div class="flex justify-between items-center py-4 border-b border-white/5">
-                <span class="text-sm sm:text-base font-extrabold text-gray-300">Reliability Score</span>
-                <span class="text-3xl sm:text-4xl font-black text-yellow-400">{{ counttrips|default:"0.0" }}</span>
-            </div>
-            
-            <div class="mt-6">
-                <h3 class="text-xs sm:text-sm font-extrabold tracking-widest uppercase text-gray-400 mb-4">Previous Trip Details</h3>
+            <div class="glass-card">
+                <h2 class="text-xl sm:text-2xl font-playfair font-black mb-5 tracking-wide border-b border-white/10 pb-3">User as Driver</h2>
                 
-                <div class="flex flex-col gap-4 max-h-[140px] sm:max-h-[160px] overflow-y-auto custom-scrollbar pr-3 snap-y snap-mandatory">
-                    {% for trip in completedtrips %}
-                        <div class="shrink-0 snap-start bg-[#171158] p-4 sm:p-5 rounded-xl border border-white/5 flex flex-col gap-2.5 shadow-sm hover:border-white/10 transition-colors h-max">
-                            
-                            <div class="flex justify-between items-center border-b border-white/5 pb-2">
-                                <span class="text-sm sm:text-base font-bold text-gray-300">{{ trip.ridedate|date:"M d, Y"|default:"Date Unknown" }}</span>
-                                <span class="text-xs sm:text-sm font-black text-green-400 uppercase tracking-widest">{{ trip.status|default:"Completed" }}</span>
-                            </div>
-                            
-                            <div class="flex justify-start items-start pt-1 gap-4">
-                                <div class="flex flex-col gap-1 text-left max-w-[70%]">
-                                    <span class="text-[10px] sm:text-xs font-extrabold text-gray-500 uppercase tracking-widest">Route / Details</span>
-                                    <span class="text-base sm:text-lg font-bold text-white truncate">{{ trip.preferedlocation|default:"Not Specified" }}</span>
+                <div class="flex justify-between items-center pb-4 border-b border-white/5">
+                    <span class="text-sm sm:text-base font-extrabold text-gray-300">Total Rides Given</span>
+                    <span class="text-3xl sm:text-4xl font-black text-green-400">{{ counttrips|default:"0" }}</span>
+                </div>
+                <div class="flex justify-between items-center py-4 border-b border-white/5">
+                    <span class="text-sm sm:text-base font-extrabold text-gray-300">Reliability Score</span>
+                    <span class="text-3xl sm:text-4xl font-black text-yellow-400">{{ counttrips|default:"0.0" }}</span>
+                </div>
+                
+                <div class="mt-6">
+                    <h3 class="text-xs sm:text-sm font-extrabold tracking-widest uppercase text-gray-400 mb-4">Previous Trip Details</h3>
+                    
+                    <div class="flex flex-col gap-4 max-h-[140px] sm:max-h-[160px] overflow-y-auto custom-scrollbar pr-3 snap-y snap-mandatory">
+                        {% for trip in completedtrips %}
+                            <div class="shrink-0 snap-start bg-[#171158] p-4 sm:p-5 rounded-xl border border-white/5 flex flex-col gap-2.5 shadow-sm hover:border-white/10 transition-colors h-max">
+                                
+                                <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                                    <span class="text-sm sm:text-base font-bold text-gray-300">{{ trip.ridedate|date:"M d, Y"|default:"Date Unknown" }}</span>
+                                    <span class="text-xs sm:text-sm font-black text-green-400 uppercase tracking-widest">{{ trip.status|default:"Completed" }}</span>
                                 </div>
-                            </div>
+                                
+                                <div class="flex justify-start items-start pt-1 gap-4">
+                                    <div class="flex flex-col gap-1 text-left max-w-[70%]">
+                                        <span class="text-[10px] sm:text-xs font-extrabold text-gray-500 uppercase tracking-widest">Route / Details</span>
+                                        <span class="text-base sm:text-lg font-bold text-white truncate">{{ trip.preferedlocation|default:"Not Specified" }}</span>
+                                    </div>
+                                </div>
 
-                        </div>
-                    {% empty %}
-                        <div class="shrink-0 snap-start bg-[#171158]/50 p-6 rounded-xl border border-white/5 text-center">
-                            <p class="text-sm text-gray-400 italic font-bold">No previous trips found.</p>
-                        </div>
-                    {% endfor %}
+                            </div>
+                        {% empty %}
+                            <div class="shrink-0 snap-start bg-[#171158]/50 p-6 rounded-xl border border-white/5 text-center">
+                                <p class="text-sm text-gray-400 italic font-bold">No previous trips found.</p>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
-        </div>
 
-    </div>
+        </div> </div> <section id="complaints-section" class="max-w-7xl w-full px-6 sm:px-20 mx-auto mt-12 mb-10">
+        <div class="flex flex-col items-center justify-center text-center glass-card min-h-[30vh] border-2 border-dashed border-white/20">
+            <svg class="w-16 h-16 text-white/30 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <h2 class="text-3xl sm:text-4xl font-playfair font-black text-white mb-4">Complaints & Support</h2>
+            <p class="text-base sm:text-lg text-gray-400 font-medium max-w-2xl">This is a blank section reserved for your complaints and support form. You can add your content here later!</p>
+        </div>
+    </section>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 
     {% if pendingpayments and orderid %}
     <script>
