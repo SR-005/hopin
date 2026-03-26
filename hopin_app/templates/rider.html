@@ -17,73 +17,74 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
     {% webpush_header %}
-    <style>@font-face {
-    font-family: 'Black Mango';
-    src: url("{% static 'hopin_app/fonts/Black_Mango_SemiBold.ttf' %}") format('truetype');
-}</style>
+    <style>
+        @font-face {
+            font-family: 'Black Mango';
+            src: url("{% static 'hopin_app/fonts/Black_Mango_SemiBold.ttf' %}") format('truetype');
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+    </style>
 </head>
 
 <body class="scroll-smooth">
 
-    {% include "partials/toast_manager.html" %}
+    {% if messages %}
+    {% for message in messages %}
+    <script>
+        alert("{{ message|escapejs }}");
+    </script>
+    {% endfor %}
+    {% endif %}
 
     {% include "partials/webpush_banner.html" %}
 
     <div class="relative overflow-hidden">
-        <div
-            class="absolute top-0 right-0 w-full h-[200vh] bg-[#191265] [clip-path:polygon(0%_43%,100%_43%,100%_100%,0%_100%)] -z-10">
+        <div class="absolute top-0 right-0 w-full h-[300vh] lg:h-[200vh] bg-[#191265] [clip-path:polygon(0%_25%,100%_20%,100%_100%,0%_100%)] lg:[clip-path:polygon(0%_43%,100%_43%,100%_100%,0%_100%)] -z-10">
         </div>
 
-        <nav class="w-full flex items-center px-6 lg:px-12 py-6 absolute top-0 left-0 z-50 -ml-4">
-            <div class="flex items-center w-1/4">
-                <img src="{% static 'hopin_app/images/logo1.png' %}" class="h-14" alt="Hop In Logo">
+        <nav class="w-full flex items-center justify-between lg:justify-start px-6 lg:px-12 py-6 absolute top-0 left-0 z-50 lg:-ml-4">
+            <div class="flex items-center lg:w-1/4">
+                <img src="{% static 'hopin_app/images/logo1.png' %}" class="h-10 lg:h-14" alt="Hop In Logo">
             </div>
 
-            <ul
-                class="hidden md:flex space-x-16 font-['Playfair_Display'] tracking-widest font-extrabold text-[18px] absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+            <ul class="hidden md:flex space-x-16 font-['Playfair_Display'] tracking-widest font-extrabold text-[18px] absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap">
                 <li><a href="#" class="text-[#191265] hover:opacity-70 transition-opacity nav-link-active">Home</a></li>
-                <li><a href="#" class="text-[#191265] hover:opacity-70 transition-opacity">History</a></li>
-                <li><a href="#" class="text-[#191265] hover:opacity-70 transition-opacity">Contact</a></li>
+                <li><a href="#search-section" class="text-[#191265] hover:opacity-70 transition-opacity">Search</a></li>
+                <li><a href="#tutorial-section" class="text-[#191265] hover:opacity-70 transition-opacity">Tutorial</a></li>
             </ul>
 
-            <div class="flex justify-end items-center gap-6 w-1/4 ml-auto" id="auth-container">
+            <div class="flex justify-end items-center gap-2 lg:gap-6 lg:w-1/4 lg:ml-auto" id="auth-container">
                 <div class="flex items-center gap-4">
-                    <span
-                        class="text-black font-['Playfair_Display'] font-extrabold text-[18px] tracking-wide hidden sm:block">
+                    <span class="text-black font-['Playfair_Display'] font-extrabold text-[18px] tracking-wide hidden sm:block">
                         {{ name }}
                     </span>
-                    <button type="button" id="user-menu-button" data-dropdown-toggle="user-dropdown"
-                        class="flex text-sm rounded-full focus:ring-4 focus:ring-gray-300">
-                        <div
-                            class="w-12 h-12 rounded-full border-2 border-white shadow-md bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden">
-                            <svg class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                                viewBox="0 0 24 24">
-                                <path fill-rule="evenodd"
-                                    d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z"
-                                    clip-rule="evenodd" />
+                    <button type="button" id="user-menu-button" data-dropdown-toggle="user-dropdown" class="flex text-sm rounded-full focus:ring-4 focus:ring-gray-300">
+                        <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-full border-2 border-white shadow-md bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden">
+                            <svg class="w-6 h-6 lg:w-8 lg:h-8" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                <path fill-rule="evenodd" d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z" clip-rule="evenodd" />
                             </svg>
                         </div>
                     </button>
-                    <div id="user-dropdown"
-                        class="hidden z-50 my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow w-44">
+                    <div id="user-dropdown" class="hidden z-50 my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow w-44">
                         <ul class="py-2 text-sm text-gray-700">
                             <li><a href="#" class="block px-4 py-2 hover:bg-gray-200">Profile</a></li>
-                            <li><a href="{% url 'logout' %}"
-                                    class="block px-4 py-2 hover:bg-red-100 text-red-600">Logout</a></li>
+                            <li><a href="{% url 'logout' %}" class="block px-4 py-2 hover:bg-red-100 text-red-600">Logout</a></li>
                         </ul>
                     </div>
                 </div>
             </div>
         </nav>
 
-        <section class="h-screen flex items-start pt-20 px-[79px]">
-            <div class="flex flex-col text-[#191265] mt-[100px] w-1/2 z-10">
-                <h2 class="text-6xl font-bold font-['Black_Mango']">Your Ride is</h2>
-                <h1 class="text-6xl font-bold  font-['Black_Mango'] text-[#191265]">One Search Away</h1>
-                <p class="text-2xl font-['Playfair_Display'] text-[#191265] mt-4">Search your route, grab a seat,<br>let's go.</p>
+        <section class="min-h-screen flex flex-col lg:flex-row items-center lg:items-start pt-24 lg:pt-20 px-6 lg:px-[79px]">
+            <div class="flex flex-col text-[#191265] mt-6 lg:mt-[100px] w-full lg:w-1/2 z-10 text-center lg:text-left">
+                <h2 class="text-4xl lg:text-6xl font-bold font-['Black_Mango']">Your Ride is</h2>
+                <h1 class="text-4xl lg:text-6xl font-bold  font-['Black_Mango'] text-[#191265]">One Search Away</h1>
+                <p class="text-xl lg:text-2xl font-['Playfair_Display'] text-[#191265] mt-4">Search your route, grab a seat,<br class="hidden lg:block">let's go.</p>
 
                 <button onclick="document.getElementById('search-section').scrollIntoView({behavior:'smooth'})"
-                    class="bg-[#191265] mt-10 text-white w-[401px] text-2xl py-3 rounded-full font-['Bricolage_Grotesque'] hover:bg-indigo-900 transition">
+                    class="bg-[#191265] mt-10 text-white mx-auto lg:mx-0 w-full max-w-[401px] text-xl lg:text-2xl py-3 rounded-full font-['Bricolage_Grotesque'] hover:bg-indigo-900 transition">
                     Search
                 </button>
 
@@ -92,13 +93,13 @@
                 </div>
             </div>
             <img src="{% static 'hopin_app/images/rider.png' %}"
-                class="w-[538px] ml-auto mt-6 z-0 relative pointer-events-none">
+                class="w-full max-w-[538px] lg:ml-auto mt-10 lg:mt-6 z-0 relative pointer-events-none">
         </section>
 
         <section id="search-section"
-            class="flex flex-col justify-start items-center gap-6 pt-12 min-h-screen bg-[#191265] pb-20">
+            class="flex flex-col justify-start items-center gap-6 pt-12 min-h-screen bg-[#191265] pb-20 px-4">
             <form method="POST" id="searchForm" action="{% url 'rider' %}"
-                class="flex gap-5 border border-white/30 rounded-2xl p-6 bg-[#191265]/70 shadow-xl w-fit">
+                class="flex flex-col lg:flex-row gap-5 border border-white/30 rounded-2xl p-4 lg:p-6 bg-[#191265]/70 shadow-xl w-full lg:w-fit">
                 {% csrf_token %}
 
                 <input type="hidden" name="action" value="riderdetails">
@@ -107,8 +108,8 @@
                 <input type="hidden" name="latitude" id="lat-input">
                 <input type="hidden" name="longitude" id="lng-input">
 
-                <div class="w-[450px]">
-                    <h2 class="text-3xl text-white font-bold mb-5">
+                <div class="w-full lg:w-[450px]">
+                    <h2 class="text-2xl lg:text-3xl text-white font-bold mb-5">
                         Search <span class="text-white">Ride</span>
                     </h2>
 
@@ -166,16 +167,21 @@
                     </button>
                 </div>
 
-                <div class="flex flex-col w-[380px]">
-                    <div id="map" class="flex-grow rounded-xl border-2 border-white/20 bg-gray-200 min-h-[320px]">
+                <div class="flex flex-col w-full lg:w-[380px] h-[300px] lg:h-auto">
+                    <div class="mb-3 px-1">
+                        <p class="text-white/90 text-xs lg:text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+                            Drop your pickup location on the map
+                        </p>
+                    </div>
+                    <div id="map" class="flex-grow rounded-xl border-2 border-white/20 bg-gray-200 w-full shadow-inner min-h-[250px]">
                     </div>
                 </div>
             </form>
-            <div class="w-full w-[900px] -mt-2 bg-[#191265] border border-white/30 rounded-2xl p-6 shadow-xl">
-                <h3 class="text-2xl text-white font-bold mb-5">Re-Book Previous Rides</h3>
+            
+            <div class="w-full max-w-[900px] lg:-mt-2 bg-[#191265] border border-white/30 rounded-2xl p-4 lg:p-6 shadow-xl">
+                <h3 class="text-xl lg:text-2xl text-white font-bold mb-5">Re-Book Previous Rides</h3>
 
-                <div id="rebookRidesList"
-                    class="flex flex-col gap-4 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
+                <div id="rebookRidesList" class="flex flex-col gap-4 overflow-y-auto max-h-[500px] pr-2 custom-scrollbar">
 
                     {% if preferredtrips %}
                     {% for trip in preferredtrips %}
@@ -186,8 +192,11 @@
 
                         <div class="flex justify-between items-center mb-2">
                             <div class="flex items-center gap-3">
-                                <img src="https://ui-avatars.com/api/?name={{ trip.usercredentials }}&background=191265&color=fff"
-                                    class="w-8 h-8 rounded-full shadow-sm" alt="User Avatar">
+                                <div class="w-14 h-14 rounded-full border-2 border-white shadow-[0_4px_10px_rgba(0,0,0,0.1)] bg-[#f1f3f5] flex items-center justify-center overflow-hidden shrink-0">
+                                    <svg class="w-8 h-8 text-[#4d5b6b]" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                        <path fill-rule="evenodd" d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
                                 <span class="font-bold text-lg">{{ trip.usercredentials.first_name }}</span>
                             </div>
                             <div class="flex items-start font-bold text-[#333]">
@@ -197,64 +206,59 @@
                         </div>
 
                         <div class="flex flex-col gap-3">
-                            <div
-                                class="flex-1 flex items-center gap-3 bg-gray-50 p-2 px-4 rounded-lg border border-gray-100">
+                            <div class="flex-1 flex items-center gap-3 bg-gray-50 p-2 px-4 rounded-lg border border-gray-100">
                                 <div class="flex flex-col items-start flex-1">
                                     <p class="font-black text-[#191265] text-[10px] uppercase leading-tight">Start</p>
-                                    <p class="text-sm text-gray-500 font-bold line-clamp-2">
-                                        {% if trip.direction == 'from' %} AISAT {% else %} {{ trip.preferedlocation }}
-                                        {% endif %}
+                                    <p class="text-sm text-black font-bold line-clamp-2">
+                                        {% if trip.direction == 'from' %} AISAT {% else %} {{ trip.preferedlocation }} {% endif %}
                                     </p>
                                 </div>
-                                <div class="flex-[2] flex items-center gap-2">
-
+                                <div class="flex-[2] flex items-center gap-2 hidden lg:flex">
                                     <div class="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
-
                                     <div class="flex-1 border-t border-dashed border-gray-400"></div>
-
-                                    <svg class="w-3 h-3 text-gray-400" viewBox="0 0 24 24" fill="none"
-                                        stroke="currentColor" stroke-width="2">
+                                    <svg class="w-3 h-3 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                         <path d="M5 12h14M12 5l7 7-7 7" />
                                     </svg>
-
                                 </div>
-
+                                <div class="lg:hidden flex items-center text-gray-400 mx-2">→</div>
                                 <div class="flex flex-col items-end flex-1 text-right">
                                     <p class="font-black text-[#191265] text-[10px] uppercase leading-tight">End</p>
-                                    <p class="text-sm text-gray-500 font-bold line-clamp-2">
-                                        {% if trip.direction == 'from' %} {{ trip.preferedlocation }} {% else %} AISAT
-                                        {% endif %}
+                                    <p class="text-sm text-black font-bold line-clamp-2">
+                                        {% if trip.direction == 'from' %} {{ trip.preferedlocation }} {% else %} AISAT {% endif %}
                                     </p>
                                 </div>
                             </div>
 
-                            <div class="flex justify-between items-center">
+                            <div class="flex flex-wrap lg:flex-nowrap justify-between items-center gap-4 lg:gap-0 mt-2 lg:mt-0">
 
-                                <!-- LEFT: Vehicle -->
                                 <div class="flex items-center gap-2">
-                                    <span
-                                        class="font-bold text-xs uppercase bg-white text-[#191265] px-2 py-1 rounded-md border border-gray-200 shadow-sm">
+                                    <span class="font-bold text-xs uppercase bg-white text-[#191265] px-2 py-1 rounded-md border border-gray-200 shadow-sm">
                                         {{ trip.vehicletype }}
                                     </span>
 
                                     {% if trip.vehicletype|lower == "bike" %}
                                     {% if request.trip.helmet %}
-                                    <span
-                                        class="bg-[#9BCCA5] text-white text-[9px] font-extrabold px-1.5 py-1 rounded-md uppercase">
+                                    <span class="bg-[#9BCCA5] text-white text-[9px] font-extrabold px-1.5 py-1 rounded-md uppercase">
                                         +HELMET
                                     </span>
                                     {% else %}
-                                    <span
-                                        class="bg-red text-white text-[9px] font-extrabold px-1.5 py-1 rounded-md uppercase">
+                                    <span class="bg-red text-white text-[9px] font-extrabold px-1.5 py-1 rounded-md uppercase">
                                         +No Helmet
                                     </span>
                                     {% endif %}
                                     {% endif %}
                                 </div>
-    <p class="text-sm text-gray-500 font-medium">
-                            {{ trip.usercredentials.userdetails.phonenumber }}</p>
-                                <!-- CENTER: Date & Time -->
-                                <div class="text-xs text-gray-600 text-center">
+                               
+                                <div class="flex items-center gap-2 lg:ml-6 w-full lg:w-auto order-last lg:order-none">
+                                    <svg class="w-5 h-5 text-black" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M7.978 4a2.553 2.553 0 0 0-1.926.877C4.233 6.7 3.699 8.751 4.153 10.814c.44 1.995 1.778 3.893 3.456 5.572 1.68 1.679 3.577 3.018 5.57 3.459 2.062.456 4.115-.073 5.94-1.885a2.556 2.556 0 0 0 .001-3.861l-1.21-1.21a2.689 2.689 0 0 0-3.802 0l-.617.618a.806.806 0 0 1-1.14 0l-1.854-1.855a.807.807 0 0 1 0-1.14l.618-.62a2.692 2.692 0 0 0 0-3.803l-1.21-1.211A2.555 2.555 0 0 0 7.978 4Z"/>
+                                    </svg>
+                                    <p class="text-medium text-black font-medium">
+                                        {{ trip.usercredentials.userdetails.phonenumber }}
+                                    </p>
+                                </div>
+
+                                <div class="text-xs text-gray-600 text-left lg:text-center">
                                     <div class="font-semibold text-[#191265]">
                                         {{ trip.ridedate }}
                                     </div>
@@ -263,8 +267,7 @@
                                     </div>
                                 </div>
 
-                                <!-- RIGHT: Rating + Button -->
-                                <div class="flex items-center gap-3">
+                                <div class="flex items-center gap-3 ml-auto lg:ml-0">
                                     <div class="flex items-center gap-1">
                                         <span class="text-yellow-400 text-sm">★</span>
                                         <span class="font-bold text-[#191265] text-xs">
@@ -291,33 +294,33 @@
 
                             </div>
                         </div>
-                        {% endfor %}
-
-                        {% else %}
-                        <div class="bg-white/10 rounded-xl p-6 text-center border-2 border-dashed border-white/30">
-                            <p class="text-lg font-medium mb-1 text-white">No Previous Rides</p>
-                            <p class="text-white/60 text-xs">Your past routes will appear here for easy re-booking.</p>
-                        </div>
-                        {% endif %}
-
                     </div>
+                    {% endfor %}
+
+                    {% else %}
+                    <div class="bg-white/10 rounded-xl p-6 text-center border-2 border-dashed border-white/30">
+                        <p class="text-lg font-medium mb-1 text-white">No Previous Rides</p>
+                        <p class="text-white/60 text-xs">Your past routes will appear here for easy re-booking.</p>
+                    </div>
+                    {% endif %}
+
                 </div>
             </div>
 
         </section>
 
-        <section id="search-results" class="min-h-screen bg-[#191265] text-[#EAE9DF] pt-10 pb-20">
-            <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-12">
-                <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-3xl font-extrabold uppercase">Search Results</h1>
-                    <div class="flex items-center gap-4">
+        <section id="search-results" class="min-h-screen bg-[#191265] text-[#EAE9DF] pt-10 pb-20 px-4 lg:px-0">
+            <div class="max-w-[1400px] mx-auto px-0 sm:px-6 lg:px-12">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4 lg:gap-0">
+                    <h1 class="text-2xl lg:text-3xl font-extrabold uppercase">Search Results</h1>
+                    <div class="flex items-center gap-4 w-full lg:w-auto">
                         <span id="ridesCountLabel"
-                            class="text-sm font-bold uppercase tracking-widest bg-white/10 px-4 py-2 rounded-lg">
+                            class="text-[10px] lg:text-sm font-bold uppercase tracking-widest bg-white/10 px-4 py-2 rounded-lg flex-1 text-center">
                             {{ rides|length|default:"0" }} Rides Available
                         </span>
-                        <a href="#search-section">
+                        <a href="#search-section" class="flex-1 lg:flex-none">
                             <button
-                                class="bg-white text-[#191265] font-bold py-2 px-6 rounded-xl hover:bg-gray-200 transition">
+                                class="w-full bg-white text-[#191265] font-bold py-2 px-6 rounded-xl hover:bg-gray-200 transition text-sm">
                                 Modify Search
                             </button>
                         </a>
@@ -326,24 +329,27 @@
 
                 <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
                     <div id="ridesList"
-                        class="xl:col-span-8 flex flex-col gap-4 overflow-y-auto max-h-[700px] pr-3 custom-scrollbar">
+                        class="xl:col-span-8 flex flex-col gap-4 overflow-y-auto max-h-[700px] pr-0 lg:pr-3 custom-scrollbar">
 
                         {% if rides %}
                         {% for trip, distance, score, amount in rides %}
-                        <div class="ride-card bg-white rounded-[2rem] p-6 text-[#191265] shadow-lg hover:shadow-xl transition-all duration-300 mb-4 border border-gray-100"
+                        <div class="ride-card bg-white rounded-2xl lg:rounded-[2rem] p-4 lg:p-6 text-[#191265] shadow-lg hover:shadow-xl transition-all duration-300 mb-4 border border-gray-100"
                             data-vehicle="{{ trip.vehicletype|lower }}"
                             data-helmet="{{ trip.helmet|default_if_none:''|lower }}"
                             data-rating="{{ trip.usercredentials.userdetails.averagerating|default_if_none:'0'|default:'0' }}"
                             data-original-order="{{ forloop.counter0 }}">
 
-                            <div class="flex justify-between gap-6">
+                            <div class="flex flex-col lg:flex-row justify-between gap-6">
 
                                 <div class="flex flex-col flex-1 justify-between">
 
-                                    <div class="flex justify-between items-center mb-6">
+                                    <div class="flex justify-between items-start mb-6">
                                         <div class="flex items-center gap-3">
-                                            <img src="https://ui-avatars.com/api/?name={{ trip.usercredentials }}&background=191265&color=fff"
-                                                class="w-10 h-10 rounded-full shadow-sm">
+                                            <div class="w-14 h-14 rounded-full border-2 border-white shadow-[0_4px_10px_rgba(0,0,0,0.1)] bg-[#f1f3f5] flex items-center justify-center overflow-hidden shrink-0">
+                                                <svg class="w-8 h-8 text-[#4d5b6b]" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path fill-rule="evenodd" d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z" clip-rule="evenodd" />
+                                                </svg>
+                                            </div>
                                             <span class="font-bold text-xl">{{ trip.usercredentials.first_name }}</span>
                                         </div>
 
@@ -352,120 +358,105 @@
                                             <span class="text-4xl leading-none">{{ amount }}</span>
                                         </div>
                                     </div>
-
-                                    <div class="flex items-center gap-4 mb-8">
-                                        <div class="flex flex-col items-center flex-1 min-w-0">
-                                            <p
-                                                class="font-black text-black text-sm uppercase leading-tight text-center">
-                                                Start</p>
-                                            <p
-                                                class="text-[20px] text-[#191265]  font-bold truncate w-full text-center">
-                                                {% if trip.direction == 'from' %} AISAT {% else %}
-                                                {{ trip.preferedlocation }} {% endif %}
+                                    
+                                    <div class="flex items-center justify-between mb-8 w-full px-0 lg:px-4">
+                                        <div class="flex flex-col items-center w-[40%] min-w-0"> 
+                                            <p class="font-black text-gray-400 text-[10px] uppercase tracking-wider mb-1">Start</p>
+                                            <p class="text-lg text-[#191265] font-bold text-center leading-tight break-words w-full">
+                                                {% if trip.direction == 'from' %} AISAT {% else %} {{ trip.preferedlocation }} {% endif %}
                                             </p>
                                         </div>
 
-                                        <div class="flex-1 flex items-center relative">
-                                            <div class="w-2 h-2 bg-gray-400 rotate-45 shrink-0"></div>
-                                            <div class="flex-1 h-[2px] bg-gray-400"></div>
-                                            <div class="absolute right-0 translate-x-1">
-                                                <svg width="12" height="12" viewBox="0 0 10 10" fill="none">
-                                                    <path d="M1 5H9M9 5L5 1M9 5L5 9" stroke="#999" stroke-width="2.5"
-                                                        stroke-linecap="round" stroke-linejoin="round" />
-                                                </svg>
+                                        <div class="flex items-center justify-center flex-1 min-w-[40px] lg:min-w-[80px]"> 
+                                            <div class="relative flex items-center w-full max-w-[60px]"> 
+                                                <div class="flex-1 h-[1px] bg-black"></div> 
+                                                <div class="absolute right-0 translate-x-0.5 flex items-center">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M9 5l7 7-7 7" stroke="black" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                                    </svg>
+                                                </div>
                                             </div>
                                         </div>
 
-                                        <div class="flex flex-col items-center flex-1 min-w-0">
-                                            <p
-                                                class="font-black text-black text-sm uppercase leading-tight text-center">
-                                                End
-                                            </p>
-                                            <p
-                                                class="text-[20px] text-[#191265]  font-bold truncate w-full text-center">
-                                                {% if trip.direction == 'from' %} {{ trip.preferedlocation }} {% else %}
-                                                AISAT{% endif %}
+                                        <div class="flex flex-col items-center w-[40%] min-w-0">
+                                            <p class="font-black text-gray-400 text-[10px] uppercase tracking-wider mb-1">End</p>
+                                            <p class="text-lg text-[#191265] font-bold text-center leading-tight break-words w-full">
+                                                {% if trip.direction == 'from' %} {{ trip.preferedlocation }} {% else %} AISAT {% endif %}
                                             </p>
                                         </div>
                                     </div>
-
+                                    
                                     <div class="flex items-center gap-3">
-                                        <span class="font-black text-sm uppercase px-1">{{ trip.vehicletype }}</span>
+                                        <span class="bg-[#191265] text-white text-lg font-black uppercase px-2 py-0.5 rounded-md lg:ml-2 tracking-wider shadow-sm">
+                                            {{ trip.vehicletype }}
+                                        </span>
                                         {% if trip.vehicletype|lower == "bike" %}
                                         {% if request.trip.helmet %}
-                                        <span
-                                            class="bg-[#9BCCA5] text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg uppercase whitespace-nowrap">
+                                        <span class="bg-[#9BCCA5] text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg uppercase whitespace-nowrap">
                                             +HELMET
                                         </span>
                                         {% else %}
-                                        <span
-                                            class="bg-red text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg uppercase whitespace-nowrap">
+                                        <span class="bg-red text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg uppercase whitespace-nowrap">
                                             No Helmet
                                         </span>
                                         {% endif %}
                                         {% endif %}
                                     </div>
-                                    <p class="text-sm text-gray-500 font-medium">
-                            {{ trip.usercredentials.userdetails.phonenumber }}</p>
-                                    <div class="flex items-center gap-4 mt-3 text-sm text-gray-600 font-semibold">
+                                  
+                                    <div class="flex flex-wrap items-center gap-4 mt-3 ml-0 lg:ml-2 text-sm text-gray-600 font-semibold">
 
-                                        <!-- 📅 Date -->
                                         <div class="flex items-center gap-1">
-                                            <span><svg class="w-6 h-6 text-gray-800 text-black" aria-hidden="true"
-                                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                    fill="currentColor" viewBox="0 0 24 24">
-                                                    <path fill-rule="evenodd"
-                                                        d="M5 5a1 1 0 0 0 1-1 1 1 0 1 1 2 0 1 1 0 0 0 1 1h1a1 1 0 0 0 1-1 1 1 0 1 1 2 0 1 1 0 0 0 1 1h1a1 1 0 0 0 1-1 1 1 0 1 1 2 0 1 1 0 0 0 1 1 2 2 0 0 1 2 2v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a2 2 0 0 1 2-2ZM3 19v-7a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm6.01-6a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm2 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm6 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm-10 4a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm6 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm2 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0Z"
-                                                        clip-rule="evenodd" />
+                                            <span>
+                                                <svg class="w-6 h-6 text-black" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path fill-rule="evenodd" d="M5 5a1 1 0 0 0 1-1 1 1 0 1 1 2 0 1 1 0 0 0 1 1h1a1 1 0 0 0 1-1 1 1 0 1 1 2 0 1 1 0 0 0 1 1h1a1 1 0 0 0 1-1 1 1 0 1 1 2 0 1 1 0 0 0 1 1 2 2 0 0 1 2 2v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a2 2 0 0 1 2-2ZM3 19v-7a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm6.01-6a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm2 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm6 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm-10 4a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm6 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm2 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0Z" clip-rule="evenodd" />
                                                 </svg>
                                             </span>
                                             <span>{{ trip.ridedate }}</span>
                                         </div>
 
-                                        <!-- ⏰ Time -->
                                         <div class="flex items-center gap-1">
-                                            <span><svg class="w-6 h-6 text-gray-800 text-black" aria-hidden="true"
-                                                    xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                    fill="currentColor" viewBox="0 0 24 24">
-                                                    <path fill-rule="evenodd"
-                                                        d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z"
-                                                        clip-rule="evenodd" />
+                                            <span>
+                                                <svg class="w-6 h-6 text-black" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z" clip-rule="evenodd" />
                                                 </svg>
                                             </span>
                                             <span>{{ trip.ridetime }}</span>
                                         </div>
-
-                                        <!-- ⭐ Rating -->
-                                        <div class="flex items-center gap-1 ml-auto">
-                                            <span>⭐</span>
-                                            <span class="driver-rating-value">
-                                                {{ trip.usercredentials.userdetails.averagerating|default_if_none:"New"
-                                                }}
-                                            </span>
+                                        
+                                        <div class="flex items-center gap-2 w-full lg:w-auto mt-2 lg:mt-0 lg:ml-6">
+                                            <svg class="w-5 h-5 text-black" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M7.978 4a2.553 2.553 0 0 0-1.926.877C4.233 6.7 3.699 8.751 4.153 10.814c.44 1.995 1.778 3.893 3.456 5.572 1.68 1.679 3.577 3.018 5.57 3.459 2.062.456 4.115-.073 5.94-1.885a2.556 2.556 0 0 0 .001-3.861l-1.21-1.21a2.689 2.689 0 0 0-3.802 0l-.617.618a.806.806 0 0 1-1.14 0l-1.854-1.855a.807.807 0 0 1 0-1.14l.618-.62a2.692 2.692 0 0 0 0-3.803l-1.21-1.211A2.555 2.555 0 0 0 7.978 4Z"/>
+                                            </svg>
+                                            <p class="text-medium text-black font-medium">
+                                                {{ trip.usercredentials.userdetails.phonenumber }}
+                                            </p>
                                         </div>
-
                                     </div>
                                 </div>
 
-                                <div class="flex flex-col items-center justify-between min-w-[130px]">
-                                    <div onclick="showRoutePopup({{ trip.latitude }}, {{ trip.longitude }}, 10.050272, 76.329273 {{ riderlatitude|default:'null' }}, {{ riderlongitude|default:'null' }} )"
-                                        class="w-32 h-20 rounded-2xl overflow-hidden border-2 border-gray-100 shadow-inner cursor-pointer hover:border-indigo-500 transition-all relative group">
+                                <div class="flex flex-row lg:flex-col items-center justify-between min-w-[130px] border-t lg:border-t-0 pt-4 lg:pt-0 gap-4 lg:gap-0 mt-4 lg:mt-0">
+                                    <div onclick="showRoutePopup({{ trip.latitude }}, {{ trip.longitude }}, 10.050272, 76.329273, {{ riderlatitude|default:'null' }}, {{ riderlongitude|default:'null' }} )"
+                                        class="w-32 h-20 rounded-2xl overflow-hidden border-2 border-gray-100 shadow-inner cursor-pointer hover:border-indigo-500 transition-all relative group shrink-0">
 
-                                        <div
-                                            class="absolute inset-0 bg-[#e5e7eb] opacity-50 group-hover:opacity-20 transition-opacity">
+                                        <div class="absolute inset-0 bg-[#e5e7eb] opacity-50 group-hover:opacity-20 transition-opacity">
                                         </div>
                                         <div class="absolute inset-0 flex items-center justify-center">
                                             <svg class="w-8 h-8 text-indigo-500 opacity-40 group-hover:opacity-100 transition-all"
                                                 fill="currentColor" viewBox="0 0 24 24">
-                                                <path
-                                                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z" />
+                                                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z" />
                                             </svg>
                                         </div>
-
                                         <img src="https://api.placeholder.com/150/100?text=Map"
                                             class="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all">
                                     </div>
-                                    <form method="POST" action="{% url 'rider' %}" class="w-full mt-4">
+                                   
+                                    <form method="POST" action="{% url 'rider' %}" class="w-full mt-0 lg:mt-4">
+                                        <div class="flex items-center gap-1 mb-2 justify-center text-medium font-bold text-gray-700"> 
+                                            <span>⭐</span>
+                                            <span class="driver-rating-value">
+                                                {{ trip.usercredentials.userdetails.averagerating|default_if_none:"New" }}
+                                            </span>
+                                        </div>
                                         {% csrf_token %}
                                         <input type="hidden" name="rideid" value="{{ trip.id }}">
                                         {% if trip.id in requestedrides %}
@@ -484,6 +475,7 @@
                             </div>
                         </div>
                         {% endfor %}
+                        
                         <div id="filteredEmptyState"
                             class="hidden bg-[#191265] rounded-[1.5rem] p-10 text-center border-2 border-dashed border-white/20">
                             <p class="text-xl font-semibold mb-2 text-white">No rides match the selected filters.</p>
@@ -493,45 +485,36 @@
                         <div
                             class="bg-white/10 rounded-[1.5rem] p-10 text-center border-2 border-dashed border-white/20">
                             <p class="text-xl font-semibold mb-2 text-white">No rides found for this route.</p>
-                            <p class="text-gray-300 text-sm">Try adjusting your time or choosing a different location.
-                            </p>
+                            <p class="text-gray-300 text-sm">Try adjusting your time or choosing a different location.</p>
                         </div>
                         {% endif %}
                     </div>
 
-                    <div
-                        class="xl:col-span-4 bg-[#231A76] rounded-[2rem] p-6 flex flex-col gap-4 shadow-xl h-fit border border-white/10">
+                    <div class="xl:col-span-4 bg-[#231A76] rounded-[2rem] p-6 flex flex-col gap-4 shadow-xl h-fit border border-white/10">
                         <div class="flex justify-between items-end shrink-0 mb-2">
-                            <h3 class="text-2xl font-['Playfair_Display'] font-bold text-white tracking-wide">Filter
-                            </h3>
-                            <a href="#" onclick="clearFilters(); return false;"
-                                class="text-xs font-bold text-gray-300 hover:text-white transition-colors">
+                            <h3 class="text-2xl font-extrabold text-white tracking-wide">Filter</h3>
+                            <a href="#" onclick="clearFilters(); return false;" class="text-xs font-bold text-gray-300 hover:text-white transition-colors">
                                 Clear all
                             </a>
                         </div>
-                        <div class=" rounded-xl p-5 text-white shadow-inner">
+                        <div class="rounded-xl p-5 text-white shadow-inner">
                             <label class="flex items-center gap-3 cursor-pointer mb-4">
-                                <input type="radio" name="vehicle" value="bike"
-                                    class="w-4 h-4 text-white focus:ring-[#191265]">
+                                <input type="radio" name="vehicle" value="bike" class="w-4 h-4 text-white focus:ring-[#191265]">
                                 <span class="font-bold text-lg">Bikes / Scooters</span>
                             </label>
                             <label class="flex items-center gap-3 cursor-pointer mb-4">
-                                <input type="radio" name="vehicle" value="car"
-                                    class="w-4 h-4 text-white focus:ring-[#191265]">
+                                <input type="radio" name="vehicle" value="car" class="w-4 h-4 text-white focus:ring-[#191265]">
                                 <span class="font-bold text-lg">Cars</span>
                             </label>
                             <label class="flex items-center gap-3 cursor-pointer mb-5">
-                                <input id="helmetFilter" type="checkbox"
-                                    class="w-4 h-4 rounded text-white focus:ring-[#191265]">
+                                <input id="helmetFilter" type="checkbox" class="w-4 h-4 rounded text-white focus:ring-[#191265]">
                                 <span class="font-bold text-lg">Helmet Available</span>
                             </label>
 
-                            <label for="sortFilter"
-                                class="block text-xs font-bold uppercase tracking-[0.2em] text-gray-500 mb-2">
+                            <label for="sortFilter" class="block text-xs font-bold uppercase tracking-[0.2em] text-gray-500 mb-2">
                                 Sort By
                             </label>
-                            <select id="sortFilter"
-                                class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 font-semibold text-[#191265] focus:border-[#191265] focus:ring-[#191265]">
+                            <select id="sortFilter" class="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 font-semibold text-[#191265] focus:border-[#191265] focus:ring-[#191265]">
                                 <option value="optimized">Optimized Ride</option>
                                 <option value="rating-desc">Rating: High to Low</option>
                             </select>
@@ -540,34 +523,33 @@
                 </div>
             </div>
         </section>
-        <div id="mapModal"
-            class="fixed inset-0 bg-[#191265]/90 backdrop-blur-md hidden items-center justify-center z-[9999] p-4">
-            <div
-                class="bg-white w-full max-w-4xl h-[85vh] rounded-[2.5rem] overflow-hidden relative shadow-2xl border-4 border-white">
 
-                <button type="button" onclick="closeMapPopup()"
-                    class="absolute top-6 right-6 bg-white hover:bg-red-50 text-[#191265] hover:text-red-600 rounded-full p-4 shadow-2xl z-[10001] transition-all active:scale-90 border border-gray-100 flex items-center justify-center">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
-                        <path d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+        <section id="tutorial-section" class="min-h-[50vh] bg-white py-20 px-6 md:px-12 flex flex-col items-center justify-center text-center border-t border-gray-200">
+            <h2 class="text-4xl md:text-5xl font-['Black_Mango'] text-[#191265] mb-4">Tutorial</h2>
+            <p class="text-lg text-gray-500 font-medium max-w-2xl">This is a blank section reserved for tutorial content. You can add your videos, guides, or FAQs here later!</p>
+        </section>
 
-                <div id="popupMap" class="w-full h-full"></div>
-            </div>
+    </div>
+
+    <div id="mapModal" class="fixed inset-0 bg-[#191265]/90 backdrop-blur-md hidden items-center justify-center p-4" style="z-index: 999999 !important;">
+        <div class="bg-white w-full max-w-4xl h-[85vh] rounded-[2.5rem] overflow-hidden relative shadow-2xl border-4 border-white">
+            <button type="button" onclick="closeMapPopup()" class="absolute top-4 right-4 lg:top-6 lg:right-6 bg-white hover:bg-red-50 text-[#191265] hover:text-red-600 rounded-full p-3 lg:p-4 shadow-2xl transition-all active:scale-90 border border-gray-100 flex items-center justify-center" style="z-index: 1000000 !important;">
+                <svg class="w-6 h-6 lg:w-8 lg:h-8" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                    <path d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <div id="popupMap" class="w-full h-full"></div>
         </div>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    </div>
 
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-        <script>
-            window.DJANGO_VARS = {
-                ridesCount: parseInt("{{ rides|length|default:'0' }}", 10) || 0
-            };
-        </script>
-
-        <script src="{% static 'hopin_app/js/rider.js' %}?v=20260326-6"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        window.DJANGO_VARS = {
+            ridesCount: parseInt("{{ rides|length|default:'0' }}", 10) || 0
+        };
+    </script>
+    <script src="{% static 'hopin_app/js/rider.js' %}?v=20260326-3"></script>
 
 </body>
-
 </html>
