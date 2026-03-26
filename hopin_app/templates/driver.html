@@ -6,16 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hop In - Create Your Ride</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Flowbite -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
     
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Bricolage+Grotesque:wght@700;800&display=swap" rel="stylesheet">
@@ -29,13 +25,12 @@
         .font-playfair { font-family: 'Playfair Display', serif; }
         .font-bricolage { font-family: 'Bricolage Grotesque', sans-serif; }
         
-        /* Updated Form Inputs & Styling */
         .custom-input {
             background-color: #191265; 
             border: none;
             color: white;
             border-radius: 0.5rem;
-            padding: 0.6rem 1rem; /* Compact vertical padding */
+            padding: 0.6rem 1rem; 
             width: 100%;
             font-size: 1rem; 
             transition: all 0.2s ease;
@@ -56,10 +51,9 @@
             color: white;
         }
         
-        /* Makes the native calendar and clock icons white */
         .custom-input::-webkit-calendar-picker-indicator {
             filter: invert(1);
-            opacity: 1; /* Makes it slightly soft to match your text */
+            opacity: 1; 
             cursor: pointer;
         }
 
@@ -85,9 +79,8 @@
         .autocomplete-item:last-child { border-bottom: none; }
         .autocomplete-item:hover { background-color: #f3f4f6; color: #191265; }
 
-        /* Direction Buttons Styles */
         .direction-btn {
-            background-color: #D1D5DB; /* Whitish grey for inactive state */
+            background-color: #D1D5DB; 
             color: #4B5563; 
         }
         .direction-btn-active {
@@ -100,15 +93,10 @@
             background-color: #191265;
             border-color: #191265;
         }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 10px; }
     </style>
 </head>
 <body class="text-white overflow-x-hidden">
 
-    <!-- Modern Toast Notifications -->
     {% if messages %}
         <div id="toast-container" class="fixed top-20 right-5 z-[1000] flex flex-col gap-2">
             {% for message in messages %}
@@ -127,7 +115,6 @@
 
     {% include "partials/webpush_banner.html" %}
 
-    <!-- Section 1: Hero -->
     <section class="min-h-screen bg-white flex flex-col relative overflow-hidden">
         <nav class="w-full flex items-center px-6 lg:px-12 py-6 absolute top-0 left-0 z-50">
             <div class="flex items-center w-1/4">
@@ -187,7 +174,6 @@
         <div class="h-24 w-full bg-[#191265] absolute bottom-0 left-0"></div>
     </section>
 
-    <!-- Section 2: Create Ride Section -->
     {% if not lasttrip %}
         <section id="create-ride-section" class="min-h-screen bg-[#191265] py-6 px-4 md:px-12 flex flex-col justify-center items-center">
             <div class="w-full max-w-5xl">
@@ -291,7 +277,6 @@
         </section>
     {% endif %}   
 
-    <!-- SECTION 3: Active Trip Management -->
     <section id="active-trip-section" class="min-h-screen bg-[#191265] py-16 px-6 md:px-16 flex flex-col items-center">
         <h2 class="text-white text-3xl md:text-5xl font-black uppercase tracking-tighter mb-12 w-full max-w-6xl font-bricolage">Active Ride Management</h2>
 
@@ -400,7 +385,6 @@
                 </div>
             
             {% else %}
-                <!-- Empty State (No Active Trips) -->
                 <div class="bg-white/5 border border-white/10 rounded-[2.5rem] p-16 flex flex-col items-center justify-center text-center shadow-xl w-full">
                     <svg class="w-20 h-20 text-white/30 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     <h3 class="text-3xl font-black text-white mb-3 uppercase tracking-wide font-bricolage">No Active Rides</h3>
@@ -410,12 +394,124 @@
         </div>
     </section>
 
+    <div id="requests-map-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-[#191265]/60 backdrop-blur-sm p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-[2rem] w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col transform scale-95 transition-transform duration-300" id="modal-content">
+            
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <h3 class="font-['Black_Mango'] text-2xl text-[#191265] font-black">Route & Accepted Pickups</h3>
+                <button onclick="closeRequestsMap()" class="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div id="popup-map" class="w-full h-[50vh] sm:h-[65vh] bg-gray-100 relative z-10"></div>
+            
+        </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script>
+        const acceptedRequestsData = [
+            {% for req in accepted %}
+                {
+                    lat: {{ req.pickuplatitude|default:"0" }},
+                    lng: {{ req.pickuplongitude|default:"0" }},
+                    email: "{{ req.rider.email|escapejs }}",
+                    location: "{{ req.pickuplocation|escapejs }}"
+                },
+            {% endfor %}
+        ];
+
+        const activeRouteGeoJSON = {% if lasttrip_routegeometry_json %}{{ lasttrip_routegeometry_json|safe }}{% else %}null{% endif %};
+
+        let requestsMapInstance = null;
+        let markersLayer = null;
+
+        function openRequestsMap() {
+            const modal = document.getElementById('requests-map-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+            }, 10);
+
+            if (!requestsMapInstance) {
+                requestsMapInstance = L.map('popup-map').setView([10.050272, 76.329273], 12); 
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19
+                }).addTo(requestsMapInstance);
+                
+                markersLayer = L.layerGroup().addTo(requestsMapInstance);
+            }
+
+            markersLayer.clearLayers();
+            let bounds = L.latLngBounds();
+            let hasValidData = false;
+
+            // 1. Draw the driver's planned route line first (LIGHT BLUE #3b82f6)
+            if (activeRouteGeoJSON) {
+                const routeLayer = L.geoJSON(activeRouteGeoJSON, {
+                    style: { color: '#3b82f6', weight: 6, opacity: 0.9 }
+                });
+                markersLayer.addLayer(routeLayer);
+                bounds.extend(routeLayer.getBounds());
+                
+                // Add default Start and End Pins based on the route coordinates
+                const coords = activeRouteGeoJSON.coordinates;
+                if(coords && coords.length > 0) {
+                    const startC = coords[0];
+                    const endC = coords[coords.length - 1];
+                    L.marker([startC[1], startC[0]]).bindPopup("<b class='text-[#191265]'>Start</b>").addTo(markersLayer);
+                    L.marker([endC[1], endC[0]]).bindPopup("<b class='text-[#191265]'>Destination</b>").addTo(markersLayer);
+                }
+
+                hasValidData = true;
+            }
+
+            // 2. Drop default pins for each accepted passenger
+            acceptedRequestsData.forEach(req => {
+                if (req.lat !== 0 && req.lng !== 0) {
+                    const popupContent = `
+                        <div class="text-center p-1">
+                            <p class="font-black text-[#191265] mb-1">${req.email}</p>
+                            <p class="text-xs text-gray-600 font-bold uppercase">Pickup Location</p>
+                        </div>
+                    `;
+                    const marker = L.marker([req.lat, req.lng]).bindPopup(popupContent);
+                    markersLayer.addLayer(marker);
+                    bounds.extend([req.lat, req.lng]);
+                    hasValidData = true;
+                }
+            });
+
+            setTimeout(() => {
+                requestsMapInstance.invalidateSize();
+                if (hasValidData) {
+                    requestsMapInstance.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+                }
+            }, 300); 
+        }
+
+        function closeRequestsMap() {
+            const modal = document.getElementById('requests-map-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            modal.classList.add('opacity-0');
+            modalContent.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+    </script>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             
-            // --- SCROLL LOGIC & BUTTON LINKS ---
             {% if lasttrip %}
                 setTimeout(() => { 
                     const section = document.getElementById('active-trip-section');
@@ -423,14 +519,10 @@
                 }, 600);
             {% endif %}
 
-            // --- POLLING VARIABLES (Must be inside DOMContentLoaded for DOM access) ---
             let driverPrevPendingIds = [];
             let driverPrevAcceptedIds = [];
             let driverPollingInitialized = false;
 
-    
-
-            // --- UI FORM VARIABLES & LOGIC ---
             const locInput = document.getElementById('location-input');
             const endpointDisplay = document.getElementById('college-endpoint-display');
             const endpointLabel = document.getElementById('endpoint-label');
@@ -442,7 +534,6 @@
                 const directionInput = document.getElementById('prefereddirection');
                 const timeInput = document.getElementById("ridetime");
                 
-                // 1. DATE RESTRICTION (Today & Tomorrow Only)
                 const dateInput = document.querySelector('input[name="ridedate"]');
                 if (dateInput) {
                     const today = new Date();
@@ -461,7 +552,6 @@
                     dateInput.value = formatDate(today);
                 }
 
-                // 2. AUTOFILL VEHICLE DETAILS (From LocalStorage)
                 const vType = document.getElementById('vehicletype');
                 const vSeats = document.querySelector('input[name="availableseats"]');
                 const vNum = document.querySelector('input[name="vehiclenumber"]');
@@ -476,7 +566,6 @@
                     if(vHelmet) vHelmet.checked = localStorage.getItem('hopin_vHelmet') === 'true';
                 }
 
-                // Save details on form submit
                 const rideForm = document.getElementById('rideForm');
                 if (rideForm) {
                     rideForm.addEventListener('submit', function() {
@@ -488,7 +577,6 @@
                     });
                 }
                 
-                // --- MAP & LOCATION LOGIC ---
                 const collegeLat = 10.050272; 
                 const collegeLng = 76.329273;
                 const collegeName = "AISAT Engineering College";
@@ -498,14 +586,15 @@
                     attribution: '© OpenStreetMap'
                 }).addTo(map);
 
+                // Use the original styled dot for the college marker
                 const collegeIcon = L.divIcon({
                     className: 'custom-div-icon',
                     html: `<div style="background-color:#191265; width:15px; height:15px; border-radius:50%; border:3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>`,
                     iconSize: [15, 15],
                     iconAnchor: [7, 7]
                 });
-                L.marker([collegeLat, collegeLng], {icon: collegeIcon}).addTo(map).bindPopup(collegeName);
-
+                let collegeMarker = L.marker([collegeLat, collegeLng], {icon: collegeIcon}).addTo(map).bindPopup(collegeName);
+                
                 let userMarker;
                 let routeLine;
 
@@ -514,7 +603,9 @@
                     document.getElementById('lng').value = lng;
                     
                     if (!userMarker) {
+                        // Just use the default Leaflet marker
                         userMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
                         userMarker.on('dragend', function(e) {
                             const position = e.target.getLatLng();
                             updateLocationData(position.lat, position.lng);
@@ -535,8 +626,10 @@
                             const geoJSON = routeData.routes[0].geometry;
                             document.getElementById('routegeometry').value = JSON.stringify(geoJSON);
                             if (routeLine) map.removeLayer(routeLine);
+                            
+                            // LIGHT BLUE ROUTE LINE (#3b82f6)
                             routeLine = L.geoJSON(geoJSON, {
-                                style: { color: '#191265', weight: 4, opacity: 0.8 }
+                                style: { color: '#3b82f6', weight: 6, opacity: 0.9 }
                             }).addTo(map);
                             map.fitBounds(routeLine.getBounds(), {padding: [30, 30]});
                         }
@@ -544,7 +637,8 @@
                         const fallbackGeoJSON = {"type": "LineString", "coordinates": [[lng, lat], [collegeLng, collegeLat]]};
                         document.getElementById('routegeometry').value = JSON.stringify(fallbackGeoJSON);
                         if (routeLine) map.removeLayer(routeLine);
-                        routeLine = L.polyline([[lat, lng], [collegeLat, collegeLng]], {color: '#191265', weight: 4, dashArray: '5, 10'}).addTo(map);
+                        // LIGHT BLUE FALLBACK LINE (#3b82f6)
+                        routeLine = L.polyline([[lat, lng], [collegeLat, collegeLng]], {color: '#3b82f6', weight: 6, dashArray: '5, 10'}).addTo(map);
                         map.fitBounds(routeLine.getBounds(), {padding: [30, 30]});
                     }
 
@@ -552,7 +646,6 @@
                         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
                             .then(res => res.json())
                             .then(data => {
-                                // Shorten Reverse Geocode
                                 const parts = data.display_name.split(',');
                                 locInput.value = parts.slice(0, 2).join(', ').trim();
                             });
@@ -590,7 +683,6 @@
                                         const div = document.createElement('div');
                                         div.className = 'autocomplete-item';
                                         
-                                        // 3. SHORTEN AUTOCOMPLETE STRING
                                         const parts = item.display_name.split(',');
                                         const shortName = parts.slice(0, 2).join(', ').trim();
                                         div.innerText = shortName;
@@ -628,12 +720,10 @@
                     toggleHelmetVisibility(); 
                 }
 
-                // REVISED SET DIRECTION LOGIC
                 function setDirection(dir) {
                     directionInput.value = dir;
                     locInput.disabled = false; 
                     
-                    // Show the endpoint display banner once direction is chosen
                     if (endpointDisplay) endpointDisplay.classList.remove('hidden');
                     
                     const mapOverlay = document.getElementById('map-overlay');
@@ -668,24 +758,19 @@
                 fromBtn.onclick = () => setDirection('from');
             }
 
-           
+            const scrollToFormBtn = document.getElementById('scroll-to-form');
+            if (scrollToFormBtn) {
+                scrollToFormBtn.onclick = () => document.getElementById('create-ride-section').scrollIntoView({ behavior: 'smooth' });
+            }
 
-            // Smooth Scroll from hero
-            // Smooth Scroll from hero (Dynamic based on active trips)
-                const scrollToFormBtn = document.getElementById('scroll-to-form');
-                if (scrollToFormBtn) {
-                    scrollToFormBtn.onclick = () => document.getElementById('create-ride-section').scrollIntoView({ behavior: 'smooth' });
-                }
-
-                const scrollToActiveBtn = document.getElementById('scroll-to-active');
-                if (scrollToActiveBtn) {
-                    scrollToActiveBtn.onclick = () => document.getElementById('active-trip-section').scrollIntoView({ behavior: 'smooth' });
-                }
+            const scrollToActiveBtn = document.getElementById('scroll-to-active');
+            if (scrollToActiveBtn) {
+                scrollToActiveBtn.onclick = () => document.getElementById('active-trip-section').scrollIntoView({ behavior: 'smooth' });
+            }
         
             function initRequestMaps() {
                 const minimapContainers = document.querySelectorAll('.minimap-container');
                 minimapContainers.forEach(container => {
-                    // Safety check: Prevent Leaflet from re-initializing the same container
                     if (!container.id) return;
 
                     const lat = parseFloat(container.getAttribute('data-lat'));
@@ -701,7 +786,6 @@
                     }
 
                     if (container._leaflet_id) {
-                        // Re-use existing map if already initialized
                         return;
                     }
 
@@ -730,7 +814,6 @@
                 });
             }
 
-            // ---------------- TOAST ----------------
             function showToast(message, type = "info") {
                 const toast = document.createElement("div");
                 toast.className = "rounded-xl px-4 py-3 font-bold shadow-lg text-sm text-white transition-opacity";
@@ -837,7 +920,6 @@
                 const trimmed = (html || "").trim();
                 container.innerHTML = trimmed;
 
-                // Keep the tiles visible even when both sections are empty so their empty states render.
                 container.hidden = false;
 
                 if (container.querySelector('.minimap-container')) {
@@ -907,8 +989,6 @@
                 window.__driverPollInterval = setInterval(pollDriver, 4000);
             }
 
-            // Initialization when page is ready
-            // Update to capture current DOM state before polling starts
             driverPrevPendingIds = getDriverPendingRequestIds();
             driverPrevAcceptedIds = getDriverAcceptedRequestIds();
             
