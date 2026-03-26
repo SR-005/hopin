@@ -315,6 +315,44 @@
         let lastKnownPosition = null;
         let hasRideEnded = false;
         let isUpdatingLocation = false;
+        let screenWakeLock = null;
+
+        async function requestScreenWakeLock() {
+            if (!("wakeLock" in navigator) || document.visibilityState !== "visible" || screenWakeLock || hasRideEnded) {
+                return;
+            }
+
+            try {
+                screenWakeLock = await navigator.wakeLock.request("screen");
+                screenWakeLock.addEventListener("release", () => {
+                    screenWakeLock = null;
+                });
+            } catch (error) {
+                console.warn("Screen wake lock unavailable:", error);
+            }
+        }
+
+        async function releaseScreenWakeLock() {
+            if (!screenWakeLock) return;
+
+            try {
+                await screenWakeLock.release();
+            } catch (error) {
+                console.warn("Could not release screen wake lock:", error);
+            } finally {
+                screenWakeLock = null;
+            }
+        }
+
+        document.addEventListener("visibilitychange", function () {
+            if (document.visibilityState === "visible" && !hasRideEnded) {
+                requestScreenWakeLock();
+            }
+        });
+
+        window.addEventListener("beforeunload", function () {
+            releaseScreenWakeLock();
+        });
 
         function getClosestIndex(driverLat, driverLng, points) {
             let minDist = Infinity;
@@ -332,6 +370,7 @@
         function handleRideEnded() {
             if (hasRideEnded) return;
             hasRideEnded = true;
+            releaseScreenWakeLock();
             alert("Ride Completed!");
             window.location.href = "/";
         }
@@ -362,6 +401,8 @@
 
         document.addEventListener("DOMContentLoaded", function () {
             if (!route) return;
+
+            requestScreenWakeLock();
 
             // 1. Initialize Map
             latlngs = route.coordinates.map(coord => [coord[1], coord[0]]);
