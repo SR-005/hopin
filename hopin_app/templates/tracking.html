@@ -146,8 +146,8 @@
             requestId: "{{ requestid|default_if_none:'' }}",
             rideId: "{{ rideid|default_if_none:'' }}",
             // The || ensures that if Django passes an empty string, it defaults to the college coordinates safely
-            riderLat: parseFloat("{{ riderlatitude|default:'' }}") || 10.0469,
-            riderLng: parseFloat("{{ riderlongitude|default:'' }}") || 76.3467
+            riderLat: parseFloat("{{ riderlatitude|default:'' }}") || 10.050272,
+            riderLng: parseFloat("{{ riderlongitude|default:'' }}") || 76.329273
         };
     </script>
     <script src="{% static 'hopin_app/js/tracking.js' %}"></script>

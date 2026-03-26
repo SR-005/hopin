@@ -12,8 +12,8 @@ User=get_user_model()
 
 
 class RideTrackingFlowTests(TestCase):
-    college_latitude=10.0469
-    college_longitude=76.3467
+    college_latitude=10.050272
+    college_longitude=76.329273
 
     def setUp(self):
         self.driver=User.objects.create_user(
