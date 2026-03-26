@@ -1,9 +1,11 @@
 """
 Push notification utilities for Hopin app using django-webpush
 """
+import json
 import logging
 
-from webpush import send_user_notification
+from webpush.models import PushInformation
+from webpush.utils import send_to_subscription
 
 logger = logging.getLogger(__name__)
 
@@ -18,10 +20,31 @@ def _build_payload(head, body, url="/rider/"):
 
 
 def _send_notification(user, payload):
-    try:
-        send_user_notification(user=user, payload=payload, ttl=1000)
-    except Exception:
-        logger.exception("Error sending notification to user %s", user.id)
+    payload_json = json.dumps(payload)
+    seen_endpoints = set()
+    push_infos = (
+        PushInformation.objects.filter(user=user)
+        .select_related("subscription")
+        .order_by("-id")
+    )
+
+    for push_info in push_infos:
+        subscription = push_info.subscription
+        endpoint = getattr(subscription, "endpoint", "")
+
+        if not endpoint or endpoint in seen_endpoints:
+            continue
+
+        seen_endpoints.add(endpoint)
+
+        try:
+            send_to_subscription(subscription, payload_json, ttl=1000)
+        except Exception:
+            logger.exception(
+                "Error sending notification to user %s for subscription %s",
+                user.id,
+                getattr(subscription, "id", "unknown"),
+            )
 
 
 def _send_notification_to_users(users, payload):
