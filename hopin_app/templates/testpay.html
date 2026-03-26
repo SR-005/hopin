@@ -51,8 +51,11 @@
                     .then(res => res.json())
                     .then(data => {
                         if(data.status === "success"){
-                            alert("Payment Successful");
-                            window.location.replace("{% url 'landing' %}");
+                            sessionStorage.setItem("hopin_redirect_toast", JSON.stringify({
+                                message: "Payment successful",
+                                type: "success"
+                            }));
+                            window.location.replace("/");
                         }
                     });
                 }

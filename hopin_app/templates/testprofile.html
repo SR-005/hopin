@@ -129,7 +129,7 @@
                     <p class="text-xs font-extrabold mb-1 text-gray-400 uppercase tracking-widest">Name:</p>
                     <p class="text-sm sm:text-2xl font-bold text-white capitalize">
                         {% if request.user.first_name %}
-                            {{ request.user.first_name }} {{ request.user.last_name }}
+                            {{ request.user.first_name }}
                         {% else %}
                             {{ request.user.username }}
                         {% endif %}
@@ -141,12 +141,12 @@
                 </div>
                 <div class="col-span-1 sm:col-span-2 mt-2">
                     <p class="text-xs font-extrabold mb-1.5 text-gray-400 uppercase tracking-widest">Phone Number:</p>
-                    <p class="text-xl sm:text-2xl font-black text-white tracking-wide">{{ request.user.userdetails.phonenumber|default:"Not Provided" }}</p>
+                    <p class="text-xl sm:text-2xl font-black text-white tracking-wide">{{ phonenumber|default:"Not Provided" }}</p>
                 </div>
             </div>
             
             <div class="flex justify-end mt-5 pt-4 border-t border-white/5">
-                <a href="#" class="text-[#FCA5A5] text-xs sm:text-sm font-black hover:underline tracking-wide">Change Number</a>
+                <a href="{% url 'verify' %}" class="text-[#FCA5A5] text-xs sm:text-sm font-black hover:underline tracking-wide">Change Number</a>
             </div>
         </div>
 
@@ -305,7 +305,10 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === "success") {
-                        alert("✅ Payment Successful");
+                        sessionStorage.setItem("hopin_redirect_toast", JSON.stringify({
+                            message: "Payment successful",
+                            type: "success"
+                        }));
                         window.location.replace('/');
                     } else {
                         alert("❌ Payment Failed");

@@ -81,8 +81,10 @@ def testprofilefunction(request):
     counttrips=len(completedtrips)
     droppedrides=riderequest.objects.filter(rider=user,status="DROPPED").order_by("-trip__ridedate")
     countrides=len(droppedrides)
-    userobject=userdetail(usercredentials=user)
+    userobject=userdetail.objects.get(usercredentials=user)
     currentaverage=userobject.averagerating
+    phonenumber=userobject.phonenumber
+    print("Phone Number: ",phonenumber)
 
 
     pendingpayments=payment.objects.filter(requestdetails__rider=request.user,status="PENDING")
@@ -115,5 +117,5 @@ def testprofilefunction(request):
             currentpayment.save()
 
     return render(request, "testprofile.html", {"completedtrips":completedtrips,"droppedrides":droppedrides,"counttrips":counttrips,
-                                                "countrides":countrides,"averagerating":currentaverage,"pendingpayments":pendingpayments, "orderid": currentorderid, "amount": currentamount,
+                                                "countrides":countrides,"averagerating":currentaverage,"phonenumber":phonenumber,"pendingpayments":pendingpayments, "orderid": currentorderid, "amount": currentamount,
                                                 "RAZORID": RAZORID})
