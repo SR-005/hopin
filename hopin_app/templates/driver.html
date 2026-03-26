@@ -125,8 +125,8 @@
 
             <ul class="hidden md:flex space-x-16 font-['Playfair_Display'] tracking-widest font-extrabold text-[18px] absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap">
                 <li><a href="{% url 'landing' %}" class="text-[#191265] hover:opacity-70 transition-opacity">Home</a></li>
-                <li><a href="#active-trip-section" class="text-[#191265] hover:opacity-70 transition-opacity">History</a></li>
-                <li><a href="#" class="text-[#191265] hover:opacity-70 transition-opacity">Contact</a></li>
+                <li><a href="#create-ride-section" class="text-[#191265] hover:opacity-70 transition-opacity">Create</a></li>
+                <li><a href="#tutorial-section" class="text-[#191265] hover:opacity-70 transition-opacity">Tutorial</a></li>
             </ul>
 
             <div class="flex justify-end items-center gap-6 w-1/4 ml-auto" id="auth-container">
@@ -394,6 +394,11 @@
         </div>
     </section>
 
+    <section id="tutorial-section" class="min-h-[60vh] bg-white py-20 px-6 md:px-12 flex flex-col items-center justify-center text-center border-t border-gray-200">
+        <h2 class="text-4xl md:text-5xl font-['Black_Mango'] text-[#191265] mb-4">Tutorial</h2>
+        <p class="text-lg text-gray-500 font-medium max-w-2xl">This is a blank section reserved for tutorial content. You can add your videos, guides, or FAQs here later!</p>
+    </section>
+
     <div id="requests-map-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-[#191265]/60 backdrop-blur-sm p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-[2rem] w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col transform scale-95 transition-transform duration-300" id="modal-content">
             
@@ -452,7 +457,6 @@
             let bounds = L.latLngBounds();
             let hasValidData = false;
 
-            // 1. Draw the driver's planned route line first (LIGHT BLUE #3b82f6)
             if (activeRouteGeoJSON) {
                 const routeLayer = L.geoJSON(activeRouteGeoJSON, {
                     style: { color: '#3b82f6', weight: 6, opacity: 0.9 }
@@ -460,7 +464,6 @@
                 markersLayer.addLayer(routeLayer);
                 bounds.extend(routeLayer.getBounds());
                 
-                // Add default Start and End Pins based on the route coordinates
                 const coords = activeRouteGeoJSON.coordinates;
                 if(coords && coords.length > 0) {
                     const startC = coords[0];
@@ -472,7 +475,6 @@
                 hasValidData = true;
             }
 
-            // 2. Drop default pins for each accepted passenger
             acceptedRequestsData.forEach(req => {
                 if (req.lat !== 0 && req.lng !== 0) {
                     const popupContent = `
@@ -586,7 +588,6 @@
                     attribution: '© OpenStreetMap'
                 }).addTo(map);
 
-                // Use the original styled dot for the college marker
                 const collegeIcon = L.divIcon({
                     className: 'custom-div-icon',
                     html: `<div style="background-color:#191265; width:15px; height:15px; border-radius:50%; border:3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>`,
@@ -603,7 +604,6 @@
                     document.getElementById('lng').value = lng;
                     
                     if (!userMarker) {
-                        // Just use the default Leaflet marker
                         userMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
 
                         userMarker.on('dragend', function(e) {
@@ -627,7 +627,6 @@
                             document.getElementById('routegeometry').value = JSON.stringify(geoJSON);
                             if (routeLine) map.removeLayer(routeLine);
                             
-                            // LIGHT BLUE ROUTE LINE (#3b82f6)
                             routeLine = L.geoJSON(geoJSON, {
                                 style: { color: '#3b82f6', weight: 6, opacity: 0.9 }
                             }).addTo(map);
@@ -637,7 +636,6 @@
                         const fallbackGeoJSON = {"type": "LineString", "coordinates": [[lng, lat], [collegeLng, collegeLat]]};
                         document.getElementById('routegeometry').value = JSON.stringify(fallbackGeoJSON);
                         if (routeLine) map.removeLayer(routeLine);
-                        // LIGHT BLUE FALLBACK LINE (#3b82f6)
                         routeLine = L.polyline([[lat, lng], [collegeLat, collegeLng]], {color: '#3b82f6', weight: 6, dashArray: '5, 10'}).addTo(map);
                         map.fitBounds(routeLine.getBounds(), {padding: [30, 30]});
                     }
