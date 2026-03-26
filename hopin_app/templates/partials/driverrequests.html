@@ -50,10 +50,20 @@
 
     <!-- Confirmed Passengers -->
     <div class="bg-[#231A76] rounded-[2.5rem] p-8 shadow-2xl flex flex-col" id="confirmed-passengers-container">
-        <h3 class="text-white text-2xl font-black uppercase mb-6">
-            Confirmed Passengers
-            <span class="bg-green-400 text-[#191265] text-xs px-2 py-1 rounded-full ml-2">{% if accepted %}{{ accepted|length }}{% else %}0{% endif %}</span>
-        </h3>
+        
+        <div class="flex items-center justify-between w-full mb-6">
+            <h3 class="text-white text-2xl font-black uppercase m-0">
+                Confirmed Passengers
+                <span class="bg-green-400 text-[#191265] text-xs px-2 py-1 rounded-full ml-2">{% if accepted %}{{ accepted|length }}{% else %}0{% endif %}</span>
+            </h3>
+            
+            <button type="button" onclick="openRequestsMap()" class="flex items-center gap-2 px-4 py-2 text-xs font-black tracking-widest text-[#191265] bg-white rounded-xl hover:bg-gray-100 active:scale-95 transition-all shadow-md">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                </svg>
+                VIEW MAP
+            </button>
+        </div>
         <div class="flex flex-col gap-4 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
             {% if accepted %}
                 {% for req in accepted %}
