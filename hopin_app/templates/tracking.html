@@ -161,7 +161,7 @@ body {
         </div>
     </div>
     <div class="relative z-10 flex justify-center mt-4">
-        <form method="POST" action="{% url 'testtracking' rideid %}" class="w-[948px]">
+        <form method="POST" action="{% url 'tracking' rideid %}" class="w-[948px]">
             {% csrf_token %}
             <input type="hidden" name="tripid" id="tripid" value="{{ rideid }}">
             <input type="hidden" name="requestid" id="requestid" value="{{ requestid }}">
