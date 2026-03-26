@@ -17,6 +17,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
     {% webpush_header %}
+    <style>@font-face {
+    font-family: 'Black Mango';
+    src: url("{% static 'hopin_app/fonts/Black_Mango_SemiBold.ttf' %}") format('truetype');
+}</style>
 </head>
 
 <body class="scroll-smooth">
@@ -80,9 +84,9 @@
 
         <section class="h-screen flex items-start pt-20 px-[79px]">
             <div class="flex flex-col text-[#191265] mt-[100px] w-1/2 z-10">
-                <h2 class="text-6xl font-bold font-['Bricolage_Grotesque']">Your Ride is</h2>
-                <h1 class="text-6xl font-bold font-['Bricolage_Grotesque'] text-[#191265]">One Search Away</h1>
-                <p class="text-2xl text-[#191265] mt-4">Search your route, grab a seat,<br>let's go.</p>
+                <h2 class="text-6xl font-bold font-['Black_Mango']">Your Ride is</h2>
+                <h1 class="text-6xl font-bold  font-['Black_Mango'] text-[#191265]">One Search Away</h1>
+                <p class="text-2xl font-['Playfair_Display'] text-[#191265] mt-4">Search your route, grab a seat,<br>let's go.</p>
 
                 <button onclick="document.getElementById('search-section').scrollIntoView({behavior:'smooth'})"
                     class="bg-[#191265] mt-10 text-white w-[401px] text-2xl py-3 rounded-full font-['Bricolage_Grotesque'] hover:bg-indigo-900 transition">
@@ -109,7 +113,7 @@
                 <input type="hidden" name="latitude" id="lat-input">
                 <input type="hidden" name="longitude" id="lng-input">
 
-                <div class="w-[340px]">
+                <div class="w-[450px]">
                     <h2 class="text-3xl text-white font-bold mb-5">
                         Search <span class="text-white">Ride</span>
                     </h2>
@@ -163,7 +167,7 @@
                     </div>
 
                     <button type="submit"
-                        class="w-full bg-white text-[#191265] py-2.5 rounded-xl text-sm font-bold hover:bg-gray-200 transition">
+                        class="w-full bg-white mt-6 text-[#191265] py-2.5 rounded-xl text-sm font-bold hover:bg-gray-200 transition">
                         Search Rides
                     </button>
                 </div>
@@ -173,7 +177,7 @@
                     </div>
                 </div>
             </form>
-            <div class="w-full max-w-[800px] -mt-2 bg-[#191265] border border-white/30 rounded-2xl p-6 shadow-xl">
+            <div class="w-full w-[900px] -mt-2 bg-[#191265] border border-white/30 rounded-2xl p-6 shadow-xl">
                 <h3 class="text-2xl text-white font-bold mb-5">Re-Book Previous Rides</h3>
 
                 <div id="rebookRidesList"
@@ -253,7 +257,8 @@
                                     {% endif %}
                                     {% endif %}
                                 </div>
-
+    <p class="text-sm text-gray-500 font-medium">
+                            {{ trip.usercredentials.userdetails.phonenumber }}</p>
                                 <!-- CENTER: Date & Time -->
                                 <div class="text-xs text-gray-600 text-center">
                                     <div class="font-semibold text-[#191265]">
@@ -406,6 +411,8 @@
                                         {% endif %}
                                         {% endif %}
                                     </div>
+                                    <p class="text-sm text-gray-500 font-medium">
+                            {{ trip.usercredentials.userdetails.phonenumber }}</p>
                                     <div class="flex items-center gap-4 mt-3 text-sm text-gray-600 font-semibold">
 
                                         <!-- 📅 Date -->
@@ -484,7 +491,7 @@
                         </div>
                         {% endfor %}
                         <div id="filteredEmptyState"
-                            class="hidden bg-white/10 rounded-[1.5rem] p-10 text-center border-2 border-dashed border-white/20">
+                            class="hidden bg-[#191265] rounded-[1.5rem] p-10 text-center border-2 border-dashed border-white/20">
                             <p class="text-xl font-semibold mb-2 text-white">No rides match the selected filters.</p>
                             <p class="text-gray-300 text-sm">Try choosing a different sort or clear all filters.</p>
                         </div>
@@ -508,20 +515,20 @@
                                 Clear all
                             </a>
                         </div>
-                        <div class="bg-white rounded-xl p-5 text-[#191265] shadow-inner">
+                        <div class=" rounded-xl p-5 text-white shadow-inner">
                             <label class="flex items-center gap-3 cursor-pointer mb-4">
                                 <input type="radio" name="vehicle" value="bike"
-                                    class="w-4 h-4 text-[#191265] focus:ring-[#191265]">
+                                    class="w-4 h-4 text-white focus:ring-[#191265]">
                                 <span class="font-bold text-lg">Bikes / Scooters</span>
                             </label>
                             <label class="flex items-center gap-3 cursor-pointer mb-4">
                                 <input type="radio" name="vehicle" value="car"
-                                    class="w-4 h-4 text-[#191265] focus:ring-[#191265]">
+                                    class="w-4 h-4 text-white focus:ring-[#191265]">
                                 <span class="font-bold text-lg">Cars</span>
                             </label>
                             <label class="flex items-center gap-3 cursor-pointer mb-5">
                                 <input id="helmetFilter" type="checkbox"
-                                    class="w-4 h-4 rounded text-[#191265] focus:ring-[#191265]">
+                                    class="w-4 h-4 rounded text-white focus:ring-[#191265]">
                                 <span class="font-bold text-lg">Helmet Available</span>
                             </label>
 
