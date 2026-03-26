@@ -40,6 +40,8 @@ def fetchtracking(request, rideid):
     return JsonResponse({
         "lat": currentride.currentlatitude, "lng": currentride.currentlongitude,
         "route": currentride.routegeometry, "status": currentride.status,
+        "pickuplattitude": currentrequest.pickuplatitude,
+        "pickuplongtitude": currentrequest.pickuplongitude,
         "eta": round(eta)
     })
 

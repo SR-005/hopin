@@ -202,31 +202,34 @@
 
 <script>
     let bigMapInstance = null;
-    let hasRideEnded = false; // Safety variable to prevent opening if ride is done
-    let isMapOpen = false; // Add this at the very top of your script
+    let hasRideEnded = false;
 
+    // ===============================
+    // OPEN MAP MODAL
+    // ===============================
     function openBigRouteModal(requestId, rideId) {
         if (hasRideEnded) return;
 
-        window.isMapViewing = true; // LOCK THE POLL GLOBALLY
+        window.isMapViewing = true;
         console.log("Map opened, polling locked.");
+
         const modal = document.getElementById('bigMapModal');
 
-        // 1. Lock screen scroll and sink background map
+        // Lock background
         document.body.classList.add('modal-open');
 
-        // 2. Completely destroy old map instance to prevent blank screen
+        // Destroy old map
         if (bigMapInstance) {
             bigMapInstance.off();
             bigMapInstance.remove();
             bigMapInstance = null;
         }
 
-        // 3. Show the modal
+        // Show modal
         modal.classList.remove('hidden');
         modal.classList.add('flex');
 
-        // 4. Initialize fresh map
+        // Init map
         setTimeout(() => {
             try {
                 bigMapInstance = L.map('bigPopupMap').setView([10.050272, 76.329273], 13);
@@ -236,7 +239,9 @@
                     attribution: '&copy; OpenStreetMap'
                 }).addTo(bigMapInstance);
 
-                // Fetch route
+                // ===============================
+                // FETCH ROUTE + RIDER
+                // ===============================
                 fetch(`/fetchtracking/${rideId}/?requestid=${requestId}`)
                     .then(res => res.json())
                     .then(data => {
@@ -248,6 +253,7 @@
 
                         const coords = routeData.coordinates.map(c => [c[1], c[0]]);
 
+                        // Route
                         const poly = L.polyline(coords, {
                             color: '#191265',
                             weight: 6,
@@ -265,74 +271,86 @@
                             .bindPopup("Destination");
 
                         // Rider
-                        if (data.rider_lat && data.rider_lng) {
+                        console.log("Incoming data:", data);
+                        if (data.pickuplattitude != null && data.pickuplongtitude != null) {
                             const riderIcon = L.icon({
                                 iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
                                 iconSize: [40, 40],
                                 iconAnchor: [20, 40]
                             });
 
-                            L.marker([data.rider_lat, data.rider_lng], { icon: riderIcon })
+                            L.marker(
+                                [
+                                    parseFloat(data.pickuplattitude),
+                                    parseFloat(data.pickuplongtitude)
+                                ],
+                                { icon: riderIcon }
+                            )
                                 .addTo(bigMapInstance)
                                 .bindPopup("Your Pickup Location");
                         }
 
-                        // Zoom
+                        // Fit map
                         bigMapInstance.fitBounds(poly.getBounds(), { padding: [50, 50] });
                     })
                     .catch(err => console.error("Map error:", err));
-                function closeBigMapPopup() {
-                    window.isMapViewing = false; // UNLOCK THE POLL GLOBALLY
-                    console.log("Map closed, polling resumed.");
-                    const modal = document.getElementById('bigMapModal');
 
-                    // 1. Hide the modal
-                    modal.classList.add('hidden');
-                    modal.classList.remove('flex');
+            } catch (e) {
+                console.error("Leaflet Error:", e);
+            }
+        }, 400);
+    }
 
-                    // 2. Unlock the screen scroll and restore background maps
-                    document.body.classList.remove('modal-open');
+    // ===============================
+    // CLOSE MAP MODAL
+    // ===============================
+    function closeBigMapPopup() {
+        window.isMapViewing = false;
+        console.log("Map closed, polling resumed.");
 
-                    // 3. Clean up memory
-                    if (bigMapInstance) {
-                        bigMapInstance.off();
-                        bigMapInstance.remove();
-                        bigMapInstance = null;
+        const modal = document.getElementById('bigMapModal');
+
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+
+        document.body.classList.remove('modal-open');
+
+        if (bigMapInstance) {
+            bigMapInstance.off();
+            bigMapInstance.remove();
+            bigMapInstance = null;
+        }
+    }
+
+    // ===============================
+    // SAFETY: SCROLL UNLOCK WATCHDOG
+    // ===============================
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('bigMapModal');
+
+        if (!modal) return;
+
+        const observer = new MutationObserver(function (mutations) {
+            mutations.forEach(function (mutation) {
+                if (mutation.attributeName === "class") {
+                    if (modal.classList.contains('hidden')) {
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                        document.body.style.position = '';
+                        document.body.style.height = '';
+
+                        const riderImg = document.querySelector("img[src*='rider.png']");
+                        if (riderImg) {
+                            riderImg.style.zIndex = "10";
+                            riderImg.style.position = "relative";
+                        }
                     }
                 }
-                // ==========================================
-                // SCROLL UNLOCK WATCHDOG
-                // ==========================================
-                document.addEventListener('DOMContentLoaded', function () {
-                    const modal = document.getElementById('bigMapModal');
+            });
+        });
 
-                    if (modal) {
-                        // Create an observer to watch for ANY changes to the modal's classes
-                        const observer = new MutationObserver(function (mutations) {
-                            mutations.forEach(function (mutation) {
-                                if (mutation.attributeName === "class") {
-                                    // If the modal becomes hidden for ANY reason, unlock the scroll immediately
-                                    if (modal.classList.contains('hidden')) {
-                                        document.body.classList.remove('modal-open');
-                                        document.body.style.overflow = '';
-                                        document.body.style.position = '';
-                                        document.body.style.height = '';
-
-                                        // Also restore the background image safely
-                                        const riderImg = document.querySelector("img[src*='rider.png']");
-                                        if (riderImg) {
-                                            riderImg.style.zIndex = "10";
-                                            riderImg.style.position = "relative";
-                                        }
-                                    }
-                                }
-                            });
-                        });
-
-                        // Start watching the modal
-                        observer.observe(modal, { attributes: true });
-                    }
-                });
+        observer.observe(modal, { attributes: true });
+    });
 </script>
 <div id="bigMapModal"
     class="hidden fixed inset-0 bg-[#191265]/90 backdrop-blur-md flex items-center justify-center p-4 lg:p-10"
