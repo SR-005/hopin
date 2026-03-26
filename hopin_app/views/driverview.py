@@ -119,6 +119,7 @@ def tripdetails(request):
 
 
             newtrip.save()
+            messages.success(request, "Your Ride has been Created!")
             return redirect("driver")
         else:
             print("Form not Valid")

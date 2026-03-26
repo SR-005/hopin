@@ -1,6 +1,6 @@
 {% load webpush_notifications %}
 {% if request.user.is_authenticated %}
-<div id="webpush-banner" class="fixed bottom-4 right-4 z-[1001] max-w-sm rounded-2xl bg-white p-4 text-[#191265] shadow-2xl ring-1 ring-black/5">
+<div id="webpush-banner" class="hidden fixed bottom-4 right-4 z-[1001] max-w-sm rounded-2xl bg-white p-4 text-[#191265] shadow-2xl ring-1 ring-black/5">
     <p class="font-['Playfair_Display'] text-lg font-extrabold">Ride updates</p>
     <p class="mt-1 text-sm font-medium text-[#4E5875]">Enable browser notifications to get instant accept, reject, and trip cancellation alerts.</p>
     <div class="mt-3 flex items-center gap-3">
@@ -15,43 +15,54 @@
         const banner = document.getElementById("webpush-banner");
         const dismissButton = document.getElementById("webpush-banner-dismiss");
         const subscribeButton = document.getElementById("webpush-subscribe-button");
-        const messageBox = document.getElementById("webpush-message");
         const dismissedKey = "hopin_webpush_banner_hidden";
 
         if (!banner || !subscribeButton) {
             return;
         }
 
-        if (localStorage.getItem(dismissedKey) === "1") {
-            banner.style.display = "none";
-        }
+        const isDismissed = function () {
+            return localStorage.getItem(dismissedKey) === "1";
+        };
 
-        dismissButton?.addEventListener("click", function () {
-            localStorage.setItem(dismissedKey, "1");
+        const hideBanner = function () {
+            banner.classList.add("hidden");
             banner.style.display = "none";
-        });
+        };
 
-        const syncBannerState = function () {
-            if (!messageBox) {
+        const showBanner = function () {
+            if (isDismissed()) {
+                hideBanner();
                 return;
             }
 
-            const message = messageBox.textContent || "";
-            if (subscribeButton.textContent.includes("Unsubscribe") || message.includes("Successfully subscribed")) {
-                banner.style.display = "none";
-                localStorage.removeItem(dismissedKey);
-            }
+            banner.classList.remove("hidden");
+            banner.style.display = "block";
         };
 
-        const observer = messageBox ? new MutationObserver(syncBannerState) : null;
-        observer?.observe(messageBox, { childList: true, subtree: true, characterData: true });
+        hideBanner();
 
-        subscribeButton.addEventListener("click", function () {
-            localStorage.removeItem(dismissedKey);
-            window.setTimeout(syncBannerState, 600);
+        dismissButton?.addEventListener("click", function () {
+            localStorage.setItem(dismissedKey, "1");
+            hideBanner();
         });
 
-        syncBannerState();
+        document.addEventListener("hopin:webpush-state", function (event) {
+            const status = event.detail?.status;
+
+            if (status === "subscribed") {
+                localStorage.removeItem(dismissedKey);
+                hideBanner();
+                return;
+            }
+
+            if (status === "unsubscribed") {
+                showBanner();
+                return;
+            }
+
+            hideBanner();
+        });
     });
 </script>
 {% endif %}

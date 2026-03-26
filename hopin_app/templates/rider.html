@@ -25,13 +25,7 @@
 
 <body class="scroll-smooth">
 
-    {% if messages %}
-    {% for message in messages %}
-    <script>
-        alert("{{ message|escapejs }}");
-    </script>
-    {% endfor %}
-    {% endif %}
+    {% include "partials/toast_manager.html" %}
 
     {% include "partials/webpush_banner.html" %}
 
@@ -572,7 +566,7 @@
             };
         </script>
 
-        <script src="{% static 'hopin_app/js/rider.js' %}?v=20260326-3"></script>
+        <script src="{% static 'hopin_app/js/rider.js' %}?v=20260326-6"></script>
 
 </body>
 
