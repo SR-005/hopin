@@ -27,7 +27,7 @@
     <h1>Live Tracking</h1>
     <div id="map"></div>
 
-    <form method="POST" action="{% url 'testtracking' rideid %}">
+    <form method="POST" action="{% url 'tracking' rideid %}">
         {% csrf_token %}
         <input type="hidden" name="tripid" id="tripid" value="{{ rideid }}">
         <input type="hidden" name="requestid" id="requestid" value="{{ requestid }}">
