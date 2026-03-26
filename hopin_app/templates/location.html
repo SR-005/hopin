@@ -24,11 +24,10 @@
         
         /* Sleek Custom Scrollbar for the queue */
         .rider-scroll::-webkit-scrollbar {
-            width: 5px;
+            width: 6px;
         }
         .rider-scroll::-webkit-scrollbar-track {
-            background: #f1f5f9; 
-            border-radius: 10px;
+            background: transparent; 
         }
         .rider-scroll::-webkit-scrollbar-thumb {
             background-color: #cbd5e1;
@@ -52,7 +51,7 @@
     </style>
 </head>
 
-<body class="min-h-screen overflow-x-hidden relative bg-[#191265] font-['Playfair_Display']">
+<body class="h-screen w-screen overflow-hidden relative bg-[#191265] font-['Playfair_Display'] flex flex-col">
     
     <div class="ambient-glow"></div>
     <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 pointer-events-none z-0"></div>
@@ -65,107 +64,110 @@
         {% endfor %}
     {% endif %}
 
-    <nav class="w-full flex items-center justify-between px-4 sm:px-6 lg:px-12 py-4 sm:py-6 fixed top-0 left-0 z-50 bg-[#191265]/90 backdrop-blur-md border-b border-white/10">
-        <div class="flex items-center w-auto lg:w-1/4">
+    <nav class="w-full flex items-center justify-between px-4 sm:px-6 lg:px-12 py-4 sm:py-6 absolute top-0 left-0 z-[1000] bg-transparent pointer-events-none">
+        <div class="flex items-center w-auto lg:w-1/4 pointer-events-auto">
             <img src="{% static 'hopin_app/images/logo.png' %}" class="h-8 sm:h-10 md:h-12 w-auto object-contain" alt="Hop In Logo">
         </div>
 
-        <ul class="flex space-x-3 sm:space-x-8 md:space-x-12 font-extrabold text-[10px] sm:text-xs md:text-base absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap tracking-widest uppercase">
+        <ul class="flex space-x-3 sm:space-x-8 md:space-x-12 font-extrabold text-[10px] sm:text-xs md:text-base absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap tracking-widest uppercase pointer-events-auto">
             <li><a href="/" class="text-[#EAE9DF] opacity-50 hover:opacity-100 transition-opacity">Home</a></li>
             <li><a href="#" class="text-white opacity-100 border-b-2 border-white pb-1">Live Ride</a></li>
         </ul>
 
-        <div class="flex justify-end items-center gap-2 sm:gap-4 lg:gap-6 w-auto lg:w-1/4 ml-auto" id="auth-container">
+        <div class="flex justify-end items-center gap-2 sm:gap-4 lg:gap-6 w-auto lg:w-1/4 ml-auto pointer-events-auto" id="auth-container">
             </div>
     </nav>
 
-    <div class="relative z-10 w-full max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-10 pt-24 lg:pt-28 pb-10 min-h-screen flex flex-col">
+    <div class="relative z-10 w-full max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-10 pt-20 lg:pt-24 pb-6 flex-1 flex flex-col overflow-y-auto lg:overflow-hidden">
         
-        <div class="mb-4 lg:mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div>
-                <div class="mb-1">
-                    <span class="text-yellow-400 text-xs sm:text-sm font-black tracking-widest uppercase">Keep your location on at all time!</span>
-                </div>
-                <h1 class="font-['Black_Mango'] text-4xl sm:text-5xl lg:text-6xl text-white tracking-wide">Live Navigation</h1>
+        <div class="mb-4 shrink-0">
+            <div class="mb-1">
+                <span class="text-red-500 text-xs sm:text-sm font-black tracking-widest uppercase">⚠️ Keep your location on at all times!</span>
             </div>
+            <h1 class="font-['Black_Mango'] text-4xl sm:text-5xl lg:text-6xl text-white tracking-wide leading-none">Live Navigation</h1>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-6 flex-1">
+        <div class="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
             
-            <div class="lg:col-span-8 flex flex-col">
-                <div class="bg-white rounded-[1.5rem] p-3 shadow-2xl flex flex-col h-[60vh] min-h-[420px] lg:h-[70vh] border-4 border-white/10 relative overflow-hidden">
+            <div class="w-full lg:w-2/3 flex flex-col h-[50vh] lg:h-auto lg:flex-1 shrink-0 relative">
+                <div class="bg-white rounded-[1.5rem] p-3 shadow-2xl flex flex-col h-full border-4 border-white/10 overflow-hidden relative">
                     <div class="absolute top-6 left-6 z-[1000] bg-white/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-lg border border-gray-100 flex flex-col">
                         <p class="text-[#191265] font-black text-sm uppercase tracking-wider">Current Route</p>
                     </div>
-                    
                     <div id="live-map" class="w-full h-full rounded-xl z-10 bg-gray-100"></div>
                 </div>
             </div>
 
-            <div class="lg:col-span-4 flex flex-col lg:h-[70vh] mt-2 lg:mt-0">
-                <div class="bg-[#F4F5F7] rounded-[1.5rem] p-5 sm:p-6 shadow-2xl flex flex-col h-full border border-white/20">
+            <div class="w-full lg:w-1/3 flex flex-col h-[50vh] lg:h-auto lg:flex-1 shrink-0 min-h-0">
+                <div class="bg-[#F4F5F7] rounded-[1.5rem] p-5 sm:p-6 shadow-2xl flex flex-col h-full border border-white/20 min-h-0">
                     
-                    <div class="flex items-center justify-between mb-5 pb-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between mb-5 pb-4 border-b border-gray-200 shrink-0">
                         <h2 class="text-2xl font-['Black_Mango'] text-[#191265]">Pickup Queue</h2>
                         <span class="bg-[#191265] text-white text-xs font-bold px-3 py-1 rounded-full">{{ riders|length }} Pending</span>
                     </div>
                     
                     <input type="hidden" name="rideid" id="rideid" value="{{ rideid }}">
                     
-                    <div class="flex-1 overflow-y-auto rider-scroll pr-2 flex flex-col gap-6">
+                    <div class="flex-1 overflow-y-auto rider-scroll pr-2 flex flex-col gap-4 min-h-0 pb-2">
                         {% for rider in riders %}
                             
                             {% if rider.status == "ACCEPTED" or rider.status == "HALFCONFIRM" or rider.status == "FULLCONFIRM" %}
-                                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 flex flex-col min-h-[220px] justify-between transition-all">
+                                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200 flex flex-col shrink-0 justify-between transition-all">
                                     
                                     <div class="flex items-center gap-4">
-                                        <div class="w-14 h-14 shrink-0 rounded-full bg-[#191265]/10 text-[#191265] flex items-center justify-center font-black text-2xl shadow-inner border border-[#191265]/20">
-                                            {{ rider.rider.email|make_list|first|upper }}
+                                        <div class="w-12 h-12 shrink-0 rounded-full bg-white border-2 border-[#191265] flex items-center justify-center shadow-sm">
+                                            <svg class="w-7 h-7 text-[#191265]" fill="#5c5b5b" viewBox="0 0 24 24">
+                                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                            </svg>
                                         </div>
                                         
                                         <div class="overflow-hidden w-full">
-                                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Passenger</p>
-                                            
                                             <p class="font-bold text-[#191265] text-lg truncate leading-tight">
-                                                {{ rider.rider.email }}
-                                            </p>
-                                            
-                                            <p class="text-xs font-bold text-gray-500 truncate mt-0.5">
                                                 {{ rider.rider.first_name|default:"Student" }} {{ rider.rider.last_name }}
+                                            </p>
+                                            <p class="text-xs font-bold text-gray-500 truncate mt-0.5">
+                                                {{ rider.rider.email }}
                                             </p>
                                             
                                             <div class="flex items-center gap-1.5 mt-1.5">
                                                 <svg class="w-3.5 h-3.5 text-[#191265] shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
                                                 </svg>
-                                                <p class="text-xs text-[#191265] font-black uppercase tracking-wider truncate">
-                                                    {{ rider.pickuplocation }}
+                                                
+                                                <p class="text-xs text-[#191265] font-black uppercase tracking-wider truncate dynamic-location" 
+                                                   data-lat="{{ rider.pickuplatitude|default:0 }}" 
+                                                   data-lng="{{ rider.pickuplongitude|default:0 }}">
+                                                    {% if rider.pickuplocation and rider.pickuplocation != "None" %}
+                                                        {{ rider.pickuplocation }}
+                                                    {% else %}
+                                                        <span class="geocode-status text-blue-500">Calculating...</span>
+                                                    {% endif %}
                                                 </p>
                                             </div>
+
                                         </div>
                                     </div>
                                     
                                     {% if rider.status == "ACCEPTED" %}
-                                        <form method="POST" action="{% url 'testlocation' rideid %}" class="w-full m-0 mt-6 pt-5 border-t border-gray-100" onsubmit="return confirm('Are you sure you want to confirm pickup for {{ rider.rider.email }}?');">
+                                        <form method="POST" action="{% url 'testlocation' rideid %}" class="w-full m-0 mt-5 pt-4 border-t border-gray-100" onsubmit="return confirm('Are you sure you want to confirm pickup for {{ rider.rider.email }}?');">
                                             {% csrf_token %}
                                             <input type="hidden" name="tripid" id="tripid" value="{{ rideid }}">
                                             <input type="hidden" name="requestid" id="requestid" value="{{ rider.id }}">
                                             
                                             <button type="submit" name="action" value="pickup" 
-                                                class="w-full py-4 rounded-xl bg-[#191265] text-white font-black text-sm uppercase tracking-widest hover:bg-[#2a228a] active:scale-95 transition-all duration-200 shadow-md flex items-center justify-center gap-2">
-                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                class="w-full py-3.5 rounded-xl bg-[#191265] text-white font-black text-xs uppercase tracking-widest hover:bg-[#2a228a] active:scale-95 transition-all duration-200 shadow-md flex items-center justify-center gap-2">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                                                 Confirm Pickup
                                             </button>
                                         </form>
                                     {% elif rider.status == "HALFCONFIRM" %}
-                                        <div class="w-full mt-6 pt-5 border-t border-gray-100 flex items-center justify-center gap-2 text-blue-600 font-black text-sm uppercase tracking-widest py-4 bg-blue-50 rounded-xl">
-                                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                        <div class="w-full mt-5 pt-4 border-t border-gray-100 flex items-center justify-center gap-2 text-blue-600 font-black text-xs uppercase tracking-widest py-3.5 bg-blue-50 rounded-xl">
+                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                                             Pending Confirmation
                                         </div>
-
                                     {% else %}
-                                        <div class="w-full mt-6 pt-5 border-t border-gray-100 flex items-center justify-center gap-2 text-green-600 font-black text-sm uppercase tracking-widest py-4 bg-green-50 rounded-xl">
-                                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                        <div class="w-full mt-5 pt-4 border-t border-gray-100 flex items-center justify-center gap-2 text-green-600 font-black text-xs uppercase tracking-widest py-3.5 bg-green-50 rounded-xl">
+                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                                             Pickup Confirmed
                                         </div>
                                     {% endif %}
@@ -194,18 +196,73 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
+            const locations = document.querySelectorAll('.dynamic-location');
+            
+            locations.forEach((el) => {
+                const statusSpan = el.querySelector('.geocode-status');
+                
+                if (statusSpan) {
+                    const lat = parseFloat(el.getAttribute('data-lat'));
+                    const lng = parseFloat(el.getAttribute('data-lng'));
+                    
+                    if (lat && lng && lat !== 0) {
+                        // Added zoom=18 for street-level accuracy and addressdetails=1 to get specific area names
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data && data.address) {
+                                    const addr = data.address;
+                                    
+                                    // Smart extraction: grab the most useful local identifiers first
+                                    const localArea = addr.amenity || addr.road || addr.neighbourhood || addr.suburb || "";
+                                    const cityArea = addr.city || addr.town || addr.village || addr.county || "";
+                                    
+                                    // Combine them neatly (e.g., "M.G. Road, Kochi")
+                                    let formattedLocation = [localArea, cityArea]
+                                        .filter(Boolean) // Remove empty strings
+                                        .filter((value, index, self) => self.indexOf(value) === index) // Prevent duplicates
+                                        .join(', ');
+
+                                    // Fallback just in case the specific address tags are missing
+                                    if (!formattedLocation && data.display_name) {
+                                        formattedLocation = data.display_name.split(',').slice(0, 2).join(', ').trim();
+                                    }
+
+                                    statusSpan.innerText = formattedLocation || `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`;
+                                    statusSpan.classList.remove('text-blue-500'); 
+                                } else {
+                                    statusSpan.innerText = `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`;
+                                    statusSpan.classList.remove('text-blue-500');
+                                }
+                            })
+                            .catch(() => {
+                                statusSpan.innerText = `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`;
+                                statusSpan.classList.remove('text-blue-500');
+                            });
+                    } else {
+                        statusSpan.innerText = "Location Unknown";
+                        statusSpan.classList.remove('text-blue-500');
+                        statusSpan.classList.add('text-red-500');
+                    }
+                }
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
             const isLoggedIn = {{ status|lower|default:"false" }};
             const authContainer = document.getElementById('auth-container');
 
             if (isLoggedIn) {
                 authContainer.innerHTML = `
-                  <div class="flex items-center gap-2 sm:gap-4">
+                  <div class="flex items-center gap-2 sm:gap-4 pointer-events-auto">
                     <span id="username-display" class="hidden sm:block font-extrabold text-[12px] sm:text-[14px] lg:text-[16px] tracking-wide text-white truncate max-w-[120px] lg:max-w-none">
                        {{ firstname }}
                     </span>
                     <button id="user-menu-button" data-dropdown-toggle="user-dropdown" class="flex text-sm rounded-full focus:ring-4 focus:ring-gray-300">
                         <div class="w-8 h-8 lg:w-12 lg:h-12 rounded-full border-2 border-[#191265] shadow-md bg-white flex items-center justify-center text-[#191265] overflow-hidden hover:bg-gray-50 transition-colors">
-                            <svg class="w-5 h-5 lg:w-8 lg:h-8" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 lg:w-8 lg:h-8" xmlns="http://www.w3.org/2000/svg" fill="#5c5b5b" viewBox="0 0 24 24">
                                 <path fill-rule="evenodd" d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z" clip-rule="evenodd" />
                             </svg>
                         </div>
@@ -222,9 +279,9 @@
                 </div>`;
             } else {
                 authContainer.innerHTML = `
-                    <a id="login-btn" href="{% url 'login' %}" class="font-extrabold text-[12px] sm:text-[14px] lg:text-[16px] text-white hover:opacity-75 transition-colors duration-300 pr-2 sm:pr-4">Login</a>
+                    <a id="login-btn" href="{% url 'login' %}" class="font-extrabold text-[12px] sm:text-[14px] lg:text-[16px] text-white hover:opacity-75 transition-colors duration-300 pr-2 sm:pr-4 pointer-events-auto">Login</a>
                     <a id="signup-btn" href="{% url 'signup' %}" 
-                    class="px-4 py-2 rounded-xl bg-white text-[#191265] font-black tracking-widest uppercase transition-all duration-300 shadow-lg text-[10px] sm:text-[12px] hover:bg-gray-100 hover:scale-105">
+                    class="px-4 py-2 rounded-xl bg-white text-[#191265] font-black tracking-widest uppercase transition-all duration-300 shadow-lg text-[10px] sm:text-[12px] hover:bg-gray-100 hover:scale-105 pointer-events-auto">
                     Sign up
                     </a>`;
             }
@@ -248,19 +305,9 @@
         }
 
         const csrftoken = getCookie("csrftoken");
-        const riders = [];
-        
-        {% for rider in riders %}
-            riders.push({
-                lat: {{ rider.pickuplatitude|default:0 }},
-                lng: {{ rider.pickuplongitude|default:0 }},
-                name: "{{ rider.rider.email }}"
-            });
-        {% endfor %}
-
-        const route = {% if riders and riders.0.trip.routegeometry %}{{ riders.0.trip.routegeometry|safe }}{% else %}null{% endif %};
         const rideid = "{{ rideid }}";
-
+        const route = {% if riders and riders.0.trip.routegeometry %}{{ riders.0.trip.routegeometry|safe }}{% else %}null{% endif %};
+        
         let map;
         let driverMarker;
         let latlngs = [];
@@ -272,26 +319,19 @@
         function getClosestIndex(driverLat, driverLng, points) {
             let minDist = Infinity;
             let closestIndex = 0;
-
             points.forEach((point, index) => {
-                const d = Math.sqrt(
-                    Math.pow(point[0] - driverLat, 2) +
-                    Math.pow(point[1] - driverLng, 2)
-                );
-
+                const d = Math.sqrt(Math.pow(point[0] - driverLat, 2) + Math.pow(point[1] - driverLng, 2));
                 if (d < minDist) {
                     minDist = d;
                     closestIndex = index;
                 }
             });
-
             return closestIndex;
         }
 
         function handleRideEnded() {
             if (hasRideEnded) return;
             hasRideEnded = true;
-            clearInterval(locationSyncInterval);
             alert("Ride Completed!");
             window.location.href = "/";
         }
@@ -306,109 +346,100 @@
                     "Content-Type": "application/json",
                     "X-CSRFToken": csrftoken
                 },
-                body: JSON.stringify({
-                    latitude: lat,
-                    longitude: lng
-                })
+                body: JSON.stringify({ latitude: lat, longitude: lng })
             })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === "COMPLETED") {
-                        handleRideEnded();
-                    }
-                })
-                .catch(err => console.error(err))
-                .finally(() => {
-                    isUpdatingLocation = false;
-                });
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === "COMPLETED") {
+                    handleRideEnded();
+                }
+            })
+            .catch(err => console.error(err))
+            .finally(() => {
+                isUpdatingLocation = false;
+            });
         }
 
         document.addEventListener("DOMContentLoaded", function () {
             if (!route) return;
 
+            // 1. Initialize Map
             latlngs = route.coordinates.map(coord => [coord[1], coord[0]]);
-
-            map = L.map("live-map", {
-                zoomControl: false 
-            }).setView(latlngs[0], 13);
-            
+            map = L.map("live-map", { zoomControl: false }).setView(latlngs[0], 13);
             L.control.zoom({ position: 'bottomright' }).addTo(map);
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
 
-            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-                maxZoom: 19
-            }).addTo(map);
+            // 2. Draw Route
+            polyline = L.polyline(latlngs, { color: "#3b82f6", weight: 6, opacity: 0.8 }).addTo(map);
+            L.marker(latlngs[0]).addTo(map).bindPopup("<b>Start Location</b>");
+            L.marker(latlngs[latlngs.length - 1]).addTo(map).bindPopup("<b>Destination</b>");
 
-            polyline = L.polyline(latlngs, {
-                color: "#3b82f6",
-                weight: 6,
-                opacity: 0.8
-            }).addTo(map);
+            // 3. Place Static Rider Markers
+            const mapRiders = [];
+            {% for rider in riders %}
+                mapRiders.push({
+                    lat: {{ rider.pickuplatitude|default:0 }},
+                    lng: {{ rider.pickuplongitude|default:0 }},
+                    name: "{{ rider.rider.first_name|default:'Student' }}"
+                });
+            {% endfor %}
 
-            L.marker(latlngs[0]).addTo(map).bindPopup("Start");
-            L.marker(latlngs[latlngs.length - 1]).addTo(map).bindPopup("Destination");
-
-            riders.forEach(r => {
-                L.marker([r.lat, r.lng])
-                    .addTo(map)
-                    .bindPopup("Rider: " + r.name);
+            mapRiders.forEach(r => {
+                if (r.lat && r.lng) {
+                    L.marker([r.lat, r.lng]).addTo(map).bindPopup("<b>Pickup:</b> " + r.name);
+                }
             });
 
-            driverMarker = L.marker(latlngs[0], {
-                icon: L.icon({
-                    iconUrl: "https://maps.google.com/mapfiles/kml/shapes/cabs.png",
-                    iconSize: [32, 32]
-                })
-            }).addTo(map).bindPopup("Driver");
+            // 4. Initialize Driver Live Marker
+            const liveDriverIcon = L.divIcon({
+                className: 'bg-transparent',
+                html: `
+                    <div class="relative flex items-center justify-center w-8 h-8">
+                        <div class="absolute w-full h-full bg-blue-500 rounded-full animate-ping opacity-40"></div>
+                        <div class="relative w-4 h-4 bg-blue-600 border-2 border-white rounded-full shadow-md"></div>
+                    </div>
+                `,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
+
+            driverMarker = L.marker(latlngs[0], { icon: liveDriverIcon })
+                .addTo(map)
+                .bindPopup("<b class='text-blue-600'>Live Location</b>");
 
             map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+            setTimeout(() => map.invalidateSize(), 300);
+
+            // 5. ACTIVATE DRIVER LIVE TRACKING
+            if ("geolocation" in navigator) {
+                // Watch position updates the marker and route instantly as the phone moves
+                navigator.geolocation.watchPosition(
+                    position => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        lastKnownPosition = { lat, lng };
+
+                        if (driverMarker) {
+                            driverMarker.setLatLng([lat, lng]);
+                            const closestIndex = getClosestIndex(lat, lng, latlngs);
+                            if (closestIndex > 2) {
+                                latlngs = latlngs.slice(closestIndex - 1);
+                                polyline.setLatLngs(latlngs);
+                            }
+                        }
+                        syncDriverLocation(lat, lng);
+                    },
+                    console.error,
+                    { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 }
+                );
+
+                // Fallback interval to ensure backend stays synced even if watchPosition pauses
+                setInterval(() => {
+                    if (!lastKnownPosition || hasRideEnded) return;
+                    syncDriverLocation(lastKnownPosition.lat, lastKnownPosition.lng);
+                }, 3000);
+            }
         });
-
-        navigator.geolocation.watchPosition(
-            position => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                lastKnownPosition = { lat, lng };
-
-                if (driverMarker) {
-                    driverMarker.setLatLng([lat, lng]);
-
-                    const closestIndex = getClosestIndex(lat, lng, latlngs);
-
-                    if (closestIndex > 2) {
-                        latlngs = latlngs.slice(closestIndex - 1);
-                        polyline.setLatLngs(latlngs);
-                    }
-                }
-
-                syncDriverLocation(lat, lng);
-            },
-            console.error,
-            {
-                enableHighAccuracy: true,
-                maximumAge: 0,
-                timeout: 3000
-            }
-        );
-
-        navigator.geolocation.getCurrentPosition(
-            position => {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-                lastKnownPosition = { lat, lng };
-                syncDriverLocation(lat, lng);
-            },
-            console.error,
-            {
-                enableHighAccuracy: true,
-                maximumAge: 0,
-                timeout: 3000
-            }
-        );
-
-        const locationSyncInterval = setInterval(() => {
-            if (!lastKnownPosition || hasRideEnded) return;
-            syncDriverLocation(lastKnownPosition.lat, lastKnownPosition.lng);
-        }, 1000);
     </script>
 </body>
 </html>

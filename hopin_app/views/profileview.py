@@ -76,10 +76,10 @@ def testprofilefunction(request):
     currentorderid=None
     currentamount=None
 
-    '''completedtrips=trip.objects.filter(usercredentials=user,status="COMPLETED")
+    completedtrips=trip.objects.filter(usercredentials=user,status="COMPLETED")
     counttrips=len(completedtrips)
     droppedrides=riderequest.objects.filter(rider=user,status="DROPPED")
-    countrides=len(droppedrides)'''
+    countrides=len(droppedrides)
 
     pendingpayments=payment.objects.filter(requestdetails__rider=request.user,status="PENDING")
     if pendingpayments.exists():

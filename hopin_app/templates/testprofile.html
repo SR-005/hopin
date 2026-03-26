@@ -3,210 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Hop In</title>
+    
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <title>Profile</title>
-
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #0f172a;
-            color: #f1f5f9;
-            margin: 0;
-            padding: 0;
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #171158; 
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        .font-playfair { font-family: 'Playfair Display', serif; }
+        
+        /* Normal Sized Card Styling */
+        .glass-card {
+            background-color: #1F1574; 
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .form-input {
+            background-color: #171158;
+            border: 1px solid rgba(255,255,255,0.15);
+            color: white;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            width: 100%;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #F87171;
         }
 
-        .container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 20px;
-        }
-
-        .card {
-            background: #1e293b;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-
-        h2 {
-            margin-bottom: 10px;
-            color: #38bdf8;
-        }
-
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: #334155;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-        }
-
-        .info p {
-            margin: 5px 0;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            margin-right: 5px;
-        }
-
-        .driver {
-            background: #22c55e;
-        }
-
-        .rider {
-            background: #3b82f6;
-        }
-
-        .stat {
-            display: flex;
-            justify-content: space-between;
-            margin: 8px 0;
-        }
+        /* Custom Scrollbar for the Ride/Trip Lists */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.05); border-radius: 10px; margin-block: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.25); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.4); }
     </style>
 </head>
-<body>
+<body class="pb-16">
 
-<div class="container">
+    <div class="bg-white w-full h-[180px] rounded-b-3xl relative shadow-md">
+        <div class="absolute -bottom-[40px] left-6 sm:left-20 w-[100px] h-[100px] bg-white rounded-full flex items-center justify-center border-[6px] border-[#171158] shadow-lg">
+            <svg class="w-14 h-14 text-[#171158]" fill="#5c5b5b" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
+        </div>
+    </div>
 
-    <!-- PROFILE HEADER -->
-    <div class="card">
-        <div class="profile-header">
-            <div class="avatar">
-                {{ request.user.username|slice:":1"|upper }}
+    <div class="max-w-4xl w-full px-6 sm:px-20 mt-16 flex flex-col items-start gap-1">
+        <h1 class="text-3xl sm:text-4xl font-playfair font-black tracking-wide capitalize text-white drop-shadow-md">
+            {% if request.user.first_name %}
+                {{ request.user.first_name }} {{ request.user.last_name }}
+            {% else %}
+                {{ request.user.username }}
+            {% endif %}
+        </h1>
+        
+        <div class="flex items-center gap-1.5 bg-[#185d2c] text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-md w-max uppercase tracking-widest shadow-sm mt-1">
+            verified user
+            <svg class="w-4 h-4 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="m8.032 12 1.984 1.984 4.96-4.96m4.55 5.272.893-.893a1.984 1.984 0 0 0 0-2.806l-.893-.893a1.984 1.984 0 0 1-.581-1.403V7.04a1.984 1.984 0 0 0-1.984-1.984h-1.262a1.983 1.983 0 0 1-1.403-.581l-.893-.893a1.984 1.984 0 0 0-2.806 0l-.893.893a1.984 1.984 0 0 1-1.403.581H7.04A1.984 1.984 0 0 0 5.055 7.04v1.262c0 .527-.209 1.031-.581 1.403l-.893.893a1.984 1.984 0 0 0 0 2.806l.893.893c.372.372.581.876.581 1.403v1.262a1.984 1.984 0 0 0 1.984 1.984h1.262c.527 0 1.031.209 1.403.581l.893.893a1.984 1.984 0 0 0 2.806 0l.893-.893a1.985 1.985 0 0 1 1.403-.581h1.262a1.984 1.984 0 0 0 1.984-1.984V15.7c0-.527.209-1.031.581-1.403Z"/>
+            </svg>
+        </div>
+    </div>
+
+    <div class="max-w-7xl w-full px-6 sm:px-20 mt-8 flex flex-col gap-6">
+
+        <div class="glass-card flex flex-col">
+            <h2 class="text-xl sm:text-2xl font-playfair font-black mb-5 tracking-wide border-b border-white/10 pb-3">Personal Details</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-6">
+                <div>
+                    <p class="text-xs font-extrabold mb-1 text-gray-400 uppercase tracking-widest">Name:</p>
+                    <p class="text-sm sm:text-2xl font-bold text-white capitalize">
+                        {% if request.user.first_name %}
+                            {{ request.user.first_name }} {{ request.user.last_name }}
+                        {% else %}
+                            {{ request.user.username }}
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <p class="text-xs font-extrabold mb-1 text-gray-400 uppercase tracking-widest">Email:</p>
+                    <p class="text-sm sm:text-2xl font-bold text-white break-all">{{ request.user.email }}</p>
+                </div>
+                <div class="col-span-1 sm:col-span-2 mt-2">
+                    <p class="text-xs font-extrabold mb-1.5 text-gray-400 uppercase tracking-widest">Phone Number:</p>
+                    <p class="text-xl sm:text-2xl font-black text-white tracking-wide">{{ request.user.userdetails.phonenumber|default:"Not Provided" }}</p>
+                </div>
             </div>
-
-            <div class="info">
-                <h2>{{ request.user.username }}</h2>
-                <p>{{ request.user.email }}</p>
-
-                <span class="badge driver">Driver</span>
-                <span class="badge rider">Rider</span>
+            
+            <div class="flex justify-end mt-5 pt-4 border-t border-white/5">
+                <a href="#" class="text-[#FCA5A5] text-xs sm:text-sm font-black hover:underline tracking-wide">Change Number</a>
             </div>
         </div>
-    </div>
 
-    <!-- DRIVER SECTION -->
-    <div class="card">
-        <h2>🚗 Driver Details</h2>
+        <div class="glass-card">
+            <h2 class="text-xl sm:text-2xl font-playfair font-black mb-5 tracking-wide border-b border-white/10 pb-3">Pending Payment</h2>
+            
+            {% if pendingpayments %}
+                <div class="bg-[#171158] p-5 sm:p-6 rounded-2xl border border-red-500/30 shadow-md">
+                    <p class="text-sm sm:text-base font-bold text-red-200 mb-4 leading-relaxed">{{ pendingpayments }}</p>
+                    
+                    <form method="POST" action="{% url 'profile' %}" class="flex flex-col gap-4">
+                        {% csrf_token %}
+                        <div>
+                            <label class="text-xs sm:text-sm font-extrabold tracking-widest uppercase text-gray-300 mb-2 block">Rate the Ride (1-5)</label>
+                            <input type="number" name="rating" min="1" max="5" required class="form-input max-w-[100px] text-center">
+                        </div>
 
-        <div class="stat">
-            <span>Total Rides Given</span>
-            <span>{{ counttrips|default:"0" }}</span>
+                        <input type="hidden" name="requestid" value="{{ pendingpayments.requestdetails.id }}">
+                        <input type="hidden" name="paymentid" value="{{ pendingpayments.id }}">
+
+                        <button type="submit" name="action" value="paypending" class="bg-[#FCA5A5] hover:bg-[#ef4444] text-[#171158] font-black text-xs sm:text-sm uppercase tracking-widest py-3 px-6 rounded-xl transition-all w-max shadow-md mt-2">
+                            Pay Now
+                        </button>
+                    </form>
+                </div>
+            {% else %}
+                <div class="h-[100px] flex items-center justify-center bg-[#171158]/50 rounded-2xl border border-white/5">
+                    <p class="text-gray-400 text-sm font-bold italic tracking-wide">No pending payments.</p>
+                </div>
+            {% endif %}
         </div>
 
-        <div class="stat">
-            <span>Reliability Score</span>
-            <span>{{ counttrips|default:"0.0" }}</span>
+        <div class="glass-card">
+            <h2 class="text-xl sm:text-2xl font-playfair font-black mb-5 tracking-wide border-b border-white/10 pb-3">User as Rider</h2>
+            
+            <div class="flex justify-between items-center pb-5 border-b border-white/5">
+                <span class="text-sm sm:text-base font-extrabold text-gray-300">Total Rides Taken</span>
+                <span class="text-3xl sm:text-4xl font-black text-blue-400">{{ countrides|default:"0" }}</span>
+            </div>
+            
+            <div class="mt-6">
+                <h3 class="text-xs sm:text-sm font-extrabold tracking-widest uppercase text-gray-400 mb-4">Previous Ride Details</h3>
+                
+                <div class="flex flex-col gap-4 max-h-[140px] sm:max-h-[160px] overflow-y-auto custom-scrollbar pr-3 snap-y snap-mandatory">
+                    {% for ride in droppedrides %}
+                        <div class="shrink-0 snap-start bg-[#171158] p-4 sm:p-5 rounded-xl border border-white/5 flex flex-col gap-2.5 shadow-sm hover:border-white/10 transition-colors h-max">
+                            <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                                <span class="text-sm sm:text-base font-bold text-gray-300">{{ ride.ridedate|date:"M d, Y"|default:"Recent Ride" }}</span>
+                                <span class="text-xs sm:text-sm font-black text-blue-400 uppercase tracking-widest">{{ ride.status|default:"Completed" }}</span>
+                            </div>
+                            <div class="flex flex-col gap-1 pt-1">
+                                <span class="text-[10px] sm:text-xs font-extrabold text-gray-500 uppercase tracking-widest">Route / Details</span>
+                                <span class="text-base sm:text-lg font-bold text-white">{{ ride.pickuplocation|default:ride }}</span>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="shrink-0 snap-start bg-[#171158]/50 p-6 rounded-xl border border-white/5 text-center">
+                            <p class="text-sm text-gray-400 italic font-bold">No previous rides found.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
 
-        <h3>Previous Trip Details</h3>
-        {% for trips in completedtrips %}
-            <p>{{ trips }}</p>
-        {% endfor %}
-    </div>
-
-    <!-- RIDER SECTION -->
-    <div class="card">
-        <h2>🧍 Rider Details</h2>
-
-        <div class="stat">
-            <span>Total Rides Taken</span>
-            <span>{{ countrides|default:"None" }}</span>
+        <div class="glass-card">
+            <h2 class="text-xl sm:text-2xl font-playfair font-black mb-5 tracking-wide border-b border-white/10 pb-3">User as Driver</h2>
+            
+            <div class="flex justify-between items-center pb-4 border-b border-white/5">
+                <span class="text-sm sm:text-base font-extrabold text-gray-300">Total Rides Given</span>
+                <span class="text-3xl sm:text-4xl font-black text-green-400">{{ counttrips|default:"0" }}</span>
+            </div>
+            <div class="flex justify-between items-center py-4 border-b border-white/5">
+                <span class="text-sm sm:text-base font-extrabold text-gray-300">Reliability Score</span>
+                <span class="text-3xl sm:text-4xl font-black text-yellow-400">{{ counttrips|default:"0.0" }}</span>
+            </div>
+            
+            <div class="mt-6">
+                <h3 class="text-xs sm:text-sm font-extrabold tracking-widest uppercase text-gray-400 mb-4">Previous Trip Details</h3>
+                
+                <div class="flex flex-col gap-4 max-h-[140px] sm:max-h-[160px] overflow-y-auto custom-scrollbar pr-3 snap-y snap-mandatory">
+                    {% for trip in completedtrips %}
+                        <div class="shrink-0 snap-start bg-[#171158] p-4 sm:p-5 rounded-xl border border-white/5 flex flex-col gap-2.5 shadow-sm hover:border-white/10 transition-colors h-max">
+                            <div class="flex justify-between items-center border-b border-white/5 pb-2">
+                                <span class="text-sm sm:text-base font-bold text-gray-300">{{ trip.ridedate|date:"M d, Y"|default:"Recent Trip" }}</span>
+                                <span class="text-xs sm:text-sm font-black text-green-400 uppercase tracking-widest">{{ trip.status|default:"Completed" }}</span>
+                            </div>
+                            <div class="flex flex-col gap-1 pt-1">
+                                <span class="text-[10px] sm:text-xs font-extrabold text-gray-500 uppercase tracking-widest">Route / Details</span>
+                                <span class="text-base sm:text-lg font-bold text-white">{{ trip.preferedlocation|default:trip }}</span>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="shrink-0 snap-start bg-[#171158]/50 p-6 rounded-xl border border-white/5 text-center">
+                            <p class="text-sm text-gray-400 italic font-bold">No previous trips found.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
 
-        <h3>Previous Ride Details</h3>
-        {% for rides in droppedrides %}
-            <p>{{ rides }}</p>
-        {% endfor %}
     </div>
 
-</div>
+    {% if pendingpayments and orderid %}
+    <script>
+        var options = {
+            "key": "{{ RAZORID }}",
+            "amount": "{{ amount }}",
+            "currency": "INR",
+            "name": "Hop In",
+            "description": "Ride Payment",
+            "order_id": "{{ orderid }}",
 
+            "handler": function (response) {
+                fetch("/verifypayment/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": "{{ csrf_token }}"
+                    },
+                    body: JSON.stringify(response)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        alert("✅ Payment Successful");
+                        window.location.replace('/');
+                    } else {
+                        alert("❌ Payment Failed");
+                    }
+                });
+            },
 
-<div class="container">
+            "theme": {
+                "color": "#1F1574"
+            }
+        };
 
-    {% if pendingpayments %}
-    <div class="card">
-        <h2>💰 Pending Payment</h2>
-
-        <p><strong>{{ pendingpayments }}</strong></p>
-
-
-        <br>
-
-        <!-- PAY FORM -->
-        <form method="POST" action="{% url 'profile' %}">
-            {% csrf_token %}
-            <label>Rate the Ride:</label><br>
-            <input type="number" name="rating" min="1" max="5" required>
-
-            <input type="hidden" name="requestid" value="{{ pendingpayments.requestdetails.id }}">
-            <input type="hidden" name="paymentid" value="{{ pendingpayments.id }}">
-
-                <button type="submit" name="action" value="paypending">
-                    Pay Now
-                </button>
-        </form>
-    </div>
+        var rzp = new Razorpay(options);
+        rzp.open();
+    </script>
     {% endif %}
-
-</div>
-
-
-<!-- ================= RAZORPAY SCRIPT ================= -->
-{% if pendingpayments and orderid %}
-<script>
-    var options = {
-        "key": "{{ RAZORID }}",
-        "amount": "{{ amount }}",
-        "currency": "INR",
-        "name": "Hop In",
-        "description": "Ride Payment",
-        "order_id": "{{ orderid }}",
-
-        "handler": function (response) {
-            fetch("/verifypayment/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": "{{ csrf_token }}"
-                },
-                body: JSON.stringify(response)
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === "success") {
-                    alert("✅ Payment Successful");
-                    window.location.replace('/');
-                } else {
-                    alert("❌ Payment Failed");
-                }
-            });
-        },
-
-        "theme": {
-            "color": "#38bdf8"
-        }
-    };
-
-    var rzp = new Razorpay(options);
-    rzp.open();
-</script>
-{% endif %}
-
 
 </body>
 </html>
