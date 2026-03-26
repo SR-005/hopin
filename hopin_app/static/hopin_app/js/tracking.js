@@ -66,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const statusInterval = setInterval(checkPickup, 2000);
 
     /* --- 3. Map Initialization --- */
-    const map = L.map("map").setView([10.0469, 76.3467], 15);
+    const map = L.map("map").setView([10.050272, 76.329273], 15);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "&copy; OpenStreetMap contributors"
     }).addTo(map);
@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", function () {
     setTimeout(() => { map.invalidateSize(); }, 500);
 
     /* --- 4. Tracking & ETA Logic --- */
-    const driverMarker = L.marker([10.0469, 76.3467]).addTo(map).bindPopup("Driver");
+    const driverMarker = L.marker([10.050272, 76.329273]).addTo(map).bindPopup("Driver");
     const riderMarker = L.marker([rLat, rLng]).addTo(map).bindPopup("You are here");
 
     let routeCoords = [];

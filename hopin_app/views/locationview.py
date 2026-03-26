@@ -22,11 +22,24 @@ def rideend(currentride):
     if not currentride.has_boarded:
         return
 
-    if not tripdestinationreached(
+    reached_trip_destination = tripdestinationreached(
         currentride,
         currentride.currentlatitude,
         currentride.currentlongitude
-    ):
+    )
+    active_rides = riderequest.objects.filter(
+        trip=currentride,
+        status__in=["ACCEPTED", "HALFCONFIRM", "FULLCONFIRM"]
+    )
+
+    # "From" rides can finish as soon as every active rider has been resolved,
+    # even if the driver has not reached the original route endpoint yet.
+    if currentride.prefereddirection == "from":
+        should_complete = reached_trip_destination or not active_rides.exists()
+    else:
+        should_complete = reached_trip_destination
+
+    if not should_complete:
         return
     
     pendingrides=riderequest.objects.filter(trip=currentride,status="FULLCONFIRM")

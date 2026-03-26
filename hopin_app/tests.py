@@ -12,8 +12,8 @@ User=get_user_model()
 
 
 class RideTrackingFlowTests(TestCase):
-    college_latitude=10.0469
-    college_longitude=76.3467
+    college_latitude=10.050272
+    college_longitude=76.329273
 
     def setUp(self):
         self.driver=User.objects.create_user(
@@ -25,7 +25,7 @@ class RideTrackingFlowTests(TestCase):
             password="password123"
         )
 
-    def create_trip(self, currentlatitude, currentlongitude, has_boarded=True):
+    def create_trip(self, currentlatitude, currentlongitude, has_boarded=True, prefereddirection="to"):
         return trip.objects.create(
             usercredentials=self.driver,
             preferedlocation="Town",
@@ -40,7 +40,7 @@ class RideTrackingFlowTests(TestCase):
                     [self.college_longitude, self.college_latitude],
                 ],
             },
-            prefereddirection="to",
+            prefereddirection=prefereddirection,
             ridedate=date.today(),
             ridetime=time(7, 45),
             currentlatitude=currentlatitude,
@@ -144,5 +144,41 @@ class RideTrackingFlowTests(TestCase):
 
         self.assertEqual(current_trip.status, "COMPLETED")
         self.assertEqual(request_record.status, "DROPPEDNOTCONFIRMED")
+        self.assertIsNotNone(created_payment)
+        self.assertEqual(created_payment.amount, request_record.price)
+
+    def test_from_ride_completes_after_last_fullconfirm_rider_is_dropped(self):
+        current_trip=self.create_trip(
+            currentlatitude=10.0300,
+            currentlongitude=76.3200,
+            prefereddirection="from",
+        )
+        request_record=riderequest.objects.create(
+            trip=current_trip,
+            rider=self.rider,
+            pickuplocation="Town Stop",
+            pickuplatitude=10.0497725,
+            pickuplongitude=76.3297076,
+            price=25.0,
+            status="FULLCONFIRM",
+        )
+
+        current_trip.currentlatitude=request_record.pickuplatitude
+        current_trip.currentlongitude=request_record.pickuplongitude
+        current_trip.save()
+
+        riderdropped(
+            current_trip.currentlatitude,
+            current_trip.currentlongitude,
+            riderequest.objects.filter(id=request_record.id),
+        )
+        rideend(current_trip)
+
+        current_trip.refresh_from_db()
+        request_record.refresh_from_db()
+        created_payment=payment.objects.filter(requestdetails=request_record).first()
+
+        self.assertEqual(request_record.status, "DROPPED")
+        self.assertEqual(current_trip.status, "COMPLETED")
         self.assertIsNotNone(created_payment)
         self.assertEqual(created_payment.amount, request_record.price)

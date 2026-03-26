@@ -2,8 +2,8 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     const ridesCount = window.DJANGO_VARS.ridesCount;
-    const collegeLat = 10.0469;
-    const collegeLng = 76.3467;
+    const collegeLat = 10.050272;
+    const collegeLng = 76.329273;
     const collegeName = "AISAT Engineering College";
     const maxLocationLength = 100;
 
