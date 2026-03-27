@@ -136,7 +136,7 @@
                             <span class="block text-sm text-[#191265] truncate">{{ request.user.email }}</span>
                         </div>
                         <ul class="py-2 text-sm text-gray-700">
-                            <li><a href="#" class="block px-4 py-2 hover:bg-gray-200">Profile</a></li>
+                            <li><a href="{% url 'profile' %}" class="block px-4 py-2 hover:bg-gray-200">Profile</a></li>
                             <li><a href="{% url 'logout' %}" class="block px-4 py-2 hover:bg-red-100 text-red-600">Logout</a></li>
                         </ul>
                     </div>

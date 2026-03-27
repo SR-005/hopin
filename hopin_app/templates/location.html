@@ -75,7 +75,28 @@
         </ul>
 
         <div class="flex justify-end items-center gap-2 sm:gap-4 lg:gap-6 w-auto lg:w-1/4 ml-auto pointer-events-auto" id="auth-container">
+            <div class="flex items-center gap-2 sm:gap-4 pointer-events-auto">
+                <span id="username-display" class="hidden sm:block font-extrabold text-[12px] sm:text-[14px] lg:text-[16px] tracking-wide text-white truncate max-w-[120px] lg:max-w-none">
+                    {{ firstname }}
+                </span>
+                <button id="user-menu-button" data-dropdown-toggle="user-dropdown" class="flex text-sm rounded-full focus:ring-4 focus:ring-gray-300">
+                    <div class="w-8 h-8 lg:w-12 lg:h-12 rounded-full border-2 border-[#191265] shadow-md bg-white flex items-center justify-center text-[#191265] overflow-hidden hover:bg-gray-50 transition-colors">
+                        <svg class="w-5 h-5 lg:w-8 lg:h-8" xmlns="http://www.w3.org/2000/svg" fill="#5c5b5b" viewBox="0 0 24 24">
+                            <path fill-rule="evenodd" d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                </button>
+                <div id="user-dropdown" class="hidden z-50 my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow-xl w-44">
+                    <div class="px-4 py-3">
+                        <span class="block font-bold text-[#191265]">{{ user.email }}</span>
+                    </div>
+                    <ul class="py-2 text-sm text-gray-700 font-bold">
+                        <li><a href="{% url 'profile' %}" class="block px-4 py-2 hover:bg-gray-100">Profile</a></li>
+                        <li><a href="{% url 'logout' %}" class="block px-4 py-2 hover:bg-red-50 text-red-600">Logout</a></li>
+                    </ul>
+                </div>
             </div>
+        </div>
     </nav>
 
     <div class="relative z-10 w-full max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-10 pt-20 lg:pt-24 pb-6 flex-1 flex flex-col overflow-y-auto lg:overflow-hidden">
@@ -246,45 +267,6 @@
                     }
                 }
             });
-        });
-    </script>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const isLoggedIn = {{ status|lower|default:"false" }};
-            const authContainer = document.getElementById('auth-container');
-
-            if (isLoggedIn) {
-                authContainer.innerHTML = `
-                  <div class="flex items-center gap-2 sm:gap-4 pointer-events-auto">
-                    <span id="username-display" class="hidden sm:block font-extrabold text-[12px] sm:text-[14px] lg:text-[16px] tracking-wide text-white truncate max-w-[120px] lg:max-w-none">
-                       {{ firstname }}
-                    </span>
-                    <button id="user-menu-button" data-dropdown-toggle="user-dropdown" class="flex text-sm rounded-full focus:ring-4 focus:ring-gray-300">
-                        <div class="w-8 h-8 lg:w-12 lg:h-12 rounded-full border-2 border-[#191265] shadow-md bg-white flex items-center justify-center text-[#191265] overflow-hidden hover:bg-gray-50 transition-colors">
-                            <svg class="w-5 h-5 lg:w-8 lg:h-8" xmlns="http://www.w3.org/2000/svg" fill="#5c5b5b" viewBox="0 0 24 24">
-                                <path fill-rule="evenodd" d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                    </button>
-                    <div id="user-dropdown" class="hidden z-50 my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow-xl w-44">
-                        <div class="px-4 py-3">
-                            <span class="block font-bold text-[#191265]">{{ user.email }}</span>
-                        </div>
-                        <ul class="py-2 text-sm text-gray-700 font-bold">
-                            <li><a href="#" class="block px-4 py-2 hover:bg-gray-100">Profile</a></li>
-                            <li><a href="{% url 'logout' %}" class="block px-4 py-2 hover:bg-red-50 text-red-600">Logout</a></li>
-                        </ul>
-                    </div>
-                </div>`;
-            } else {
-                authContainer.innerHTML = `
-                    <a id="login-btn" href="{% url 'login' %}" class="font-extrabold text-[12px] sm:text-[14px] lg:text-[16px] text-white hover:opacity-75 transition-colors duration-300 pr-2 sm:pr-4 pointer-events-auto">Login</a>
-                    <a id="signup-btn" href="{% url 'signup' %}" 
-                    class="px-4 py-2 rounded-xl bg-white text-[#191265] font-black tracking-widest uppercase transition-all duration-300 shadow-lg text-[10px] sm:text-[12px] hover:bg-gray-100 hover:scale-105 pointer-events-auto">
-                    Sign up
-                    </a>`;
-            }
         });
     </script>
 
