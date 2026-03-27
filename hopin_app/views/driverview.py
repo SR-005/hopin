@@ -110,9 +110,11 @@ def tripdetails(request):
             helmetavailable=request.POST.get("helmet")
             newtrip.helmet=helmetavailable
 
+            vehicle=request.POST.get("vehicletype")
+
             latitude=float(request.POST.get("latitude"))
             longitude=float(request.POST.get("longitude"))
-            distance,amount=tripprice(routegeometry)
+            distance,amount=tripprice(routegeometry,vehicle)
 
             newtrip.distance=distance
             newtrip.price=amount
