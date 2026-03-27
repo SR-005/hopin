@@ -267,7 +267,7 @@
     {% endif %}   
 
     <section id="active-trip-section" class="min-h-screen bg-[#191265] py-16 px-6 md:px-16 flex flex-col items-center">
-        <h2 class="text-white text-3xl md:text-5xl font-black uppercase tracking-tighter mb-12 w-full max-w-6xl font-bricolage">Active Ride Management</h2>
+        <h2 class="text-white text-4xl md:text-5xl font-['Black_Mango'] mb-12 w-full max-w-6xl text-center md:text-left">Active Ride Management</h2>
 
         <div class="w-full max-w-6xl flex flex-col gap-8">
             
@@ -279,7 +279,7 @@
                             <div class="w-8 h-8 rounded-full bg-[#191265] text-white flex items-center justify-center font-bold text-sm shadow-sm">
                                 {{ request.user.email|make_list|first|upper }}
                             </div>
-                            <h4 class="font-extrabold text-sm sm:text-base font-bricolage tracking-wide">{{ request.user.email }}</h4>
+                            <h4 class="font-bold text-sm sm:text-base tracking-wide">{{ request.user.email }}</h4>
                         </div>
                         
                         <div class="bg-gray-50 text-[#191265] flex items-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-black tracking-widest uppercase border border-gray-200 shadow-sm whitespace-nowrap">
@@ -406,33 +406,12 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
-        // Fetching Accepted Requests
-        const acceptedRequestsData = [
-            {% for req in accepted %}
-                {
-                    lat: {{ req.pickuplatitude|default:"0" }},
-                    lng: {{ req.pickuplongitude|default:"0" }},
-                    firstName: "{{ req.rider.first_name|default:req.rider.username|default:'Rider'|escapejs }}",
-                },
-            {% endfor %}
-        ];
-
-        // FIX: The incoming requests use the 'requests' variable!
-        const pendingRequestsData = [
-            {% for req in requests %}
-                {
-                    lat: {{ req.pickuplatitude|default:"0" }},
-                    lng: {{ req.pickuplongitude|default:"0" }},
-                    firstName: "{{ req.rider.first_name|default:req.rider.username|default:'Rider'|escapejs }}",
-                },
-            {% endfor %}
-        ];
-
         const activeRouteGeoJSON = {% if lasttrip_routegeometry_json %}{{ lasttrip_routegeometry_json|safe }}{% else %}null{% endif %};
 
         let dynamicMapInstance = null;
         let markersLayer = null;
 
+        // BULLETPROOF SCRIPT: Instantly reads the map pins directly from the HTML cards so they NEVER desync!
         function openMapModal(type) {
             const modal = document.getElementById('dynamic-map-modal');
             const modalContent = document.getElementById('modal-content');
@@ -463,6 +442,7 @@
             let bounds = L.latLngBounds();
             let hasValidData = false;
 
+            // Plot Main Route
             if (activeRouteGeoJSON) {
                 const routeLayer = L.geoJSON(activeRouteGeoJSON, {
                     style: { color: '#3b82f6', weight: 6, opacity: 0.9 }
@@ -474,30 +454,42 @@
                 if(coords && coords.length > 0) {
                     const startC = coords[0];
                     const endC = coords[coords.length - 1];
-                    L.marker([startC[1], startC[0]]).bindPopup("<b class='text-[#191265]'>Start</b>").addTo(markersLayer);
-                    L.marker([endC[1], endC[0]]).bindPopup("<b class='text-[#191265]'>Destination</b>").addTo(markersLayer);
+                    L.marker([startC[1], startC[0]]).bindPopup("<b class='text-[#191265] uppercase tracking-wider text-center block'>Start</b>").addTo(markersLayer);
+                    L.marker([endC[1], endC[0]]).bindPopup("<b class='text-[#191265] uppercase tracking-wider text-center block'>Destination</b>").addTo(markersLayer);
                 }
                 hasValidData = true;
             }
 
-            // Decide which array of requests to plot
-            const dataToLoop = (type === 'accepted') ? acceptedRequestsData : pendingRequestsData;
+            // Dynamically Extract Passenger Data straight from the active cards!
+            const containerId = type === 'accepted' ? 'confirmed-passengers-container' : 'incoming-requests-container';
+            const container = document.getElementById(containerId);
             
-            dataToLoop.forEach(req => {
-                if (req.lat !== 0 && req.lng !== 0) {
-                    const popupContent = `
-                        <div class="text-center p-1">
-                            <p class="font-black text-[#191265] mb-1 uppercase tracking-wider">${req.firstName}</p>
-                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">${type === 'accepted' ? 'Pickup' : 'Requested Pickup'}</p>
-                        </div>
-                    `;
-                    // Using standard Leaflet blue marker for everything!
-                    const marker = L.marker([req.lat, req.lng]).bindPopup(popupContent);
-                    markersLayer.addLayer(marker);
-                    bounds.extend([req.lat, req.lng]);
-                    hasValidData = true;
-                }
-            });
+            if (container) {
+                const cards = container.querySelectorAll('.bg-white.rounded-\\[1\\.5rem\\]');
+                cards.forEach(card => {
+                    const locSpan = card.querySelector('.dynamic-pickup-loc');
+                    const nameTag = card.querySelector('.font-extrabold.text-lg');
+                    
+                    if (locSpan && nameTag) {
+                        const lat = parseFloat(locSpan.getAttribute('data-lat'));
+                        const lng = parseFloat(locSpan.getAttribute('data-lng'));
+                        const firstName = nameTag.innerText.trim();
+                        
+                        if (lat && lng && lat !== 0) {
+                            const popupContent = `
+                                <div class="text-center p-1">
+                                    <p class="font-black text-[#191265] mb-1 uppercase tracking-wider">${firstName}</p>
+                                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">${type === 'accepted' ? 'Pickup' : 'Requested Pickup'}</p>
+                                </div>
+                            `;
+                            const marker = L.marker([lat, lng]).bindPopup(popupContent);
+                            markersLayer.addLayer(marker);
+                            bounds.extend([lat, lng]);
+                            hasValidData = true;
+                        }
+                    }
+                });
+            }
 
             setTimeout(() => {
                 dynamicMapInstance.invalidateSize();
@@ -591,8 +583,6 @@
                 const collegeLat = 10.050272; 
                 const collegeLng = 76.329273;
                 const collegeName = "AISAT Engineering College";
-                const maxLocationLength = 100;
-                const nominatimLanguage = 'en';
                 
                 const map = L.map('map').setView([collegeLat, collegeLng], 12);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -609,34 +599,6 @@
                 
                 let userMarker;
                 let routeLine;
-
-                function trimLocationLabel(label) {
-                    if (!label) return '';
-                    return label.replace(/\s+/g, ' ').trim().slice(0, maxLocationLength);
-                }
-
-                function buildShortLocationLabel(place) {
-                    const address = place?.address || {};
-                    const nameParts = [
-                        place?.name,
-                        address.road,
-                        address.neighbourhood,
-                        address.suburb,
-                        address.hamlet,
-                        address.quarter,
-                        address.village,
-                        address.town,
-                        address.city
-                    ].filter(Boolean);
-
-                    const primaryName = nameParts[0] || '';
-                    const locality = address.city || address.town || address.village || address.suburb || address.state_district || address.state || '';
-                    const shortLabel = locality && primaryName && locality !== primaryName
-                        ? `${primaryName}, ${locality}`
-                        : (primaryName || locality || place?.display_name || '');
-
-                    return trimLocationLabel(shortLabel);
-                }
 
                 async function updateLocationData(lat, lng, addressString = null) {
                     document.getElementById('lat').value = lat;
@@ -680,13 +642,14 @@
                     }
 
                     if (!addressString) {
-                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&accept-language=${nominatimLanguage}&lat=${lat}&lon=${lng}`)
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
                             .then(res => res.json())
                             .then(data => {
-                                locInput.value = buildShortLocationLabel(data);
+                                const parts = data.display_name.split(',');
+                                locInput.value = parts.slice(0, 2).join(', ').trim();
                             });
                     } else {
-                        locInput.value = trimLocationLabel(addressString);
+                        locInput.value = addressString;
                     }
                 }
 
@@ -709,7 +672,7 @@
                     }
 
                     autocompleteTimeout = setTimeout(() => {
-                        fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&accept-language=${nominatimLanguage}&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`)
+                        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`)
                             .then(res => res.json())
                             .then(data => {
                                 autocompleteResults.innerHTML = '';
@@ -719,7 +682,8 @@
                                         const div = document.createElement('div');
                                         div.className = 'autocomplete-item';
                                         
-                                        const shortName = buildShortLocationLabel(item);
+                                        const parts = item.display_name.split(',');
+                                        const shortName = parts.slice(0, 2).join(', ').trim();
                                         div.innerText = shortName;
                                         
                                         div.onclick = function() {
