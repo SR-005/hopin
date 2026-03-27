@@ -591,6 +591,8 @@
                 const collegeLat = 10.050272; 
                 const collegeLng = 76.329273;
                 const collegeName = "AISAT Engineering College";
+                const maxLocationLength = 100;
+                const nominatimLanguage = 'en';
                 
                 const map = L.map('map').setView([collegeLat, collegeLng], 12);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -607,6 +609,34 @@
                 
                 let userMarker;
                 let routeLine;
+
+                function trimLocationLabel(label) {
+                    if (!label) return '';
+                    return label.replace(/\s+/g, ' ').trim().slice(0, maxLocationLength);
+                }
+
+                function buildShortLocationLabel(place) {
+                    const address = place?.address || {};
+                    const nameParts = [
+                        place?.name,
+                        address.road,
+                        address.neighbourhood,
+                        address.suburb,
+                        address.hamlet,
+                        address.quarter,
+                        address.village,
+                        address.town,
+                        address.city
+                    ].filter(Boolean);
+
+                    const primaryName = nameParts[0] || '';
+                    const locality = address.city || address.town || address.village || address.suburb || address.state_district || address.state || '';
+                    const shortLabel = locality && primaryName && locality !== primaryName
+                        ? `${primaryName}, ${locality}`
+                        : (primaryName || locality || place?.display_name || '');
+
+                    return trimLocationLabel(shortLabel);
+                }
 
                 async function updateLocationData(lat, lng, addressString = null) {
                     document.getElementById('lat').value = lat;
@@ -650,14 +680,13 @@
                     }
 
                     if (!addressString) {
-                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&addressdetails=1&accept-language=${nominatimLanguage}&lat=${lat}&lon=${lng}`)
                             .then(res => res.json())
                             .then(data => {
-                                const parts = data.display_name.split(',');
-                                locInput.value = parts.slice(0, 2).join(', ').trim();
+                                locInput.value = buildShortLocationLabel(data);
                             });
                     } else {
-                        locInput.value = addressString;
+                        locInput.value = trimLocationLabel(addressString);
                     }
                 }
 
@@ -680,7 +709,7 @@
                     }
 
                     autocompleteTimeout = setTimeout(() => {
-                        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`)
+                        fetch(`https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&accept-language=${nominatimLanguage}&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`)
                             .then(res => res.json())
                             .then(data => {
                                 autocompleteResults.innerHTML = '';
@@ -690,8 +719,7 @@
                                         const div = document.createElement('div');
                                         div.className = 'autocomplete-item';
                                         
-                                        const parts = item.display_name.split(',');
-                                        const shortName = parts.slice(0, 2).join(', ').trim();
+                                        const shortName = buildShortLocationLabel(item);
                                         div.innerText = shortName;
                                         
                                         div.onclick = function() {

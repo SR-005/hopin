@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const collegeLng = 76.329273;
     const collegeName = "AISAT Engineering College";
     const maxLocationLength = 100;
+    const nominatimLanguage = "en";
 
     let direction = "to"; // Default direction
     let userLat = null;
@@ -85,6 +86,16 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!label) return "";
         const normalized = label.replace(/\s+/g, " ").trim();
         return normalized.slice(0, maxLocationLength);
+    }
+
+    function buildNominatimUrl(endpoint, params) {
+        const searchParams = new URLSearchParams({
+            format: "json",
+            addressdetails: "1",
+            "accept-language": nominatimLanguage,
+            ...params
+        });
+        return `https://nominatim.openstreetmap.org/${endpoint}?${searchParams.toString()}`;
     }
 
     function buildShortLocationLabel(place) {
@@ -202,7 +213,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (lngHidden) lngHidden.value = lng;
         marker.setLatLng([lat, lng]);
 
-        fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+        fetch(buildNominatimUrl("reverse", { lat, lon: lng }))
             .then(res => res.json())
             .then(data => {
                 const placeName = buildShortLocationLabel(data);
@@ -215,7 +226,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /* ---------------- AUTOCOMPLETE (NOMINATIM) ---------------- */
     function searchLocation(query, resultsBox, isPickup) {
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=5`)
+        fetch(buildNominatimUrl("search", { q: query, countrycodes: "in", limit: "5" }))
             .then(res => res.json())
             .then(data => {
                 resultsBox.innerHTML = "";
@@ -636,11 +647,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 }
 
-                riderPollingInitialized = true;
+              riderPollingInitialized = true;
                 riderPollingAcceptedIds = [...acceptedIds];
                 riderPollingPendingIds = [...pendingIds];
 
                 if (data.html) {
+                    // ✅ DOUBLE-CHECK: Did the user open the map WHILE we were waiting for the server?
+                    if (window.isMapViewing === true) {
+                        console.log("Map was opened during network request! Aborting DOM update.");
+                        return; // Stop right here, don't overwrite the HTML!
+                    }
+                    
                     container.innerHTML = data.html;
                 }
             } catch (err) {
@@ -661,9 +678,19 @@ let routeLayer = null;
 let mapMarkers = [];
 
 // ✅ NEW
+// ✅ UPDATED: Added logic to hide the rider image
+// ✅ UPDATED: Removes the blue route line, only shows pins, and fixes pin images
 function showRoutePopup(sLat, sLng, eLat, eLng, rLat = null, rLng = null) {
     window.isMapViewing = true; // LOCK: Stop background polling
     console.log("Map opened! Polling locked.");
+
+    // Hide rider image to prevent overlap
+    const riderImg = document.querySelector("img[src*='rider.png']");
+    if (riderImg) {
+        riderImg.style.opacity = "0";
+        riderImg.style.pointerEvents = "none";
+    }
+    document.body.classList.add('modal-open');
 
     if (!sLat || !sLng || !eLat || !eLng) {
         showToast("Location coordinates are missing for this ride.", "error");
@@ -679,6 +706,16 @@ function showRoutePopup(sLat, sLng, eLat, eLng, rLat = null, rLng = null) {
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap'
         }).addTo(popupMap);
+
+        // Fix for Leaflet default pins not showing
+        if (typeof L !== 'undefined' && L.Icon && L.Icon.Default) {
+            delete L.Icon.Default.prototype._getIconUrl;
+            L.Icon.Default.mergeOptions({
+                iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+                iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+            });
+        }
     }
 
     setTimeout(() => {
@@ -688,46 +725,55 @@ function showRoutePopup(sLat, sLng, eLat, eLng, rLat = null, rLng = null) {
         mapMarkers.forEach(m => popupMap.removeLayer(m));
         mapMarkers = [];
 
-        const url = `https://router.project-osrm.org/route/v1/driving/${sLng},${sLat};${eLng},${eLat}?overview=full&geometries=geojson`;
+        // 1. Add Start Pin
+        const startMarker = L.marker([sLat, sLng]).addTo(popupMap).bindPopup("Start");
+        
+        // 2. Add End Pin
+        const endMarker = L.marker([eLat, eLng]).addTo(popupMap).bindPopup("End");
 
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                if (!data.routes || data.routes.length === 0) return;
+        mapMarkers.push(startMarker, endMarker);
 
-                routeLayer = L.geoJSON(data.routes[0].geometry, {
-                    style: { color: '#191265', weight: 6, opacity: 0.8 }
-                }).addTo(popupMap);
+        // Keep track of coordinates to zoom properly
+        let boundsCoords = [ [sLat, sLng], [eLat, eLng] ];
 
-                const startMarker = L.marker([sLat, sLng]).addTo(popupMap).bindPopup("Start");
+        // 3. Add Rider Location Pin (if available)
+        if (rLat && rLng && rLat !== 'null' && rLng !== 'null') {
+            const rLatFloat = parseFloat(rLat);
+            const rLngFloat = parseFloat(rLng);
+            
+            if (!isNaN(rLatFloat) && !isNaN(rLngFloat)) {
+                const riderIcon = L.icon({
+                    iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
+                    iconSize: [35, 35],
+                    iconAnchor: [17, 35]
+                });
 
-                const endMarker = L.marker([eLat, eLng]).addTo(popupMap).bindPopup("End");
+                const riderMarker = L.marker([rLatFloat, rLngFloat], { icon: riderIcon })
+                    .addTo(popupMap)
+                    .bindPopup("Rider Location");
 
-                mapMarkers.push(startMarker, endMarker);
+                mapMarkers.push(riderMarker);
+                boundsCoords.push([rLatFloat, rLngFloat]);
+            }
+        }
 
-                // ✅ ADD THIS (rider marker only in popup)
-                if (rLat && rLng) {
-                    const riderIcon = L.icon({
-                        iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
-                        iconSize: [35, 35],
-                        iconAnchor: [17, 35]
-                    });
+        // Fit map exactly to where the pins are
+        const bounds = L.latLngBounds(boundsCoords);
+        popupMap.fitBounds(bounds, { padding: [50, 50] });
 
-                    const riderMarker = L.marker([rLat, rLng], { icon: riderIcon })
-                        .addTo(popupMap)
-                        .bindPopup("Rider Location");
-
-                    mapMarkers.push(riderMarker);
-                }
-                popupMap.fitBounds(routeLayer.getBounds(), { padding: [50, 50] });
-            })
-            .catch(err => console.error("OSRM Fetch Error:", err));
     }, 300);
 }
-
+// ✅ UPDATED: Added logic to bring the rider image back
 function closeMapPopup() {
     window.isMapViewing = false; // UNLOCK: Resume background polling!
     console.log("Map closed! Polling resumed.");
+
+    // 👉 FIX: Bring the rider image back when modal closes
+    const riderImg = document.querySelector("img[src*='rider.png']");
+    if (riderImg) {
+        riderImg.style.opacity = "1";
+    }
+    document.body.classList.remove('modal-open'); // Remove backup CSS fix
 
     const modal = document.getElementById('mapModal');
     if (modal) {
@@ -739,7 +785,6 @@ function closeMapPopup() {
         }
     }
 }
-
 document.addEventListener('keydown', function (e) {
     if (e.key === "Escape") {
         closeMapPopup();

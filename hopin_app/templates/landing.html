@@ -16,14 +16,7 @@
 </head>
 
 <body class="min-h-screen overflow-x-hidden relative bg-[#191265]">
-    {# default message display snippet- as web popup #}
-    {% if messages %}
-        {% for message in messages %}
-        <script>
-            alert("{{ message|escapejs }}");
-        </script>
-        {% endfor %}
-    {% endif %}
+    {% include "partials/toast_manager.html" %}
 
     <section id="home" class="relative w-full">
         
@@ -110,6 +103,20 @@
     <script>
         // Merged logic into a single DOMContentLoaded so the buttons are injected BEFORE the scroll watcher checks them!
         document.addEventListener("DOMContentLoaded", () => {
+            const redirectToastStorageKey = "hopin_redirect_toast";
+
+            try {
+                const rawToast = sessionStorage.getItem(redirectToastStorageKey);
+                if (rawToast) {
+                    const toastPayload = JSON.parse(rawToast);
+                    sessionStorage.removeItem(redirectToastStorageKey);
+                    if (toastPayload?.message) {
+                        window.HopinToast.show(toastPayload.message, toastPayload.type || "info");
+                    }
+                }
+            } catch (error) {
+                sessionStorage.removeItem(redirectToastStorageKey);
+            }
 
             // 1. INJECT AUTH BUTTONS/USERNAME FIRST
             const isLoggedIn={{ status|lower }};

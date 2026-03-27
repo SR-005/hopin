@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     /* --- 4. Tracking & ETA Logic --- */
     const driverMarker = L.marker([10.050272, 76.329273]).addTo(map).bindPopup("Driver");
-    const riderMarker = L.marker([rLat, rLng]).addTo(map).bindPopup("Rider Destination");
+    const riderMarker = L.marker([rLat, rLng]).addTo(map).bindPopup("Rider");
 
 
 

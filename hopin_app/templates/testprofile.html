@@ -54,6 +54,7 @@
     </style>
 </head>
 <body class="pb-16">
+    {% include "partials/toast_manager.html" %}
 
     <nav class="w-full flex items-center justify-between px-6 lg:px-12 py-6 absolute top-0 left-0 z-50">
         <div class="flex items-center w-auto lg:w-1/4">
@@ -129,7 +130,7 @@
                     <p class="text-xs font-extrabold mb-1 text-gray-400 uppercase tracking-widest">Name:</p>
                     <p class="text-sm sm:text-2xl font-bold text-white capitalize">
                         {% if request.user.first_name %}
-                            {{ request.user.first_name }} {{ request.user.last_name }}
+                            {{ request.user.first_name }}
                         {% else %}
                             {{ request.user.username }}
                         {% endif %}
@@ -141,52 +142,124 @@
                 </div>
                 <div class="col-span-1 sm:col-span-2 mt-2">
                     <p class="text-xs font-extrabold mb-1.5 text-gray-400 uppercase tracking-widest">Phone Number:</p>
-                    <p class="text-xl sm:text-2xl font-black text-white tracking-wide">{{ request.user.userdetails.phonenumber|default:"Not Provided" }}</p>
+                    <p class="text-xl sm:text-2xl font-black text-white tracking-wide">{{ phonenumber|default:"Not Provided" }}</p>
                 </div>
             </div>
             
             <div class="flex justify-end mt-5 pt-4 border-t border-white/5">
-                <a href="#" class="text-[#FCA5A5] text-xs sm:text-sm font-black hover:underline tracking-wide">Change Number</a>
+                <a href="{% url 'verify' %}" class="text-[#FCA5A5] text-xs sm:text-sm font-black hover:underline tracking-wide">Change Number</a>
             </div>
         </div>
 
         <div class="glass-card">
-            <h2 class="text-xl sm:text-2xl font-playfair font-black mb-5 tracking-wide border-b border-white/10 pb-3">Pending Payment</h2>
-            
-            {% if pendingpayments %}
-                <div class="bg-[#171158] p-5 sm:p-6 rounded-2xl border border-red-500/30 shadow-md">
-                    
-                    <div class="mb-5 flex flex-col gap-1.5 bg-[#1F1574]/50 p-4 rounded-xl border border-white/5">
-                        <p class="text-sm sm:text-base font-bold text-red-200 flex items-center gap-2">
-                            <span class="text-[10px] text-gray-400 uppercase tracking-widest bg-black/20 px-2 py-0.5 rounded">Rider</span> 
-                            {{ pendingpayments.requestdetails.rider.email }}
-                        </p>
-                        <p class="text-sm sm:text-base font-bold text-red-200 flex items-center gap-2">
-                            <span class="text-[10px] text-gray-400 uppercase tracking-widest bg-black/20 px-2 py-0.5 rounded">Driver</span> 
-                            {{ pendingpayments.requestdetails.trip.usercredentials.email }}
-                        </p>
-                    </div>
-                    
-                    <form method="POST" action="{% url 'profile' %}" class="flex flex-col gap-4">
-                        {% csrf_token %}
+            <h2 class="text-xl sm:text-2xl font-playfair font-black mb-5 tracking-wide border-b border-white/10 pb-3">Payments</h2>
+
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <div class="bg-[#171158]/70 p-5 sm:p-6 rounded-2xl border border-rose-400/20 shadow-md">
+                    <div class="flex items-start justify-between gap-4 border-b border-white/10 pb-4 mb-5">
                         <div>
-                            <label class="text-xs sm:text-sm font-extrabold tracking-widest uppercase text-gray-300 mb-2 block">Rate the Ride (1-5)</label>
-                            <input type="number" name="rating" min="1" max="5" required class="form-input max-w-[100px] text-center">
+                            <p class="text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.25em] text-rose-200">As Rider</p>
+                            <h3 class="text-lg sm:text-xl font-playfair font-black text-white mt-1">Pay Drivers</h3>
+                            <p class="text-sm text-gray-400 font-medium mt-1">Complete pending ride payments with the exact driver amount shown below.</p>
                         </div>
+                        <div class="text-right shrink-0">
+                            <p class="text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.25em] text-gray-400">Total Due</p>
+                            <p class="text-2xl sm:text-3xl font-black text-rose-300">Rs. {{ rider_pending_total|floatformat:2 }}</p>
+                        </div>
+                    </div>
 
-                        <input type="hidden" name="requestid" value="{{ pendingpayments.requestdetails.id }}">
-                        <input type="hidden" name="paymentid" value="{{ pendingpayments.id }}">
+                    <div class="flex flex-col gap-4 max-h-[420px] overflow-y-auto custom-scrollbar pr-2">
+                        {% for pendingpayment in rider_pending_payments %}
+                            <div class="bg-[#1F1574]/70 p-4 rounded-2xl border border-white/5">
+                                <div class="flex items-start justify-between gap-4 border-b border-white/5 pb-3">
+                                    <div class="min-w-0">
+                                        <p class="text-[10px] font-extrabold uppercase tracking-widest text-gray-400">Driver</p>
+                                        <p class="text-base sm:text-lg font-black text-white truncate">
+                                            {{ pendingpayment.requestdetails.trip.usercredentials.first_name|default:pendingpayment.requestdetails.trip.usercredentials.email }}
+                                        </p>
+                                        <p class="text-xs sm:text-sm text-gray-400 font-bold mt-1 truncate">
+                                            {{ pendingpayment.requestdetails.trip.ridedate|date:"M d, Y" }} • {{ pendingpayment.requestdetails.pickuplocation|default:"Route not specified" }}
+                                        </p>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        <p class="text-[10px] font-extrabold uppercase tracking-widest text-gray-400">Amount</p>
+                                        <p class="text-xl sm:text-2xl font-black text-rose-300">Rs. {{ pendingpayment.amount|floatformat:2 }}</p>
+                                    </div>
+                                </div>
 
-                        <button type="submit" name="action" value="paypending" class="bg-[#FCA5A5] hover:bg-[#ef4444] text-[#171158] font-black text-xs sm:text-sm uppercase tracking-widest py-3 px-6 rounded-xl transition-all w-max shadow-md mt-2">
-                            Pay Now
-                        </button>
-                    </form>
+                                <form method="POST" action="{% url 'profile' %}" class="mt-4 flex flex-col gap-4">
+                                    {% csrf_token %}
+                                    {% if pendingpayment.requestdetails.rating %}
+                                        <div class="flex items-center justify-between gap-3 bg-[#171158]/70 px-4 py-3 rounded-xl border border-white/5">
+                                            <span class="text-xs sm:text-sm font-extrabold tracking-widest uppercase text-gray-300">Rating Submitted</span>
+                                            <span class="text-lg font-black text-yellow-300">{{ pendingpayment.requestdetails.rating }}/5</span>
+                                        </div>
+                                    {% else %}
+                                        <div>
+                                            <label class="text-xs sm:text-sm font-extrabold tracking-widest uppercase text-gray-300 mb-2 block">Rate the Ride (1-5)</label>
+                                            <input type="number" name="rating" min="1" max="5" required class="form-input max-w-[100px] text-center">
+                                        </div>
+                                    {% endif %}
+
+                                    <input type="hidden" name="requestid" value="{{ pendingpayment.requestdetails.id }}">
+                                    <input type="hidden" name="paymentid" value="{{ pendingpayment.id }}">
+
+                                    <button type="submit" name="action" value="paypending" class="bg-[#FCA5A5] hover:bg-[#ef4444] text-[#171158] font-black text-xs sm:text-sm uppercase tracking-widest py-3 px-6 rounded-xl transition-all w-max shadow-md">
+                                        Pay Rs. {{ pendingpayment.amount|floatformat:2 }}
+                                    </button>
+                                </form>
+                            </div>
+                        {% empty %}
+                            <div class="min-h-[160px] flex items-center justify-center bg-[#171158]/50 rounded-2xl border border-white/5 text-center px-6">
+                                <p class="text-gray-400 text-sm font-bold italic tracking-wide">No pending payments to drivers.</p>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
-            {% else %}
-                <div class="h-[100px] flex items-center justify-center bg-[#171158]/50 rounded-2xl border border-white/5">
-                    <p class="text-gray-400 text-sm font-bold italic tracking-wide">No pending payments.</p>
+
+                <div class="bg-[#171158]/70 p-5 sm:p-6 rounded-2xl border border-emerald-400/20 shadow-md">
+                    <div class="flex items-start justify-between gap-4 border-b border-white/10 pb-4 mb-5">
+                        <div>
+                            <p class="text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.25em] text-emerald-200">As Driver</p>
+                            <h3 class="text-lg sm:text-xl font-playfair font-black text-white mt-1">Money To Receive</h3>
+                            <p class="text-sm text-gray-400 font-medium mt-1">See pending amounts riders still need to pay you for completed trips.</p>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <p class="text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.25em] text-gray-400">Total Receivable</p>
+                            <p class="text-2xl sm:text-3xl font-black text-emerald-300">Rs. {{ driver_receivable_total|floatformat:2 }}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-4 max-h-[420px] overflow-y-auto custom-scrollbar pr-2">
+                        {% for receivable in driver_receivables %}
+                            <div class="bg-[#1F1574]/70 p-4 rounded-2xl border border-white/5">
+                                <div class="flex items-start justify-between gap-4">
+                                    <div class="min-w-0">
+                                        <p class="text-[10px] font-extrabold uppercase tracking-widest text-gray-400">Rider</p>
+                                        <p class="text-base sm:text-lg font-black text-white truncate">
+                                            {{ receivable.requestdetails.rider.first_name|default:receivable.requestdetails.rider.email }}
+                                        </p>
+                                        <p class="text-xs sm:text-sm text-gray-400 font-bold mt-1 truncate">
+                                            {{ receivable.requestdetails.trip.ridedate|date:"M d, Y" }} • {{ receivable.requestdetails.pickuplocation|default:"Pickup not specified" }}
+                                        </p>
+                                        <p class="text-xs sm:text-sm text-gray-500 font-bold mt-2">
+                                            Status: <span class="text-amber-300">{{ receivable.status }}</span>
+                                        </p>
+                                    </div>
+                                    <div class="text-right shrink-0">
+                                        <p class="text-[10px] font-extrabold uppercase tracking-widest text-gray-400">To Receive</p>
+                                        <p class="text-xl sm:text-2xl font-black text-emerald-300">Rs. {{ receivable.amount|floatformat:2 }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="min-h-[160px] flex items-center justify-center bg-[#171158]/50 rounded-2xl border border-white/5 text-center px-6">
+                                <p class="text-gray-400 text-sm font-bold italic tracking-wide">No pending driver receivables.</p>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
-            {% endif %}
+            </div>
         </div>
 
         <div id="info-section" class="scroll-mt-24 flex flex-col gap-6">
@@ -241,7 +314,7 @@
                 </div>
                 <div class="flex justify-between items-center py-4 border-b border-white/5">
                     <span class="text-sm sm:text-base font-extrabold text-gray-300">Reliability Score</span>
-                    <span class="text-3xl sm:text-4xl font-black text-yellow-400">{{ counttrips|default:"0.0" }}</span>
+                    <span class="text-3xl sm:text-4xl font-black text-yellow-400">{{ averagerating|default:"0.0" }}</span>
                 </div>
                 
                 <div class="mt-6">
@@ -273,17 +346,51 @@
                 </div>
             </div>
 
-        </div> </div> <section id="complaints-section" class="max-w-7xl w-full px-6 sm:px-20 mx-auto mt-12 mb-10">
-        <div class="flex flex-col items-center justify-center text-center glass-card min-h-[30vh] border-2 border-dashed border-white/20">
-            <svg class="w-16 h-16 text-white/30 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-            <h2 class="text-3xl sm:text-4xl font-playfair font-black text-white mb-4">Complaints & Support</h2>
-            <p class="text-base sm:text-lg text-gray-400 font-medium max-w-2xl">This is a blank section reserved for your complaints and support form. You can add your content here later!</p>
+        </div> </div> <section id="complaints-section" class="max-w-7xl w-full px-6 sm:px-20 mt-12 mb-10 flex flex-col gap-6">
+        <div class="glass-card w-full bg-[#3A131B] border border-red-300/20 shadow-none">
+            <div class="border-b border-red-200/15 pb-4 mb-6">
+                <h2 class="text-3xl sm:text-4xl font-playfair font-black text-white">Complaints & Support</h2>
+                <p class="text-sm sm:text-base text-red-100/75 font-medium max-w-3xl mt-3">
+                    If the issue is regarding a specific ride, include the rider or driver name, ride date, and ride time so the issue can be checked faster.
+                </p>
+            </div>
+
+            <form method="POST" action="{% url 'profile' %}" class="flex flex-col gap-5">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="submitcomplaint">
+                <input type="hidden" name="complaint_name" value="{% if request.user.first_name or request.user.last_name %}{{ request.user.first_name }} {{ request.user.last_name }}{% else %}{{ request.user.email }}{% endif %}">
+                <input type="hidden" name="complaint_email" value="{{ request.user.email }}">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs sm:text-sm font-extrabold tracking-widest uppercase text-red-100/80 mb-2 block">Name</label>
+                        <input type="text" disabled value="{% if request.user.first_name or request.user.last_name %}{{ request.user.first_name }} {{ request.user.last_name }}{% else %}{{ request.user.email }}{% endif %}" class="form-input opacity-70 cursor-not-allowed border-red-200/15 bg-[#2A0F15]">
+                    </div>
+                    <div>
+                        <label class="text-xs sm:text-sm font-extrabold tracking-widest uppercase text-red-100/80 mb-2 block">Email</label>
+                        <input type="email" disabled value="{{ request.user.email }}" class="form-input opacity-70 cursor-not-allowed border-red-200/15 bg-[#2A0F15]">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="complaint_message" class="text-xs sm:text-sm font-extrabold tracking-widest uppercase text-red-100/80 mb-2 block">Complaint Details</label>
+                    <textarea id="complaint_message" name="complaint_message" rows="7" required
+                        class="form-input min-h-[180px] resize-y border-red-200/15 bg-[#2A0F15] focus:border-[#FCA5A5]"
+                        placeholder="Describe the issue clearly. If this is about a ride, include the rider/driver name, date, and time."></textarea>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-[#FCA5A5] hover:bg-[#ef4444] text-[#171158] font-black text-xs sm:text-sm uppercase tracking-widest py-3 px-6 rounded-xl transition-all shadow-md">
+                        Send
+                    </button>
+                </div>
+            </form>
         </div>
     </section>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 
-    {% if pendingpayments and orderid %}
+    {% if orderid %}
     <script>
         var options = {
             "key": "{{ RAZORID }}",
@@ -305,7 +412,10 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.status === "success") {
-                        alert("✅ Payment Successful");
+                        sessionStorage.setItem("hopin_redirect_toast", JSON.stringify({
+                            message: "Payment successful",
+                            type: "success"
+                        }));
                         window.location.replace('/');
                     } else {
                         alert("❌ Payment Failed");

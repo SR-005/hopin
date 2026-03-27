@@ -1,10 +1,13 @@
 from ..models import userdetail, riderequest, payment,trip
+from ..email.brevo import sendemail
 from django.contrib.auth import get_user_model
+from django.conf import settings
+from django.contrib import messages
 from dotenv import load_dotenv
 import os
 import json
 import razorpay
-from django.db.models import Avg
+from django.db.models import Avg, Sum
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 User=get_user_model()
@@ -75,15 +78,28 @@ def testprofilefunction(request):
     countrides=None
     currentorderid=None
     currentamount=None
+    currentaverage=None
 
-    completedtrips=trip.objects.filter(usercredentials=user,status="COMPLETED")
+    completedtrips=trip.objects.filter(usercredentials=user,status="COMPLETED").order_by("-ridedate")
     counttrips=len(completedtrips)
-    droppedrides=riderequest.objects.filter(rider=user,status="DROPPED")
+    droppedrides=riderequest.objects.filter(rider=user,status="DROPPED").order_by("-trip__ridedate")
     countrides=len(droppedrides)
+    userobject=userdetail.objects.get(usercredentials=user)
+    currentaverage=userobject.averagerating
+    phonenumber=userobject.phonenumber
+    print("Phone Number: ",phonenumber)
 
-    pendingpayments=payment.objects.filter(requestdetails__rider=request.user,status="PENDING")
-    if pendingpayments.exists():
-        pendingpayments=pendingpayments.first() 
+
+    rider_pending_payments=payment.objects.filter(requestdetails__rider=request.user,status="PENDING").select_related(
+                                    "requestdetails__rider","requestdetails__trip__usercredentials").order_by(
+                                    "-requestdetails__trip__ridedate", "-id")
+
+    driver_receivables=payment.objects.filter(requestdetails__trip__usercredentials=request.user,status="PENDING").select_related(
+                                    "requestdetails__rider","requestdetails__trip").order_by(
+                                    "-requestdetails__trip__ridedate", "-id")
+
+    rider_pending_total=rider_pending_payments.aggregate(total=Sum("amount"))["total"] or 0
+    driver_receivable_total=driver_receivables.aggregate(total=Sum("amount"))["total"] or 0
 
     if request.method=="POST":
         action=request.POST.get("action")
@@ -92,24 +108,54 @@ def testprofilefunction(request):
             currentrating=request.POST.get("rating")
             currentrequest=riderequest.objects.get(id=requestid)
 
-            try:
-                currentrating = int(currentrating)
-            except (TypeError, ValueError):
-                return redirect("profile")
+            if currentrequest.rating is None:
+                try:
+                    currentrating = int(currentrating)
+                except (TypeError, ValueError):
+                    return redirect("profile")
 
-            if currentrating < 1 or currentrating > 5:
-                return redirect("profile")
+                if currentrating < 1 or currentrating > 5:
+                    return redirect("profile")
 
-            currentrequest.rating=currentrating
-            currentrequest.save()
-            averagerating(currentrequest)
+                currentrequest.rating=currentrating
+                currentrequest.save()
+                averagerating(currentrequest)
 
             paymentid=request.POST.get("paymentid")
             currentpayment=payment.objects.get(id=paymentid)
             currentorderid, currentamount=createpayment(request)
             currentpayment.orderid=currentorderid
             currentpayment.save()
+        elif action=="submitcomplaint":
+            complaint_name = (request.POST.get("complaint_name") or user.get_full_name() or user.email).strip()
+            complaint_email = (request.POST.get("complaint_email") or user.email).strip()
+            complaint_message = (request.POST.get("complaint_message") or "").strip()
+
+            if not complaint_message:
+                messages.error(request, "Please describe your complaint before sending it.")
+                return redirect("profile")
+
+            email_subject = f"Hop In Complaint from {complaint_name}"
+            email_body = (
+                f"Name: {complaint_name}\n"
+                f"Email: {complaint_email}\n\n"
+                "Complaint Details:\n"
+                f"{complaint_message}\n"
+            )
+
+            try:
+                sendemail(email_subject, email_body, settings.DEFAULT_FROM_EMAIL)
+                messages.success(request, "Complaint submitted successfully.")
+            except Exception:
+                messages.error(request, "Complaint could not be submitted right now. Please try again.")
+
+            return redirect("profile")
 
     return render(request, "testprofile.html", {"completedtrips":completedtrips,"droppedrides":droppedrides,"counttrips":counttrips,
-                                                "countrides":countrides,"pendingpayments":pendingpayments, "orderid": currentorderid, "amount": currentamount,
+                                                "countrides":countrides,"averagerating":currentaverage,"phonenumber":phonenumber,
+                                                "rider_pending_payments":rider_pending_payments,
+                                                "driver_receivables":driver_receivables,
+                                                "rider_pending_total":rider_pending_total,
+                                                "driver_receivable_total":driver_receivable_total,
+                                                "orderid": currentorderid, "amount": currentamount,
                                                 "RAZORID": RAZORID})
