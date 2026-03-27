@@ -1,5 +1,7 @@
 from django.http import HttpResponse
 from django.urls import reverse
+from django.shortcuts import redirect
+from django.contrib import messages
 from .models import payment
 
 class PendingPaymentMiddleware:
@@ -17,6 +19,7 @@ class PendingPaymentMiddleware:
                                ,"/testlocation/","/testtracking/","/updatelocation/","/testprofile"]
 
                 if not any(request.path.startswith(p) for p in allowed_paths):
-                    return HttpResponse("Complete pending payment first", status=403)
+                    messages.error(request, "Complete pending payment first")
+                    return redirect('profile')
 
         return self.get_response(request)
