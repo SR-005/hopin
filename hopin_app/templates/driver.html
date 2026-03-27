@@ -7,11 +7,8 @@
     <title>Hop In - Create Your Ride</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css" rel="stylesheet" />
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -105,7 +102,6 @@
 <body class="text-white overflow-x-hidden">
 
     {% include "partials/toast_manager.html" %}
-
     {% include "partials/webpush_banner.html" %}
 
     <section class="min-h-screen bg-white flex flex-col relative overflow-hidden">
@@ -170,7 +166,7 @@
     {% if not lasttrip %}
         <section id="create-ride-section" class="min-h-screen bg-[#191265] py-6 px-4 md:px-12 flex flex-col justify-center items-center">
             <div class="w-full max-w-5xl">
-                <h2 class="text-4xl md:text-5xl font-['Black_Mango'] text-white mb-6 text-center md:text-left">Create Your Ride</h2>
+                <h2 class="text-white text-3xl md:text-4xl font-black uppercase tracking-tighter mb-4 text-center md:text-left font-bricolage">Create Your Ride</h2>
 
                 <div class="bg-white rounded-[1.5rem] p-4 md:p-5 flex flex-col lg:flex-row gap-5 shadow-2xl">
                     
@@ -271,7 +267,7 @@
     {% endif %}   
 
     <section id="active-trip-section" class="min-h-screen bg-[#191265] py-16 px-6 md:px-16 flex flex-col items-center">
-        <h2 class="text-white text-4xl md:text-5xl font-['Black_Mango'] mb-12 w-full max-w-6xl text-center md:text-left">Active Ride Management</h2>
+        <h2 class="text-white text-3xl md:text-5xl font-black uppercase tracking-tighter mb-12 w-full max-w-6xl font-bricolage">Active Ride Management</h2>
 
         <div class="w-full max-w-6xl flex flex-col gap-8">
             
@@ -283,7 +279,7 @@
                             <div class="w-8 h-8 rounded-full bg-[#191265] text-white flex items-center justify-center font-bold text-sm shadow-sm">
                                 {{ request.user.email|make_list|first|upper }}
                             </div>
-                            <h4 class="font-bold text-sm sm:text-base tracking-wide">{{ request.user.email }}</h4>
+                            <h4 class="font-extrabold text-sm sm:text-base font-bricolage tracking-wide">{{ request.user.email }}</h4>
                         </div>
                         
                         <div class="bg-gray-50 text-[#191265] flex items-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-black tracking-widest uppercase border border-gray-200 shadow-sm whitespace-nowrap">
@@ -392,18 +388,17 @@
         <p class="text-lg text-gray-500 font-medium max-w-2xl">This is a blank section reserved for tutorial content. You can add your videos, guides, or FAQs here later!</p>
     </section>
 
-    <div id="requests-map-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-[#191265]/60 backdrop-blur-sm p-4 opacity-0 transition-opacity duration-300">
+    <div id="dynamic-map-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center bg-[#191265]/60 backdrop-blur-sm p-4 opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-[2rem] w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col transform scale-95 transition-transform duration-300" id="modal-content">
             
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <h3 class="font-['Black_Mango'] text-2xl text-[#191265] font-black">Route & Accepted Pickups</h3>
-                <button onclick="closeRequestsMap()" class="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors">
+                <h3 id="map-modal-title" class="font-['Black_Mango'] text-2xl text-[#191265] font-black">Route Map</h3>
+                <button onclick="closeMapModal()" class="text-gray-400 hover:text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
             
             <div id="popup-map" class="w-full h-[50vh] sm:h-[65vh] bg-gray-100 relative z-10"></div>
-            
         </div>
     </div>
 
@@ -411,39 +406,57 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script>
+        // Fetching Accepted Requests
         const acceptedRequestsData = [
             {% for req in accepted %}
                 {
                     lat: {{ req.pickuplatitude|default:"0" }},
                     lng: {{ req.pickuplongitude|default:"0" }},
-                    email: "{{ req.rider.email|escapejs }}",
-                    location: "{{ req.pickuplocation|escapejs }}"
+                    firstName: "{{ req.rider.first_name|default:req.rider.username|default:'Rider'|escapejs }}",
+                },
+            {% endfor %}
+        ];
+
+        // FIX: The incoming requests use the 'requests' variable!
+        const pendingRequestsData = [
+            {% for req in requests %}
+                {
+                    lat: {{ req.pickuplatitude|default:"0" }},
+                    lng: {{ req.pickuplongitude|default:"0" }},
+                    firstName: "{{ req.rider.first_name|default:req.rider.username|default:'Rider'|escapejs }}",
                 },
             {% endfor %}
         ];
 
         const activeRouteGeoJSON = {% if lasttrip_routegeometry_json %}{{ lasttrip_routegeometry_json|safe }}{% else %}null{% endif %};
 
-        let requestsMapInstance = null;
+        let dynamicMapInstance = null;
         let markersLayer = null;
 
-        function openRequestsMap() {
-            const modal = document.getElementById('requests-map-modal');
+        function openMapModal(type) {
+            const modal = document.getElementById('dynamic-map-modal');
             const modalContent = document.getElementById('modal-content');
+            const title = document.getElementById('map-modal-title');
             
+            if (type === 'accepted') {
+                title.innerText = "Route & Accepted Pickups";
+            } else if (type === 'incoming') {
+                title.innerText = "Route & Incoming Requests";
+            }
+
             modal.classList.remove('hidden');
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 modalContent.classList.remove('scale-95');
             }, 10);
 
-            if (!requestsMapInstance) {
-                requestsMapInstance = L.map('popup-map').setView([10.050272, 76.329273], 12); 
+            if (!dynamicMapInstance) {
+                dynamicMapInstance = L.map('popup-map').setView([10.050272, 76.329273], 12); 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19
-                }).addTo(requestsMapInstance);
+                }).addTo(dynamicMapInstance);
                 
-                markersLayer = L.layerGroup().addTo(requestsMapInstance);
+                markersLayer = L.layerGroup().addTo(dynamicMapInstance);
             }
 
             markersLayer.clearLayers();
@@ -464,18 +477,21 @@
                     L.marker([startC[1], startC[0]]).bindPopup("<b class='text-[#191265]'>Start</b>").addTo(markersLayer);
                     L.marker([endC[1], endC[0]]).bindPopup("<b class='text-[#191265]'>Destination</b>").addTo(markersLayer);
                 }
-
                 hasValidData = true;
             }
 
-            acceptedRequestsData.forEach(req => {
+            // Decide which array of requests to plot
+            const dataToLoop = (type === 'accepted') ? acceptedRequestsData : pendingRequestsData;
+            
+            dataToLoop.forEach(req => {
                 if (req.lat !== 0 && req.lng !== 0) {
                     const popupContent = `
                         <div class="text-center p-1">
-                            <p class="font-black text-[#191265] mb-1">${req.email}</p>
-                            <p class="text-xs text-gray-600 font-bold uppercase">Pickup Location</p>
+                            <p class="font-black text-[#191265] mb-1 uppercase tracking-wider">${req.firstName}</p>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">${type === 'accepted' ? 'Pickup' : 'Requested Pickup'}</p>
                         </div>
                     `;
+                    // Using standard Leaflet blue marker for everything!
                     const marker = L.marker([req.lat, req.lng]).bindPopup(popupContent);
                     markersLayer.addLayer(marker);
                     bounds.extend([req.lat, req.lng]);
@@ -484,15 +500,15 @@
             });
 
             setTimeout(() => {
-                requestsMapInstance.invalidateSize();
+                dynamicMapInstance.invalidateSize();
                 if (hasValidData) {
-                    requestsMapInstance.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
+                    dynamicMapInstance.fitBounds(bounds, { padding: [40, 40], maxZoom: 15 });
                 }
             }, 300); 
         }
 
-        function closeRequestsMap() {
-            const modal = document.getElementById('requests-map-modal');
+        function closeMapModal() {
+            const modal = document.getElementById('dynamic-map-modal');
             const modalContent = document.getElementById('modal-content');
             
             modal.classList.add('opacity-0');
@@ -758,52 +774,6 @@
             if (scrollToActiveBtn) {
                 scrollToActiveBtn.onclick = () => document.getElementById('active-trip-section').scrollIntoView({ behavior: 'smooth' });
             }
-        
-            function initRequestMaps() {
-                const minimapContainers = document.querySelectorAll('.minimap-container');
-                minimapContainers.forEach(container => {
-                    if (!container.id) return;
-
-                    const lat = parseFloat(container.getAttribute('data-lat'));
-                    const lng = parseFloat(container.getAttribute('data-lng'));
-
-                    if (isNaN(lat) || isNaN(lng) || (lat === 0 && lng === 0)) {
-                        container.innerHTML = `
-                            <div class="w-full h-full bg-gray-100 flex flex-col items-center justify-center text-gray-400">
-                                <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                <span class="text-[10px] font-bold uppercase tracking-wider">No Location</span>
-                            </div>`;
-                        return;
-                    }
-
-                    if (container._leaflet_id) {
-                        return;
-                    }
-
-                    const mmap = L.map(container.id, {
-                        zoomControl: false,
-                        dragging: false,
-                        scrollWheelZoom: false,
-                        doubleClickZoom: false,
-                        boxZoom: false,
-                        keyboard: false,
-                        attributionControl: false
-                    }).setView([lat, lng], 15.5);
-
-                    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(mmap);
-
-                    L.circleMarker([lat, lng], {
-                        radius: 8,
-                        fillColor: "#191265",
-                        color: "#ffffff",
-                        weight: 3,
-                        opacity: 1,
-                        fillOpacity: 1
-                    }).addTo(mmap);
-
-                    setTimeout(() => mmap.invalidateSize(), 300);
-                });
-            }
 
             function showToast(message, type = "info") {
                 window.HopinToast.show(message, type);
@@ -896,10 +866,6 @@
                 container.innerHTML = trimmed;
 
                 container.hidden = false;
-
-                if (container.querySelector('.minimap-container')) {
-                    setTimeout(initRequestMaps, 50);
-                }
             }
 
             async function pollDriver() {
@@ -975,7 +941,6 @@
             driverPrevAcceptedIds = getDriverAcceptedRequestIds();
             
             showQueuedDriverToast();
-            initRequestMaps();
             startDriverPolling();
 
         });
