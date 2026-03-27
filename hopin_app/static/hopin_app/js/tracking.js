@@ -79,7 +79,18 @@ document.addEventListener("DOMContentLoaded", function () {
     setTimeout(() => { map.invalidateSize(); }, 500);
 
     /* --- 4. Tracking & ETA Logic --- */
-    const driverMarker = L.marker([10.050272, 76.329273]).addTo(map).bindPopup("Driver");
+    // Define the custom solid blue dot (no pulsating effect)
+    const liveDriverIcon = L.divIcon({
+        className: 'bg-transparent',
+        html: `
+            <div class="relative flex items-center justify-center w-8 h-8">
+                <div class="relative w-4 h-4 bg-blue-600 border-2 border-white rounded-full shadow-md"></div>
+            </div>
+        `,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16]
+    });
+    const driverMarker = L.marker([10.050272, 76.329273], {icon: liveDriverIcon}).addTo(map).bindPopup("Driver");
     const riderMarker = L.marker([rLat, rLng]).addTo(map).bindPopup("Rider");
 
 

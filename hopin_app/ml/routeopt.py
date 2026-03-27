@@ -211,10 +211,14 @@ def requestprice(currenttrip,pickupindex,location1):
     print("Price: ", price)
     return price
 
-def tripprice(routegeometry):
+def tripprice(routegeometry,vehicle):
     totalrouteindex=len(routegeometry["coordinates"]) - 1
     distance=routedistance(routegeometry,0,totalrouteindex)
     print(distance, "km")
-    price=round(distance*1.3, 2)  # 1.3 rupees per km
+    if vehicle=="bike":
+        priceperkm=1.3
+    else:
+        priceperkm=2
+    price=round(distance*priceperkm, 2)  # 1.3 rupees per km
     print("Price: ", price)
     return distance, price
