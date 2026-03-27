@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
-from .commonview import cleanup
+from .commonview import cleanup, get_active_driver_trip
 from ..notifications import send_new_ride_request_notification, send_request_cancelled_notification
 User = get_user_model()
 
@@ -474,6 +474,15 @@ def seemore(request):
 # rider page routing function
 @login_required
 def riderfunction(request):
+    active_driver_trip = get_active_driver_trip(request.user)
+    if active_driver_trip:
+        if active_driver_trip.status == "ONGOING":
+            messages.error(request, "You already have an ongoing driver trip. Finish it before switching to the rider page.")
+            return redirect("testlocation", rideid=active_driver_trip.id)
+
+        messages.error(request, "You already have an active trip as a driver. Complete or delete it before booking as a rider.")
+        return redirect("driver")
+
     cleanup(request)  # calling cleanup function to delete expired rides
     rides=None
     requests=None

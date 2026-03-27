@@ -30,13 +30,7 @@
 
 <body class="scroll-smooth">
 
-    {% if messages %}
-    {% for message in messages %}
-    <script>
-        alert("{{ message|escapejs }}");
-    </script>
-    {% endfor %}
-    {% endif %}
+    {% include "partials/toast_manager.html" %}
 
     {% include "partials/webpush_banner.html" %}
 

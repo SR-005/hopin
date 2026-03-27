@@ -18,7 +18,7 @@ from ..notifications import (
     send_trip_deleted_notification,
 )
 
-from .commonview import cleanup
+from .commonview import cleanup, get_active_driver_trip, get_active_rider_request
 User=get_user_model()
 
 #driver html poll
@@ -226,10 +226,24 @@ def starttracking(request):
 #driver page routing function
 @login_required
 def driverfunction(request):
-    
+    active_rider_request = get_active_rider_request(request.user)
+    if active_rider_request:
+        if active_rider_request.status == "PENDING":
+            messages.error(request, "You already have a pending ride request. Cancel it before creating a ride as a driver.")
+            return redirect("rider")
+
+        if active_rider_request.status in ["HALFCONFIRM", "FULLCONFIRM"] or active_rider_request.trip.status == "ONGOING":
+            messages.error(request, "You already have an ongoing rider trip. Finish it before switching to the driver page.")
+            return redirect("tracking", rideid=active_rider_request.trip.id)
+
+        messages.error(request, "You already have an accepted ride request. Complete or cancel it before creating a ride as a driver.")
+        return redirect("rider")
+
     # --- FAILSAFE: AUTO-REDIRECT IF RIDE IS ALREADY ONGOING ---
     # If the user has an ongoing ride, intercept them instantly and force them to the dashboard
-    ongoing_trip = trip.objects.filter(usercredentials=request.user, status="ONGOING").first()
+    ongoing_trip = get_active_driver_trip(request.user)
+    if ongoing_trip and ongoing_trip.status != "ONGOING":
+        ongoing_trip = None
     if ongoing_trip:
         return redirect("testlocation", rideid=ongoing_trip.id)
     
