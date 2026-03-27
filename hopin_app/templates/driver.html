@@ -210,7 +210,8 @@
                                     <input type="date" name="ridedate" class="custom-input cursor-pointer" onkeydown="return false" required>
                                 </div>
                                 <div class="space-y-1">
-                                    <label class="text-[#191265] font-black text-sm uppercase tracking-widest ml-1">Time</label>
+                                    <label class="text-[#191265] font-black text-sm  tracking-widest ml-1">TIME<span class="tracking-normal">(Departure)</span></label>
+                                    
                                     <input type="time" id="ridetime" name="ridetime" class="custom-input" required>
                                 </div>
                             </div>
@@ -221,12 +222,11 @@
                                     <select name="vehicletype" id="vehicletype" class="custom-input" required>
                                         <option value="car">Car</option>
                                         <option value="bike">Bike</option>
-                                        <option value="scooter">Scooter</option>
                                     </select>
                                 </div>
                                 <div class="space-y-1">
                                     <label class="text-[#191265] font-black text-sm uppercase tracking-widest ml-1">Seats</label>
-                                    <input type="number" name="availableseats" value="1" min="1" max="6" class="custom-input" required>
+                                    <input type="number" name="availableseats" id="availableseats" value="1" min="1" max="6" class="custom-input" required>
                                 </div>
                             </div>
 
@@ -274,15 +274,15 @@
             {% if lasttrip %}
                 <div class="bg-white rounded-[1.5rem] p-4 sm:p-5 shadow-xl w-full max-w-5xl mx-auto flex flex-col gap-4 text-[#191265] border border-gray-100">
                     
-                    <div class="flex justify-between items-center gap-4">
-                        <div class="flex items-center gap-3 shrink-0">
-                            <div class="w-8 h-8 rounded-full bg-[#191265] text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                    <div class="flex justify-between items-center gap-2 sm:gap-4 w-full">
+                        <div class="flex items-center gap-2 sm:gap-3 shrink min-w-0">
+                            <div class="w-8 h-8 shrink-0 rounded-full bg-[#191265] text-white flex items-center justify-center font-bold text-sm shadow-sm">
                                 {{ request.user.email|make_list|first|upper }}
                             </div>
-                            <h4 class="font-bold text-sm sm:text-base tracking-wide">{{ request.user.email }}</h4>
+                            <h4 class="font-bold text-sm sm:text-base tracking-wide truncate">{{ request.user.email }}</h4>
                         </div>
                         
-                        <div class="bg-gray-50 text-[#191265] flex items-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-black tracking-widest uppercase border border-gray-200 shadow-sm whitespace-nowrap">
+                        <div class="bg-gray-50 text-[#191265] flex items-center px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-black tracking-widest uppercase border border-gray-200 shadow-sm whitespace-nowrap shrink-0">
                             <svg class="w-4 h-4 mr-1.5 opacity-70 hidden sm:block shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                             </svg>
@@ -336,7 +336,7 @@
                                     {% if lasttrip.vehiclenumber %}
                                         <span class="uppercase">{{ lasttrip.vehiclenumber }}</span><span class="text-gray-300 font-normal">•</span>
                                     {% endif %}
-                                    <span>{{ lasttrip.availableseats }} SEAT{% if lasttrip.availableseats|add:"0" > 1 %}S{% endif %}</span>
+                                    <span>{{ lasttrip.availableseats|default:"1" }} SEAT(S)</span>
                                 </div>
                             </div>
 
@@ -411,7 +411,6 @@
         let dynamicMapInstance = null;
         let markersLayer = null;
 
-        // BULLETPROOF SCRIPT: Instantly reads the map pins directly from the HTML cards so they NEVER desync!
         function openMapModal(type) {
             const modal = document.getElementById('dynamic-map-modal');
             const modalContent = document.getElementById('modal-content');
@@ -460,7 +459,7 @@
                 hasValidData = true;
             }
 
-            // Dynamically Extract Passenger Data straight from the active cards!
+            // Dynamically Extract Passenger Data straight from the HTML!
             const containerId = type === 'accepted' ? 'confirmed-passengers-container' : 'incoming-requests-container';
             const container = document.getElementById(containerId);
             
@@ -555,18 +554,56 @@
                     dateInput.value = formatDate(today);
                 }
 
+                // SECURE VEHICLE SCRIPT (HELMET & SEATS)
                 const vType = document.getElementById('vehicletype');
-                const vSeats = document.querySelector('input[name="availableseats"]');
+                const vSeats = document.getElementById('availableseats'); // Selected by ID
                 const vNum = document.querySelector('input[name="vehiclenumber"]');
                 const vModel = document.querySelector('input[name="vehiclemodel"]');
                 const vHelmet = document.getElementById('helmet');
 
+                function toggleHelmetVisibility() {
+                    if (!vType) return;
+                    
+                    const helmetContainer = document.getElementById('helmet-container');
+                    
+                    if (vType.value === 'bike') {
+                        if (helmetContainer) helmetContainer.classList.remove('hidden');
+                        
+                        if (vSeats) {
+                            vSeats.value = 1;
+                            vSeats.setAttribute('readonly', 'readonly');
+                            vSeats.setAttribute('max', '1');
+                            vSeats.classList.add('opacity-50', 'cursor-not-allowed');
+                            vSeats.style.pointerEvents = 'none'; // Absolutely prevents clicking the arrows
+                        }
+                    } else {
+                        if (helmetContainer) helmetContainer.classList.add('hidden');
+                        if (vHelmet) vHelmet.checked = false; 
+                        
+                        if (vSeats) {
+                            vSeats.removeAttribute('readonly');
+                            vSeats.setAttribute('max', '6');
+                            vSeats.classList.remove('opacity-50', 'cursor-not-allowed');
+                            vSeats.style.pointerEvents = 'auto'; // Restores clicking
+                        }
+                    }
+                }
+
+                // Restore from local storage BEFORE adding event listener
                 if (localStorage.getItem('hopin_vNum')) {
-                    if(vType) vType.value = localStorage.getItem('hopin_vType');
+                    if(vType && localStorage.getItem('hopin_vType') === 'car' || localStorage.getItem('hopin_vType') === 'bike') {
+                        vType.value = localStorage.getItem('hopin_vType');
+                    }
                     if(vSeats) vSeats.value = localStorage.getItem('hopin_vSeats');
                     if(vNum) vNum.value = localStorage.getItem('hopin_vNum');
                     if(vModel) vModel.value = localStorage.getItem('hopin_vModel');
                     if(vHelmet) vHelmet.checked = localStorage.getItem('hopin_vHelmet') === 'true';
+                }
+
+                // Attach listener and trigger it immediately on load
+                if (vType) {
+                    vType.addEventListener('change', toggleHelmetVisibility);
+                    toggleHelmetVisibility(); 
                 }
 
                 const rideForm = document.getElementById('rideForm');
@@ -704,20 +741,6 @@
                         autocompleteResults.classList.add('hidden');
                     }
                 });
-
-                function toggleHelmetVisibility() {
-                    if (vType.value === 'bike' || vType.value === 'scooter') {
-                        document.getElementById('helmet-container').classList.remove('hidden');
-                    } else {
-                        document.getElementById('helmet-container').classList.add('hidden');
-                        if (vHelmet) vHelmet.checked = false; 
-                    }
-                }
-
-                if (vType) {
-                    vType.addEventListener('change', toggleHelmetVisibility);
-                    toggleHelmetVisibility(); 
-                }
 
                 function setDirection(dir) {
                     directionInput.value = dir;
