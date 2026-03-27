@@ -102,10 +102,7 @@ def landingfunction(request):
                 return redirect("verify")
             user=request.user
             status="true"
-            username=User.objects.get(email=request.user.email)
-            username=str(username.first_name).upper()
-            username=username.split()
-            firstname=username[0]
+            firstname=user.first_name
 
             pendingpayment=paymentchecker(request)
     except:

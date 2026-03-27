@@ -30,13 +30,7 @@
 
 <body class="scroll-smooth">
 
-    {% if messages %}
-    {% for message in messages %}
-    <script>
-        alert("{{ message|escapejs }}");
-    </script>
-    {% endfor %}
-    {% endif %}
+    {% include "partials/toast_manager.html" %}
 
     {% include "partials/webpush_banner.html" %}
 
@@ -210,7 +204,7 @@
                                 <div class="flex flex-col items-start flex-1">
                                     <p class="font-black text-[#191265] text-[10px] uppercase leading-tight">Start</p>
                                     <p class="text-sm text-black font-bold line-clamp-2">
-                                        {% if trip.direction == 'from' %} AISAT {% else %} {{ trip.preferedlocation }} {% endif %}
+                                        {% if trip.prefereddirection == 'from' %} AISAT {% else %} {{ trip.preferedlocation }} {% endif %}
                                     </p>
                                 </div>
                                 <div class="flex-[2] flex items-center gap-2 hidden lg:flex">
@@ -224,7 +218,7 @@
                                 <div class="flex flex-col items-end flex-1 text-right">
                                     <p class="font-black text-[#191265] text-[10px] uppercase leading-tight">End</p>
                                     <p class="text-sm text-black font-bold line-clamp-2">
-                                        {% if trip.direction == 'from' %} {{ trip.preferedlocation }} {% else %} AISAT {% endif %}
+                                        {% if trip.prefereddirection == 'from' %} {{ trip.preferedlocation }} {% else %} AISAT {% endif %}
                                     </p>
                                 </div>
                             </div>
@@ -237,12 +231,12 @@
                                     </span>
 
                                     {% if trip.vehicletype|lower == "bike" %}
-                                    {% if request.trip.helmet %}
+                                    {% if trip.helmet %}
                                     <span class="bg-[#9BCCA5] text-white text-[9px] font-extrabold px-1.5 py-1 rounded-md uppercase">
                                         +HELMET
                                     </span>
                                     {% else %}
-                                    <span class="bg-red text-white text-[9px] font-extrabold px-1.5 py-1 rounded-md uppercase">
+                                    <span class="bg-red-500 text-white text-[9px] font-extrabold px-1.5 py-1 rounded-md uppercase">
                                         +No Helmet
                                     </span>
                                     {% endif %}
@@ -363,7 +357,7 @@
                                         <div class="flex flex-col items-center w-[40%] min-w-0"> 
                                             <p class="font-black text-gray-400 text-[10px] uppercase tracking-wider mb-1">Start</p>
                                             <p class="text-lg text-[#191265] font-bold text-center leading-tight break-words w-full">
-                                                {% if trip.direction == 'from' %} AISAT {% else %} {{ trip.preferedlocation }} {% endif %}
+                                                {% if trip.prefereddirection == 'from' %} AISAT {% else %} {{ trip.preferedlocation }} {% endif %}
                                             </p>
                                         </div>
 
@@ -377,26 +371,24 @@
                                                 </div>
                                             </div>
                                         </div>
-
                                         <div class="flex flex-col items-center w-[40%] min-w-0">
                                             <p class="font-black text-gray-400 text-[10px] uppercase tracking-wider mb-1">End</p>
                                             <p class="text-lg text-[#191265] font-bold text-center leading-tight break-words w-full">
-                                                {% if trip.direction == 'from' %} {{ trip.preferedlocation }} {% else %} AISAT {% endif %}
+                                                {% if trip.prefereddirection == 'from' %} {{ trip.preferedlocation }} {% else %} AISAT {% endif %}
                                             </p>
                                         </div>
                                     </div>
-                                    
                                     <div class="flex items-center gap-3">
                                         <span class="bg-[#191265] text-white text-lg font-black uppercase px-2 py-0.5 rounded-md lg:ml-2 tracking-wider shadow-sm">
                                             {{ trip.vehicletype }}
                                         </span>
                                         {% if trip.vehicletype|lower == "bike" %}
-                                        {% if request.trip.helmet %}
+                                        {% if trip.helmet == "on"%}
                                         <span class="bg-[#9BCCA5] text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg uppercase whitespace-nowrap">
                                             +HELMET
                                         </span>
                                         {% else %}
-                                        <span class="bg-red text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg uppercase whitespace-nowrap">
+                                        <span class="bg-red-500 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-lg uppercase whitespace-nowrap">
                                             No Helmet
                                         </span>
                                         {% endif %}

@@ -105,36 +105,56 @@
 
 {% if requests %}
 <div class="relative lg:absolute top-0 mt-4 lg:-mt-4 left-0 w-full max-w-[520px] h-[180px] lg:h-[200px] bg-white/10 lg:bg-white/5 rounded-[1.5rem] lg:rounded-[2rem] p-3 border border-white/20 shadow-inner overflow-hidden flex flex-col z-20">
-    <p class="text-[9px] lg:text-[10px] font-black uppercase text-[#191265] lg:text-white tracking-widest mb-2 px-2">
+    <p class="text-[9px] lg:text-[10px] font-black uppercase text-[#191265] lg:text-[#191265]  tracking-widest mb-2 px-2">
         Active Requests ({{ requests|length }})
     </p>
 
     <div class="flex-grow overflow-y-auto pr-2 space-y-3 custom-rider-scrollbar">
         {% for request in requests %}
-        <div class="relative animate-in slide-in-from-left-2 duration-300">
-            <div class="flex items-center justify-between border-2 border-blue-700 rounded-xl lg:rounded-2xl px-3 lg:px-4 py-2 lg:py-3 bg-gray-50 shadow-sm">
-                <div class="flex items-center gap-2 lg:gap-3 min-w-0">
-                    <div class="w-10 h-10 lg:w-12 lg:h-12 rounded-full border-2 border-white bg-[#f1f3f5] flex items-center justify-center overflow-hidden shrink-0">
-                        <svg class="w-6 h-6 text-[#4d5b6b]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z"/></svg>
-                    </div>
-                    <div class="leading-tight min-w-0">
-                        <p class="text-blue-800 text-[8px] lg:text-[10px] font-bold uppercase truncate">Pending to</p>
-                        <p class="text-[#191265] font-bold text-xs lg:text-sm truncate">
-                            {{ request.trip.usercredentials }}
-                        </p>
-                    </div>
+       <div class="relative animate-in slide-in-from-left-2 duration-300">
+    <div class="flex items-center justify-between border-2 border-blue-700 rounded-xl lg:rounded-2xl px-2 lg:px-3 py-2 lg:py-3 bg-gray-50 shadow-sm min-h-[100px]">
+        
+        <div class="flex items-center gap-3 lg:gap-4 min-w-0">
+            <div class="w-12 h-12 lg:w-14 lg:h-14 rounded-full border-2 border-white bg-[#f1f3f5] flex items-center justify-center overflow-hidden shrink-0">
+                <svg class="w-7 h-7 text-[#4d5b6b]" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z"/></svg>
+            </div>
+
+            <div class="flex flex-col gap-1 min-w-0">
+                <div>
+                    <p class="text-blue-800 text-[13px] lg:text-[15px] font-bold uppercase tracking-tight">Pending to</p>
+                    <p class="text-[#191265] font-black text-sm lg:text-base truncate uppercase">
+                        {{ request.trip.usercredentials.first_name }}
+                    </p>
                 </div>
 
-                <div class="flex items-center gap-1 lg:gap-2 shrink-0">
-                    <button type="button" onclick="openBigRouteModal('{{ request.id }}', '{{ request.trip.id }}')" class="bg-[#191265] text-white px-2 lg:px-3 py-1.5 rounded-lg text-[9px] lg:text-[10px] font-black uppercase shadow-md">Route</button>
-                    <form method="POST" action="{% url 'rider' %}" class="m-0">
-                        {% csrf_token %}
-                        <input type="hidden" name="requestid" value="{{ request.id }}">
-                        <button type="submit" name="action" value="cancelrequest" class="bg-red-600 text-white px-2 lg:px-3 py-1.5 rounded-lg text-[9px] lg:text-[10px] font-black uppercase shadow-md">Cancel</button>
-                    </form>
+                <div class="flex items-center gap-3 text-[14px] lg:text-xs text-gray-600 font-bold">
+                    <div class="flex items-center gap-1">
+                        <svg class="w-4 h-4 text-black" fill="currentColor" viewBox="0 0 24 24">
+                            <path fill-rule="evenodd" d="M5 5a1 1 0 0 0 1-1 1 1 0 1 1 2 0 1 1 0 0 0 1 1h1a1 1 0 0 0 1-1 1 1 0 1 1 2 0 1 1 0 0 0 1 1h1a1 1 0 0 0 1-1 1 1 0 1 1 2 0 1 1 0 0 0 1 1 2 2 0 0 1 2 2v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a2 2 0 0 1 2-2ZM3 19v-7a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm6.01-6a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm2 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm6 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm-10 4a1 1 0 1 1 2 0 1 1 0 0 1-2 0Zm6 0a1 1 0 1 0-2 0 1 1 0 0 0 2 0Zm2 0a1 1 0 1 1 2 0 1 1 0 0 1-2 0Z" clip-rule="evenodd" />
+                        </svg>
+                        <span>{{ request.trip.ridedate }}</span>
+                    </div>
+
+                    <div class="flex items-center gap-1">
+                        <svg class="w-4 h-4 text-black" fill="currentColor" viewBox="0 0 24 24">
+                            <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v4a1 1 0 0 0 .293.707l3 3a1 1 0 0 0 1.414-1.414L13 11.586V8Z" clip-rule="evenodd" />
+                        </svg>
+                        <span>{{ request.trip.ridetime }}</span>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <div class="flex flex-col gap-2 shrink-0">
+            <button type="button" onclick="openBigRouteModal('{{ request.id }}', '{{ request.trip.id }}')" class="bg-[#191265] text-white px-3 py-2 rounded-lg text-[10px] font-black uppercase shadow-md hover:bg-blue-900 transition-colors">Route</button>
+            <form method="POST" action="{% url 'rider' %}" class="m-0">
+                {% csrf_token %}
+                <input type="hidden" name="requestid" value="{{ request.id }}">
+                <button type="submit" name="action" value="cancelrequest" class="bg-red-600 text-white px-3 py-2 rounded-lg text-[10px] font-black uppercase shadow-md hover:bg-red-700 transition-colors w-full">Cancel</button>
+            </form>
+        </div>
+    </div>
+</div>
         {% endfor %}
     </div>
 </div>

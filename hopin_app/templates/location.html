@@ -56,13 +56,7 @@
     <div class="ambient-glow"></div>
     <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 pointer-events-none z-0"></div>
 
-    {% if messages %}
-        {% for message in messages %}
-        <script>
-            alert("{{ message|escapejs }}");
-        </script>
-        {% endfor %}
-    {% endif %}
+    {% include "partials/toast_manager.html" %}
 
     <nav class="w-full flex items-center justify-between px-4 sm:px-6 lg:px-12 py-4 sm:py-6 absolute top-0 left-0 z-[1000] bg-transparent pointer-events-none">
         <div class="flex items-center w-auto lg:w-1/4 pointer-events-auto">
@@ -70,7 +64,6 @@
         </div>
 
         <ul class="flex space-x-3 sm:space-x-8 md:space-x-12 font-extrabold text-[10px] sm:text-xs md:text-base absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap tracking-widest uppercase pointer-events-auto">
-            <li><a href="/" class="text-[#EAE9DF] opacity-50 hover:opacity-100 transition-opacity">Home</a></li>
             <li><a href="#" class="text-white opacity-100 border-b-2 border-white pb-1">Live Ride</a></li>
         </ul>
 
