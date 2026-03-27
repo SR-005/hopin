@@ -121,7 +121,7 @@ body {
                     <span class="bg-red-500 text-white font-bold text-[10px] px-2 py-0.5 rounded shadow-sm">NO HELMET</span>
                 {% endif %}
             {% endif %}
-            <span class="font-extrabold text-2xl text-green-600">₹{{ currentrequest.trip.price }}</span>
+            <span class="font-extrabold text-2xl text-green-600">₹{{ currentrequest.price }}</span>
         </div>
 
         {% if currentrequest.trip.vehicletype == "car" %}
@@ -172,10 +172,18 @@ body {
             <p class="text-white font-extrabold font-['Black_Mango'] text-lg md:text-xl text-center md:text-left">
                 Wait for the Driver to Pickup to give Confirmation
             </p>
+            {% if currentrequest.status == "FULLCONFIRM" %}
+             <button type="submit"  disabled
+                class="w-full mt-4 bg-green-600 text-white font-extrabold text-lg md:text-xl py-4 rounded-2xl shadow-xl hover:bg-green-700 disabled:bg-gray-400 transition duration-300">
+                Confirmed
+            </button>
+        
+            {% else %}
             <button type="submit" name="action" id="confirmbutton" value="confirmride" disabled
                 class="w-full mt-4 bg-green-600 text-white font-extrabold text-lg md:text-xl py-4 rounded-2xl shadow-xl hover:bg-green-700 disabled:bg-gray-400 transition duration-300">
                 Confirm Pickup
             </button>
+            {% endif %}
         </form>
     </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
