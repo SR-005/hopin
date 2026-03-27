@@ -60,12 +60,39 @@
                                 Book
                             </button>
                         </a>
-                        {% if pending %}
-                            <a href="{% url 'profile' %}">
-                                <h1>You have a Pending Payment</h1>
-                                <button type="submit" name="action" value="paypending">Pay Now</button>
-                            </a>
-                        {% endif %}
+                       {% if pending %}
+<div class=" mb-6">
+    <a href="{% url 'profile' %}" class="relative block overflow-hidden rounded-xl lg:rounded-2xl border border-white/20 shadow-xl transition-transform active:scale-[0.98]">
+        
+        <div class="backdrop-blur-md bg-[#191265]/70 px-5 py-3 lg:py-4 flex flex-row items-center justify-between gap-4">
+            
+            <div class="flex items-center gap-4 min-w-0">
+                <div class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border border-white/20 shrink-0">
+                    <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+
+                <div class="min-w-0 text-left">
+                    <h1 class="text-white text-base lg:text-lg font-['Playfair_Display']tracking-tight leading-tight">
+                        Pending Payment
+                    </h1>
+                    <p class="text-blue-100/70 text-[9px] font-['Playfair_Display'] lg:text-[10px] font-bold uppercase tracking-widest">
+                        Action Required
+                    </p>
+                </div>
+            </div>
+
+            <button type="submit" name="action" value="paypending" 
+                    class="bg-white text-[#191265] font-['Playfair_Display'] font-extrabold text-[14px] px-5 py-2 rounded-lg shadow-lg hover:bg-blue-50 transition-colors shrink-0">
+                Pay Now
+            </button>
+        </div>
+
+        <div class="absolute inset-0 pointer-events-none border border-white/10 rounded-xl lg:rounded-2xl"></div>
+    </a>
+</div>
+{% endif %}
                     </div>
                 </div>
 
