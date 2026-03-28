@@ -53,42 +53,6 @@ def fetchstatus(request, requestid):
     })
 
 
-def testconfirmride(request):
-    requestid = request.POST.get("requestid")
-    requestid = request.POST.get("requestid")
-    currentrequest = riderequest.objects.get(id=requestid)
-
-    currentrequest.status = "FULLCONFIRM"
-    currentrequest.save()
-
-    currentrequest.trip.has_boarded = True
-    currentrequest.trip.save()
-
-    return redirect("testtracking", rideid=request.POST.get("tripid"))
-
-# to render tracking page
-
-
-def testtrackingfunction(request, rideid):
-    currentrideid = None
-    currentride = get_object_or_404(
-        trip, id=rideid, status__in=["ONGOING", "COMPLETED"])
-    print("Current Tracking Ride: ", currentride)
-    currentrideid = rideid
-
-    currentrequest = riderequest.objects.get(trip=currentride, rider=request.user, status__in=[
-                                             "ACCEPTED", "HALFCONFIRM", "FULLCONFIRM", "DROPPED"])
-    riderlatitude = currentrequest.pickuplatitude
-    riderlongitude = currentrequest.pickuplongitude
-
-    if request.method == "POST":
-        action = request.POST.get("action")
-        if action == "confirmride":
-            return testconfirmride(request)
-
-    return render(request, "testtracking.html", {"rideid": currentrideid, "requestid": currentrequest.id, "riderlatitude": riderlatitude, "riderlongitude": riderlongitude})
-
-
 def confirmride(request):
     requestid = request.POST.get("requestid")
     requestid = request.POST.get("requestid")

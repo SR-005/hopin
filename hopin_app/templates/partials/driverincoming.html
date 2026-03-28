@@ -11,7 +11,7 @@
                     data-route="{{ request.routegeometry_json|escape }}">
             </div>
 
-        <form method="POST" action="{% url 'testdriver' %}">
+        <form method="POST" action="{% url 'driver' %}">
             {% csrf_token %}
             <input type="hidden" name="requestid" value="{{ request.id }}">
 

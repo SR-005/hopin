@@ -1,7 +1,12 @@
 from django.urls import path
 from .views import authview,payandrateview,driverview,riderview,trackingview,locationview,profileview,testdriverview,commonview
+from webpush.views import ServiceWorkerView, save_info
 
 urlpatterns=[
+    #web push routes
+    path("save_information", save_info, name="save_webpush_info"),
+    path("service-worker.js", ServiceWorkerView.as_view(), name="service_worker"),
+
     #Profile view functions
     path("testprofile/", profileview.testprofilefunction, name="profile"),
 
@@ -12,18 +17,11 @@ urlpatterns=[
     path("verify/", authview.verifyfunction, name="verify"),
     path("logout/", authview.logoutfunction, name="logout"),
 
-    #notification view functions
-    path("register_webpush_subscription/", commonview.register_webpush_subscription, name="register_webpush_subscription"),
-    path("push-debug/", commonview.push_debug_page, name="push_debug"),
-    path("push-debug/status/", commonview.push_debug_status, name="push_debug_status"),
-
     #payment and rating view functions
-    path("testpay/<int:paymentid>/", payandrateview.testpayfunction, name="testpay"),
     path("verifypayment/", payandrateview.verifypayment, name="verifypayment"),
 
 
     #driver view functions
-    path("testcreatetrip/", testdriverview.testdriverfunction, name="testdriver"),
     path("driver/", driverview.driverfunction, name="driver"),   #test driver
     #path("driver/", driverview.driverfunction, name="driver"),   #driver
     path("driver/poll/", driverview.driverpoll, name="driverpoll"),
@@ -40,7 +38,6 @@ urlpatterns=[
     path("updatelocation/<int:rideid>/", locationview.updatelocation, name="update_location"),
     
     #location tracking view functions
-    path("testtracking/<int:rideid>/", trackingview.testtrackingfunction, name="testtracking"),   #test tracking
     path("fetchtracking/<int:rideid>/", trackingview.fetchtracking, name="fetchtracking"),   #test tracking
     path("fetchstatus/<int:requestid>/", trackingview.fetchstatus, name="fetchstatus"),    #fetch status of ride: completed or not
     path("tracking/<int:rideid>/", trackingview.trackingfunction, name="tracking"),   #test tracking

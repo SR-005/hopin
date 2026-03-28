@@ -22,22 +22,13 @@ def rideend(currentride):
     if not currentride.has_boarded:
         return
 
-    reached_trip_destination = tripdestinationreached(
-        currentride,
-        currentride.currentlatitude,
-        currentride.currentlongitude
-    )
-    active_rides = riderequest.objects.filter(
-        trip=currentride,
-        status__in=["ACCEPTED", "HALFCONFIRM", "FULLCONFIRM"]
-    )
+    reached_trip_destination=tripdestinationreached(currentride,currentride.currentlatitude,currentride.currentlongitude)
+    active_rides=riderequest.objects.filter(trip=currentride,status__in=["ACCEPTED", "HALFCONFIRM", "FULLCONFIRM"])
 
-    # "From" rides can finish as soon as every active rider has been resolved,
-    # even if the driver has not reached the original route endpoint yet.
     if currentride.prefereddirection == "from":
-        should_complete = reached_trip_destination or not active_rides.exists()
+        should_complete=reached_trip_destination or not active_rides.exists()
     else:
-        should_complete = reached_trip_destination
+        should_complete=reached_trip_destination
 
     if not should_complete:
         return
@@ -92,7 +83,7 @@ def updatelocation(request,rideid):
 
         riders=riderequest.objects.filter(trip=currentride,status__in=["FULLCONFIRM", "HALFCONFIRM", "ACCEPTED"])
         print("Current Req2: ",riders)
-        dropped_rides = riderdropped(latitude,longitude,riders)
+        dropped_rides=riderdropped(latitude,longitude,riders)
         for dropped_ride in dropped_rides:
             send_dropoff_notification(dropped_ride.rider)
         rideend(currentride)
@@ -106,36 +97,33 @@ def updatelocation(request,rideid):
 
 #live location fetching from driver
 def testlocationfunction(request, rideid):
-    currentrequest = None
+    currentrequest=None
 
-    ride = get_object_or_404(trip, id=rideid)
-    print("Ride Status for Driver: ", ride.status)
+    ride=get_object_or_404(trip,id=rideid)
+    print("Ride Status for Driver: ",ride.status)
 
-    if ride.status != "ONGOING":
-        messages.error(request, "This Ride has Successfully been completed")
+    if ride.status!="ONGOING":
+        messages.error(request,"This Ride has Successfully been completed")
         return redirect("landing")
     
-    currentrequest = riderequest.objects.filter(trip=ride, status__in=["ACCEPTED", "HALFCONFIRM", "FULLCONFIRM", "DROPPED", "DROPPEDNOTCONFIRMED", "NOTBOARDED"])
-    print("Current Req1: ", currentrequest)
+    currentrequest=riderequest.objects.filter(trip=ride, status__in=["ACCEPTED", "HALFCONFIRM", "FULLCONFIRM", "DROPPED", "DROPPEDNOTCONFIRMED", "NOTBOARDED"])
+    print("Current Req1: ",currentrequest)
 
-    if request.method == "POST":
-        pickupid = request.POST.get("requestid")
-        pickuprider = get_object_or_404(riderequest, id=pickupid, status="ACCEPTED")
-        pickuprider.status = "HALFCONFIRM"
+    if request.method=="POST":
+        pickupid=request.POST.get("requestid")
+        pickuprider=get_object_or_404(riderequest, id=pickupid, status="ACCEPTED")
+        pickuprider.status="HALFCONFIRM"
         pickuprider.save()
-        ride.has_boarded = True 
+        ride.has_boarded=True 
         ride.save()
         send_pickup_confirmed_notification(pickuprider.rider)
 
-    # Context variables added for the new Dashboard UI Navbar
-    context = {
+    #Context variables added for the new Dashboard UI Navbar
+    context={
         "rideid": rideid,
         "riders": currentrequest,
-        # Pass status as "true" or "false" string so the JS in the template reads it correctly
         "status": "true" if request.user.is_authenticated else "false",
-        # Pass the user's first name for the top right profile display
         "firstname": request.user.first_name if request.user.is_authenticated else "",
     }
 
-    # CHANGED: Now renders your new beautiful dashboard!
     return render(request, "location.html", context)

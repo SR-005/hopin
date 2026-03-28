@@ -15,8 +15,8 @@ class PendingPaymentMiddleware:
                 if request.path == "/":
                     return self.get_response(request)
                 
-                allowed_paths=["/login/","/signup/","/logout/","/verifypayment/","/testpay/","/fetchtracking/","/fetchstatus/"
-                               ,"/testlocation/","/testtracking/","/updatelocation/","/testprofile"]
+                allowed_paths=["/login/","/signup/","/logout/","/verifypayment/","/fetchtracking/","/fetchstatus/"
+                               ,"/testlocation/","/updatelocation/","/testprofile"]
 
                 if not any(request.path.startswith(p) for p in allowed_paths):
                     messages.error(request, "Complete pending payment first")
