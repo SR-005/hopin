@@ -68,7 +68,6 @@ def confirmride(request):
 
 # to render tracking page
 
-
 def trackingfunction(request, rideid):
     currentrideid = None
     firstname=request.user.first_name

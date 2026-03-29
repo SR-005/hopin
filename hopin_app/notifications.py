@@ -147,7 +147,7 @@ def send_payment_due_notification(rider, payment_id=None):
     payload = _build_payload(
         head="Payment Pending",
         body="Your ride is complete. Payment is now ready.",
-        url=f"/testpay/{payment_id}/" if payment_id else "/rider/",
+        url=f"/profile/" if payment_id else "/rider/",
     )
     _send_notification(rider, payload)
 
