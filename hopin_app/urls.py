@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import authview,payandrateview,driverview,riderview,trackingview,locationview,profileview,testdriverview,commonview
+from .views import authview,driverview,riderview,trackingview,locationview,profileview,commonview
 from webpush.views import ServiceWorkerView, save_info
 
 urlpatterns=[
@@ -16,9 +16,6 @@ urlpatterns=[
     path("signup/", authview.signupfunction, name="signup"),
     path("verify/", authview.verifyfunction, name="verify"),
     path("logout/", authview.logoutfunction, name="logout"),
-
-    #payment and rating view functions
-    path("verifypayment/", payandrateview.verifypayment, name="verifypayment"),
 
 
     #driver view functions
