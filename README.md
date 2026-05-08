@@ -54,14 +54,8 @@ Real-time AJAX polling for booking updates, ride status, and acceptance/rejectio
 
 ---
 
-## Quick Start
 
-### Prerequisites
-- Python 3.9+
-- PostgreSQL
-- Virtual environment (`venv` or `conda`)
-
-### Installation
+## Installation
 
 ```bash
 # Clone and setup
@@ -127,28 +121,6 @@ hopin/
 6. Complete payment after ride
 
 ---
-
-## Environment Variables
-
-Create a `.env` file in the root directory:
-
-```env
-# Django
-SECRET_KEY=your-django-secret-key
-DEBUG=True
-
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/hopin
-
-# Google OAuth
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-
-# Razorpay
-RAZORPAY_KEY_ID=your-razorpay-key
-RAZORPAY_KEY_SECRET=your-razorpay-secret
-```
-
 
 
 ## Performance & Safety
