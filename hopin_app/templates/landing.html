@@ -20,7 +20,7 @@
 
     <section id="home" class="relative w-full">
         
-        <div class="absolute bottom-0 right-0 w-full h-[45%] bg-[#F4F5F7] rounded-t-[3rem] lg:top-0 lg:bottom-auto lg:w-[38%] lg:h-[130vh] lg:rounded-t-none lg:rounded-bl-[140px] z-0 pointer-events-none shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.1)] lg:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]"></div>
+        <div class="absolute bottom-0 right-0 w-full h-[45%] bg-[#F4F5F7] rounded-t-[3rem] lg:top-0 lg:bottom-auto lg:w-[38%] lg:h-[105vh] lg:rounded-t-none lg:rounded-bl-[140px] z-0 pointer-events-none shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.1)] lg:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)]"></div>
         
         <nav class="w-full flex items-center justify-between px-3 sm:px-6 lg:px-12 py-4 sm:py-6 fixed top-0 left-0 z-50">
             <div class="flex items-center w-auto lg:w-1/4">
@@ -106,17 +106,17 @@
     </section>
 
     <section id="about" class="min-h-screen pt-64 px-6 lg:px-12 text-[#EAE9DF] relative z-10">
-        <div class="max-w-[1200px] mx-auto flex flex-col gap-6">
-            <h2 class="text-4xl md:text-6xl font-['Black_Mango']">About Us</h2>
-            <div class="space-y-8">
+        <div class="max-w-[1200px] mx-auto flex flex-col gap-8">
+            <h2 class="text-5xl md:text-6xl font-['Black_Mango']">About Us</h2>
+            <div class="space-y-6 lg:space-y-8 max-w-5xl">
 
-                <p class="font-['Playfair_Display'] text-white/80 text-lg sm:text-xl lg:text-2xl leading-loose">
+                <p class="font-['Playfair_Display'] text-white/90 text-lg md:text-xl lg:text-2xl leading-loose">
                     Hop-In is a campus-based ride-sharing platform developed to address the everyday transportation challenges faced by college students.
                     Many students depend on unreliable public transport or expensive alternatives, making daily commuting inconvenient and time-consuming.
                     At the same time, several students travel with empty seats in their vehicles, leading to inefficient use of resources and increased traffic congestion.
                 </p>
 
-                <p class="font-['Playfair_Display'] text-white/80 text-lg sm:text-xl lg:text-2xl leading-loose">
+                <p class="font-['Playfair_Display'] text-white/90 text-lg md:text-xl lg:text-2xl leading-loose">
                     The platform is designed to create a safer and more reliable travel environment by ensuring that only verified college users can access the system.
                     By encouraging shared commuting, Hop-In helps reduce travel costs, improve efficiency, and promote a more sustainable campus environment.
                     Hop-In bridges this gap by connecting students who need rides with those who can offer them, within a trusted college community.
@@ -126,19 +126,53 @@
         </div>
     </section>
 
-    <section id="contact" class="min-h-screen pt-40 px-6 lg:px-16 text-[#EAE9DF] relative z-10">
-        <div class="max-w-[1200px] mx-auto flex flex-col gap-6">
-            <h2 class="text-4xl md:text-6xl font-['Black_Mango']">contact</h2>
-            <p class="text-lg md:text-xl font-['Playfair_Display'] max-w-2xl">
-                contact us here
-            </p>
+    <section id="contact" class="min-h-screen pt-32 pb-24 px-6 lg:px-16 text-[#EAE9DF] relative z-10 flex flex-col justify-center">
+        <div class="max-w-[1200px] mx-auto w-full">
+            
+            <div class="flex flex-col lg:flex-row justify-between items-start gap-16 border-t border-white/20 pt-16">
+                
+                <div class="w-full lg:w-1/2">
+                    <h2 class="text-4xl md:text-5xl font-['Black_Mango'] mb-8">The Team.</h2>
+                    <p class="text-[#EAE9DF]/80 font-['Playfair_Display'] text-lg sm:text-xl leading-relaxed mb-8">
+                        Hop-In is a student-led project developed to make campus commutes organized, secure, and cost-effective. Built exclusively for our college community.
+                    </p>
+
+                    <div class="mb-4 text-xs text-white/50 uppercase tracking-widest font-bold font-['Playfair_Display']">Developed By</div>
+                    <ul class="space-y-3 text-xl lg:text-2xl font-['Playfair_Display'] text-[#EAE9DF] mb-12">
+                        <li>Sreeram V Gopal</li>
+                        <li>Aadith V S</S></li>
+                        <li>Ameena Sulfikar</li>
+                        <li>Shahrukh Dawood</li>
+                    </ul>
+                </div>
+
+                <div class="w-full lg:w-1/2 lg:pl-16 lg:border-l border-white/20">
+                    <h2 class="text-4xl md:text-5xl font-['Black_Mango'] mb-8">Support.</h2>
+                    <p class="text-[#EAE9DF]/80 font-['Playfair_Display'] text-lg sm:text-xl leading-relaxed mb-10">
+                        To ensure we can resolve your issues quickly, all queries, ride complaints, and platform suggestions are handled directly through your authenticated account. 
+                    </p>
+                    
+                    <a href="{% url 'profile' %}" class="inline-flex items-center gap-4 group">
+                        <span class="bg-white text-[#191265] px-8 py-4 rounded-[14px] font-['Playfair_Display'] font-extrabold hover:bg-gray-200 transition duration-300 text-sm md:text-base tracking-wide">
+                            Go to Support / Complaints
+                        </span>
+                    </a>
+                    
+                    <div class="mt-12">
+                        <span class="text-sm font-['Playfair_Display'] text-white/50 block mb-2">Or email us directly at:</span>
+                        <a href="mailto:admin@hopin.edu" class="text-lg lg:text-xl font-['Playfair_Display'] text-[#EAE9DF] hover:text-white transition pb-1 border-b border-white/30 hover:border-white inline-block">
+                            admin@hopin.edu
+                        </a>
+                    </div>
+                </div>
+
+            </div>
         </div>
     </section>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"></script>
 
     <script>
-        // Merged logic into a single DOMContentLoaded so the buttons are injected BEFORE the scroll watcher checks them!
         document.addEventListener("DOMContentLoaded", () => {
             const redirectToastStorageKey = "hopin_redirect_toast";
 
@@ -155,56 +189,35 @@
                 sessionStorage.removeItem(redirectToastStorageKey);
             }
 
-            // 1. INJECT AUTH BUTTONS/USERNAME FIRST
             const isLoggedIn={{ status|lower }};
             const authContainer=document.getElementById('auth-container');
 
             if (isLoggedIn) {
                 authContainer.innerHTML=`
                   <div class="flex items-center gap-2 sm:gap-4">
-
-                    <!-- Added ID "username-display" and smooth transition-colors -->
                     <span id="username-display" class="font-['Playfair_Display'] font-extrabold text-[12px] sm:text-[14px] lg:text-[18px] tracking-wide block transition-colors duration-300">
                        {{ firstname }}
                     </span>
-
-                    <!-- Profile Button -->
                     <button id="user-menu-button" data-dropdown-toggle="user-dropdown"
                         class="flex text-sm rounded-full focus:ring-4 focus:ring-gray-300">
-
                         <div class="w-8 h-8 lg:w-12 lg:h-12 rounded-full border-2 border-white shadow-md bg-gray-100 flex items-center justify-center text-gray-600 overflow-hidden">
                             <svg class="w-5 h-5 lg:w-8 lg:h-8" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-                                <path fill-rule="evenodd"
-                                    d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z"
-                                    clip-rule="evenodd" />
+                                <path fill-rule="evenodd" d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z" clip-rule="evenodd" />
                             </svg>
                         </div>
-
                     </button>
-
-                    <!-- Dropdown -->
                     <div id="user-dropdown"
                         class="hidden z-50 my-4 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow w-44">
-
                         <div class="px-4 py-3">
                             <span class="block font-['Playfair_Display'] font-extrabold text-[#191265]">{{ user.email }}</span>
                         </div>
-
                         <ul class="py-2 text-sm text-gray-700">
-
                             <li>
-                                <a href="{% url 'profile' %}" class="block px-4 py-2 hover:bg-gray-200">
-                                    Profile
-                                </a>
+                                <a href="{% url 'profile' %}" class="block px-4 py-2 hover:bg-gray-200">Profile</a>
                             </li>
-
-                        
                             <li>
-                                <a href="{% url 'logout' %}" class="block px-4 py-2 hover:bg-red-100 text-red-600">
-                                    Logout
-                                </a>
+                                <a href="{% url 'logout' %}" class="block px-4 py-2 hover:bg-red-100 text-red-600">Logout</a>
                             </li>
-
                         </ul>
                     </div>
                 </div>
@@ -212,7 +225,6 @@
             } else {
                 authContainer.innerHTML=`
                     <a id="login-btn" href="{% url 'login' %}" class="font-['Playfair_Display'] font-extrabold text-[10px] sm:text-[14px] lg:text-[18px] hover:opacity-75 transition-colors duration-300 pr-1 sm:pr-4">Login</a>
-
                     <a id="signup-btn" href="{% url 'signup' %}" 
                     class="px-3 py-1 sm:px-5 sm:py-2 lg:px-8 lg:py-2.5 rounded-[14px] bg-white lg:bg-[#191265] text-[#191265] lg:text-white font-['Playfair_Display'] font-extrabold tracking-wide transition-all duration-300 shadow-sm text-[10px] sm:text-[14px] lg:text-[18px] hover:bg-[#191265] hover:text-white">
                     Sign up
@@ -220,13 +232,11 @@
                 `;
             }
 
-            // 2. SCROLLSPY LOGIC
             const sections=document.querySelectorAll("section[id]");
             const navLinks=document.querySelectorAll(".nav-item");
 
             function updateActiveLink() {
-                let currentSection="home"; // Default fallback
-
+                let currentSection="home"; 
                 const scrollTrigger=window.scrollY + 100;
 
                 sections.forEach(section => {
@@ -251,10 +261,8 @@
                 const loginBtn=document.getElementById("login-btn");
                 const signupBtn=document.getElementById("signup-btn");
                 const usernameDisplay=document.getElementById("username-display");
-
                 const isMobile=window.innerWidth < 1024;
 
-                // Toggle logic for Login & Sign Up buttons
                 if (loginBtn && signupBtn) {
                     signupBtn.className =
                     "px-3 py-1 sm:px-5 sm:py-2 lg:px-8 lg:py-2.5 rounded-[14px] font-['Playfair_Display'] font-extrabold tracking-wide transition-all duration-300 shadow-sm text-[10px] sm:text-[14px] lg:text-[18px] border";
@@ -274,7 +282,6 @@
                     }
                 }
 
-                // Toggle logic for Logged In Username
                 if (usernameDisplay) {
                     if (currentSection === "home" && !isMobile) {
                         usernameDisplay.style.color="#191265";
@@ -286,9 +293,8 @@
 
             window.addEventListener("scroll", updateActiveLink);
             window.addEventListener("resize", updateActiveLink); 
-            updateActiveLink(); // Run once immediately so correct colors set on page load
+            updateActiveLink(); 
 
-            // 3. SMOOTH SCROLL CLICK LOGIC
             document.querySelectorAll(".nav-item").forEach(link => {
                 link.addEventListener("click", function(e) {
                     e.preventDefault();
@@ -298,7 +304,7 @@
 
                     let offset=0;   
                     if (targetId === "about") {
-                        offset=250;
+                        offset=150;
                     }
 
                     const position=targetSection.offsetTop + offset;
