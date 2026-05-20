@@ -8,6 +8,7 @@ import os
 import json
 import razorpay
 from django.db.models import Avg, Sum
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 User=get_user_model()
@@ -70,6 +71,7 @@ def createpayment(request):
     print("Payment Created Successfully")
     return currentorder["id"], amount
 
+@login_required
 def testprofilefunction(request):
     user=request.user
     completedtrips=None

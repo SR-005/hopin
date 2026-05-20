@@ -44,9 +44,9 @@
             </div>
 
             <ul class="hidden md:flex space-x-16 font-['Playfair_Display'] tracking-widest font-extrabold text-[18px] absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap">
-                <li><a href="#" class="text-[#191265] hover:opacity-70 transition-opacity nav-link-active">Home</a></li>
+                <li><a href="{% url 'landing' %}" class="text-[#191265] hover:opacity-70 transition-opacity nav-link-active">Home</a></li>
                 <li><a href="#search-section" class="text-[#191265] hover:opacity-70 transition-opacity">Search</a></li>
-                <li><a href="#tutorial-section" class="text-[#191265] hover:opacity-70 transition-opacity">Tutorial</a></li>
+                <li><a href="{% url 'profile' %}" class="text-[#191265] hover:opacity-70 transition-opacity">Grievances</a></li>
             </ul>
 
             <div class="flex justify-end items-center gap-2 lg:gap-6 lg:w-1/4 lg:ml-auto" id="auth-container">
@@ -513,11 +513,6 @@
                     </div>
                 </div>
             </div>
-        </section>
-
-        <section id="tutorial-section" class="min-h-[50vh] bg-white py-20 px-6 md:px-12 flex flex-col items-center justify-center text-center border-t border-gray-200">
-            <h2 class="text-4xl md:text-5xl font-['Black_Mango'] text-[#191265] mb-4">Tutorial</h2>
-            <p class="text-lg text-gray-500 font-medium max-w-2xl">This is a blank section reserved for tutorial content. You can add your videos, guides, or FAQs here later!</p>
         </section>
 
     </div>
